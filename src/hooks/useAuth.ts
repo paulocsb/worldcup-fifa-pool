@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { markAsReturningUser } from '@/lib/inviteStorage'
 
 type AuthState = {
   status: 'loading' | 'authenticated' | 'unauthenticated'
@@ -18,6 +19,7 @@ export function useAuth(): AuthState {
 
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return
+      if (data.session) markAsReturningUser()
       setState({
         status: data.session ? 'authenticated' : 'unauthenticated',
         session: data.session,
@@ -25,6 +27,7 @@ export function useAuth(): AuthState {
     })
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) markAsReturningUser()
       setState({
         status: session ? 'authenticated' : 'unauthenticated',
         session,
