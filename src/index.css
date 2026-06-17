@@ -270,6 +270,10 @@
   .safe-top {
     padding-top: max(env(safe-area-inset-top), 0.5rem);
   }
+  /* Reserva espaço pro BottomNav fixo + safe-area do home indicator (iOS) */
+  .pb-nav {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
 
   /* Tipografia display — Saira Condensed (FWC2026-flavor) */
   .font-display {

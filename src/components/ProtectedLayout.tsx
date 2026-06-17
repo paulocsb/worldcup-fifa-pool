@@ -42,7 +42,7 @@ export function ProtectedLayout() {
 
   return (
     <div className="flex min-h-svh flex-col">
-      <main className="flex-1 pb-16">
+      <main className="pb-nav flex-1">
         <Outlet />
       </main>
       {!isOnOnboarding && <BottomNav />}

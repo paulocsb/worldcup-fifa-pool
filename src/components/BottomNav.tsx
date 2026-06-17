@@ -19,7 +19,7 @@ const items: NavItem[] = [
 
 export function BottomNav() {
   return (
-    <nav className="safe-bottom sticky bottom-0 z-30 border-t border-border/60 bg-card/90 backdrop-blur-2xl">
+    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-card/90 backdrop-blur-2xl">
       <ul className="container grid grid-cols-5 gap-0.5 px-1 py-1.5">
         {items.map(({ to, label, icon: Icon, end }) => (
           <li key={to}>
