@@ -41,8 +41,8 @@ export function ProtectedLayout() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col">
-      <main className="pb-nav flex-1">
+    <div className="flex h-dvh flex-col">
+      <main className="flex-1 overflow-y-auto overscroll-contain">
         <Outlet />
       </main>
       {!isOnOnboarding && <BottomNav />}
