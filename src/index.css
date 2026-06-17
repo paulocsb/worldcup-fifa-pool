@@ -1,0 +1,387 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base — off-white com navy-pitch foreground */
+    --background: 60 9% 98%;
+    --foreground: 141 41% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 141 41% 10%;
+
+    /* Primary (verde-gramado) — ação */
+    --primary: 151 70% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Posição cerimonial */
+    --accent-gold: 43 65% 52%;
+    --accent-gold-foreground: 141 41% 10%;
+    --accent-silver: 215 14% 65%;
+    --accent-bronze: 30 76% 36%;
+
+    --secondary: 60 5% 94%;
+    --secondary-foreground: 141 41% 10%;
+    --muted: 60 5% 94%;
+    --muted-foreground: 141 18% 38%;
+    --accent: 151 55% 92%;
+    --accent-foreground: 141 41% 10%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 60 5% 88%;
+    --input: 60 5% 88%;
+    --ring: 151 70% 40%;
+    --radius: 0.875rem;
+
+    --bg-gradient-from: 60 9% 98%;
+    --bg-gradient-to: 151 50% 96%;
+
+    /* Grupos (12 cores saturadas) */
+    --group-a: 142 71% 58%;  /* lime-green   */
+    --group-b: 0 84% 60%;    /* red          */
+    --group-c: 25 95% 53%;   /* orange       */
+    --group-d: 226 71% 40%;  /* deep blue    */
+    --group-e: 271 81% 56%;  /* purple       */
+    --group-f: 48 96% 53%;   /* yellow       */
+    --group-g: 330 81% 60%;  /* magenta      */
+    --group-h: 187 85% 53%;  /* cyan         */
+    --group-i: 215 16% 47%;  /* slate-blue   */
+    --group-j: 158 64% 39%;  /* emerald      */
+    --group-k: 11 86% 65%;   /* coral        */
+    --group-l: 199 89% 60%;  /* sky          */
+
+    /* Fases do torneio (7 cores) */
+    --phase-group: 142 71% 45%;
+    --phase-r32: 271 81% 56%;
+    --phase-r16: 25 95% 53%;
+    --phase-quarter: 84 81% 50%;
+    --phase-semi: 187 85% 53%;
+    --phase-third: 32 95% 44%;
+    --phase-final: 48 96% 53%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --background: 141 41% 6%;
+      --foreground: 60 9% 96%;
+      --card: 141 30% 10%;
+      --card-foreground: 60 9% 96%;
+
+      --primary: 151 70% 50%;
+      --primary-foreground: 141 41% 6%;
+
+      --accent-gold: 43 80% 58%;
+      --accent-gold-foreground: 141 41% 6%;
+      --accent-silver: 215 16% 72%;
+      --accent-bronze: 30 76% 50%;
+
+      --secondary: 141 18% 16%;
+      --secondary-foreground: 60 9% 96%;
+      --muted: 141 18% 16%;
+      --muted-foreground: 60 6% 70%;
+      --accent: 151 30% 18%;
+      --accent-foreground: 151 60% 80%;
+
+      --destructive: 0 72% 58%;
+      --destructive-foreground: 0 0% 100%;
+
+      --border: 141 18% 20%;
+      --input: 141 18% 22%;
+      --ring: 151 70% 50%;
+
+      --bg-gradient-from: 141 41% 6%;
+      --bg-gradient-to: 141 50% 4%;
+
+      /* Grupos em dark mode (saturação um pouco mais alta + lightness) */
+      --group-a: 142 71% 62%;
+      --group-b: 0 84% 65%;
+      --group-c: 25 95% 58%;
+      --group-d: 226 71% 55%;
+      --group-e: 271 81% 65%;
+      --group-f: 48 96% 60%;
+      --group-g: 330 81% 65%;
+      --group-h: 187 85% 58%;
+      --group-i: 215 16% 60%;
+      --group-j: 158 64% 50%;
+      --group-k: 11 86% 70%;
+      --group-l: 199 89% 65%;
+
+      /* Fases em dark mode */
+      --phase-group: 142 71% 50%;
+      --phase-r32: 271 81% 65%;
+      --phase-r16: 25 95% 58%;
+      --phase-quarter: 84 81% 55%;
+      --phase-semi: 187 85% 58%;
+      --phase-third: 32 95% 50%;
+      --phase-final: 48 96% 60%;
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --background: 141 41% 6%;
+    --foreground: 60 9% 96%;
+    --card: 141 30% 10%;
+    --card-foreground: 60 9% 96%;
+
+    --primary: 151 70% 50%;
+    --primary-foreground: 141 41% 6%;
+
+    --accent-gold: 43 80% 58%;
+    --accent-gold-foreground: 141 41% 6%;
+    --accent-silver: 215 16% 72%;
+    --accent-bronze: 30 76% 50%;
+
+    --secondary: 141 18% 16%;
+    --secondary-foreground: 60 9% 96%;
+    --muted: 141 18% 16%;
+    --muted-foreground: 60 6% 70%;
+    --accent: 151 30% 18%;
+    --accent-foreground: 151 60% 80%;
+
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 141 18% 20%;
+    --input: 141 18% 22%;
+    --ring: 151 70% 50%;
+
+    --bg-gradient-from: 141 41% 6%;
+    --bg-gradient-to: 141 50% 4%;
+
+    --group-a: 142 71% 62%;
+    --group-b: 0 84% 65%;
+    --group-c: 25 95% 58%;
+    --group-d: 226 71% 55%;
+    --group-e: 271 81% 65%;
+    --group-f: 48 96% 60%;
+    --group-g: 330 81% 65%;
+    --group-h: 187 85% 58%;
+    --group-i: 215 16% 60%;
+    --group-j: 158 64% 50%;
+    --group-k: 11 86% 70%;
+    --group-l: 199 89% 65%;
+
+    --phase-group: 142 71% 50%;
+    --phase-r32: 271 81% 65%;
+    --phase-r16: 25 95% 58%;
+    --phase-quarter: 84 81% 55%;
+    --phase-semi: 187 85% 58%;
+    --phase-third: 32 95% 50%;
+    --phase-final: 48 96% 60%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+
+  /* Safe-area extension: garante que a barra inferior (home indicator iOS)
+     herde a cor do tema em vez do branco default do html. */
+  html {
+    background-color: hsl(var(--background));
+  }
+
+  body {
+    @apply min-h-svh text-foreground;
+    font-family: 'Noto Sans', Inter, system-ui, sans-serif;
+    background:
+      radial-gradient(
+        1200px 600px at 50% -10%,
+        hsl(var(--primary) / 0.08),
+        transparent 60%
+      ),
+      linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
+    background-attachment: fixed;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.4s ease;
+  }
+
+  /* Backgrounds contextuais por seção */
+  body[data-page-theme='group-stage'] {
+    background:
+      radial-gradient(
+        900px 500px at 50% -10%,
+        hsl(var(--phase-group) / 0.28),
+        transparent 65%
+      ),
+      radial-gradient(
+        700px 400px at 100% 100%,
+        hsl(var(--phase-group) / 0.12),
+        transparent 70%
+      ),
+      linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
+  }
+  body[data-page-theme='knockouts'] {
+    background:
+      radial-gradient(
+        900px 500px at 50% -10%,
+        hsl(var(--phase-r32) / 0.28),
+        transparent 65%
+      ),
+      radial-gradient(
+        700px 400px at 0 100%,
+        hsl(var(--phase-r32) / 0.14),
+        transparent 70%
+      ),
+      linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
+  }
+  body[data-page-theme='final'] {
+    background:
+      radial-gradient(
+        900px 500px at 50% -10%,
+        hsl(var(--phase-final) / 0.32),
+        transparent 65%
+      ),
+      radial-gradient(
+        700px 400px at 100% 100%,
+        hsl(var(--phase-final) / 0.16),
+        transparent 70%
+      ),
+      linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
+  }
+  body[data-page-theme='ranking'] {
+    background:
+      radial-gradient(
+        900px 500px at 50% -10%,
+        hsl(var(--accent-gold) / 0.26),
+        transparent 65%
+      ),
+      radial-gradient(
+        700px 400px at 0 100%,
+        hsl(var(--accent-gold) / 0.12),
+        transparent 70%
+      ),
+      linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
+  }
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 0.5rem);
+  }
+
+  /* Tipografia display — Saira Condensed (FWC2026-flavor) */
+  .font-display {
+    font-family: 'Saira Condensed', 'Noto Sans', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.005em;
+  }
+
+  /* Glass */
+  .glass {
+    background-color: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.7);
+  }
+  .glass-strong {
+    background-color: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid hsl(var(--border) / 0.8);
+  }
+
+  /* Glows */
+  .glow-primary {
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.25),
+      0 10px 30px -10px hsl(var(--primary) / 0.5);
+  }
+  .glow-destructive {
+    box-shadow:
+      0 0 0 2px hsl(var(--destructive) / 0.25),
+      0 0 22px hsl(var(--destructive) / 0.35);
+  }
+  .glow-gold {
+    box-shadow:
+      0 0 0 1px hsl(var(--accent-gold) / 0.3),
+      0 10px 30px -10px hsl(var(--accent-gold) / 0.5);
+  }
+
+  /* Motivo signature: quarter-circle cut (FIFA 2026) */
+  .cut-corner-tl {
+    -webkit-mask-image: radial-gradient(circle 18px at 0 0, transparent 18px, black 18px);
+    mask-image: radial-gradient(circle 18px at 0 0, transparent 18px, black 18px);
+  }
+  .cut-corner-tr {
+    -webkit-mask-image: radial-gradient(circle 18px at 100% 0, transparent 18px, black 18px);
+    mask-image: radial-gradient(circle 18px at 100% 0, transparent 18px, black 18px);
+  }
+  .cut-corner-bl {
+    -webkit-mask-image: radial-gradient(circle 18px at 0 100%, transparent 18px, black 18px);
+    mask-image: radial-gradient(circle 18px at 0 100%, transparent 18px, black 18px);
+  }
+  .cut-corner-br {
+    -webkit-mask-image: radial-gradient(circle 18px at 100% 100%, transparent 18px, black 18px);
+    mask-image: radial-gradient(circle 18px at 100% 100%, transparent 18px, black 18px);
+  }
+
+  /* Pattern decorativo de 48 elementos (DNA do "26" no logo FIFA) */
+  .bg-fwc-dots {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><g fill='%23000' fill-opacity='0.05'><circle cx='20' cy='20' r='4'/><rect x='56' y='16' width='8' height='8' rx='1'/><circle cx='100' cy='20' r='4'/><rect x='136' y='16' width='8' height='8' rx='1'/><rect x='16' y='56' width='8' height='8' rx='1'/><circle cx='60' cy='60' r='4'/><rect x='96' y='56' width='8' height='8' rx='1'/><circle cx='140' cy='60' r='4'/><circle cx='20' cy='100' r='4'/><rect x='56' y='96' width='8' height='8' rx='1'/><circle cx='100' cy='100' r='4'/><rect x='136' y='96' width='8' height='8' rx='1'/><rect x='16' y='136' width='8' height='8' rx='1'/><circle cx='60' cy='140' r='4'/><rect x='96' y='136' width='8' height='8' rx='1'/><circle cx='140' cy='140' r='4'/></g></svg>");
+    background-repeat: repeat;
+    background-size: 160px 160px;
+  }
+  :root[data-theme='dark'] .bg-fwc-dots,
+  :root:not([data-theme='light']) .bg-fwc-dots {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><g fill='%23ffffff' fill-opacity='0.05'><circle cx='20' cy='20' r='4'/><rect x='56' y='16' width='8' height='8' rx='1'/><circle cx='100' cy='20' r='4'/><rect x='136' y='16' width='8' height='8' rx='1'/><rect x='16' y='56' width='8' height='8' rx='1'/><circle cx='60' cy='60' r='4'/><rect x='96' y='56' width='8' height='8' rx='1'/><circle cx='140' cy='60' r='4'/><circle cx='20' cy='100' r='4'/><rect x='56' y='96' width='8' height='8' rx='1'/><circle cx='100' cy='100' r='4'/><rect x='136' y='96' width='8' height='8' rx='1'/><rect x='16' y='136' width='8' height='8' rx='1'/><circle cx='60' cy='140' r='4'/><rect x='96' y='136' width='8' height='8' rx='1'/><circle cx='140' cy='140' r='4'/></g></svg>");
+  }
+}
+
+/* ----- FIFA logo: troca de variante por tema -----
+ * Ambas as imagens vivem no DOM; CSS mostra só a apropriada via display.
+ * Usamos !important pra blindar contra utilities do Tailwind que possam
+ * vir depois no cascade.
+ */
+img.fifa-logo-light { display: inline-block !important; }
+img.fifa-logo-dark { display: none !important; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) img.fifa-logo-light { display: none !important; }
+  :root:not([data-theme='light']) img.fifa-logo-dark { display: inline-block !important; }
+}
+:root[data-theme='dark'] img.fifa-logo-light { display: none !important; }
+:root[data-theme='dark'] img.fifa-logo-dark { display: inline-block !important; }
+:root[data-theme='light'] img.fifa-logo-light { display: inline-block !important; }
+:root[data-theme='light'] img.fifa-logo-dark { display: none !important; }
+
+/* ----- Animações reusáveis ----- */
+@keyframes shine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background:
+    linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted) / 0.5) 50%,
+      hsl(var(--muted)) 100%
+    );
+  background-size: 200% 100%;
+  animation: shine 1.5s linear infinite;
+}
+
+@keyframes float-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-float-in { animation: float-in 0.4s ease-out both; }
+
+@keyframes score-flip {
+  0%   { opacity: 0; transform: translateY(40%) scale(0.85); }
+  40%  { opacity: 1; transform: translateY(-6%) scale(1.1); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-score-flip { animation: score-flip 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
