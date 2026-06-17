@@ -7,6 +7,11 @@ import { FifaLogo } from '@/components/FifaLogo'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import {
+  isReturningUser,
+  readStoredInvite,
+  storeInvite,
+} from '@/lib/inviteStorage'
 
 const emailSchema = z.string().email('Digite um email válido')
 
@@ -29,30 +34,50 @@ export function LoginPage() {
   const [state, setState] = useState<State>({ kind: 'idle' })
   const [invite, setInvite] = useState<InviteState>({ kind: 'checking' })
 
-  const inviteCode = params.get('invite')?.trim() ?? ''
+  const urlInvite = params.get('invite')?.trim() ?? ''
 
   useEffect(() => {
     let cancelled = false
     async function check() {
-      if (!inviteCode) {
-        if (!cancelled) setInvite({ kind: 'missing' })
+      // Prioridade: URL > localStorage. URL invite SOBRESCREVE storage.
+      const stored = readStoredInvite() ?? ''
+      const candidate = urlInvite || stored
+      const returning = isReturningUser()
+
+      // Sem invite nenhum: returning user passa (profile já existe),
+      // novo usuário sem invite é bloqueado.
+      if (!candidate) {
+        if (!cancelled) {
+          setInvite(returning ? { kind: 'valid', code: '' } : { kind: 'missing' })
+        }
         return
       }
+
+      // Validar via RPC
       const { data, error } = await supabase.rpc('validate_invite', {
-        p_code: inviteCode,
+        p_code: candidate,
       })
       if (cancelled) return
+
       if (error || !data) {
-        setInvite({ kind: 'invalid', code: inviteCode })
-      } else {
-        setInvite({ kind: 'valid', code: inviteCode })
+        // Invite inválido — returning user ainda passa (não precisa)
+        if (returning) {
+          setInvite({ kind: 'valid', code: '' })
+        } else {
+          setInvite({ kind: 'invalid', code: candidate })
+        }
+        return
       }
+
+      // Válido: persiste pra próximas aberturas do PWA sem URL param
+      storeInvite(candidate)
+      setInvite({ kind: 'valid', code: candidate })
     }
     check()
     return () => {
       cancelled = true
     }
-  }, [inviteCode])
+  }, [urlInvite])
 
   if (auth.status === 'authenticated') return <Navigate to="/" replace />
 
@@ -103,7 +128,7 @@ export function LoginPage() {
       )}
 
       {(invite.kind === 'missing' || invite.kind === 'invalid') && (
-        <PrivateBolaoMessage variant={invite.kind} code={inviteCode} />
+        <PrivateBolaoMessage variant={invite.kind} code={urlInvite} />
       )}
 
       {invite.kind === 'valid' && (

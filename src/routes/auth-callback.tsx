@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { markAsReturningUser } from '@/lib/inviteStorage'
 
 type State =
   | { kind: 'waiting' }
@@ -31,6 +32,7 @@ export function AuthCallback() {
     // Pode já ter sido exchanged antes desse mount (caching) — checa agora
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
+        markAsReturningUser()
         setState({ kind: 'success' })
       }
     })
@@ -38,6 +40,7 @@ export function AuthCallback() {
     // E também escuta novos sign-ins (detectSessionInUrl é assíncrono)
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        markAsReturningUser()
         setState({ kind: 'success' })
       }
     })
