@@ -14,6 +14,10 @@ import { StandingsPage } from '@/routes/standings'
 import { TournamentPredictionPage } from '@/routes/predictions/tournament'
 import { GroupsIndexPage } from '@/routes/predictions/groups'
 import { GroupDetailPage } from '@/routes/predictions/group-detail'
+import {
+  MyPredictionsPage,
+  PublicPredictionsPage,
+} from '@/routes/me/predictions'
 import { ProtectedLayout } from '@/components/ProtectedLayout'
 import { PWAUpdatePrompt } from '@/components/PWAUpdatePrompt'
 
@@ -38,6 +42,11 @@ export default function App() {
         <Route
           path="/predictions/tournament"
           element={<TournamentPredictionPage />}
+        />
+        <Route path="/me/predictions" element={<MyPredictionsPage />} />
+        <Route
+          path="/u/:userId/predictions"
+          element={<PublicPredictionsPage />}
         />
         <Route path="/predictions/groups" element={<GroupsIndexPage />} />
         <Route

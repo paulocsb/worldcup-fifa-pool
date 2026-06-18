@@ -33,19 +33,23 @@ function StatCard({
   label,
   value,
   hint,
+  to,
 }: {
   icon: React.ReactNode
   label: string
   value: string | number
   hint?: string
+  /** Se passado, o card vira um Link */
+  to?: string
 }) {
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card/80 p-3 backdrop-blur-sm">
+  const content = (
+    <>
       <div className="mb-1.5 flex items-center gap-1.5 text-muted-foreground">
         {icon}
         <span className="text-[10px] font-semibold uppercase tracking-wider">
           {label}
         </span>
+        {to && <ChevronRight className="ml-auto size-3 text-muted-foreground/60" />}
       </div>
       <div className="font-display text-2xl font-bold tabular-nums">
         {value}
@@ -53,6 +57,23 @@ function StatCard({
       {hint && (
         <div className="mt-0.5 text-[10px] text-muted-foreground">{hint}</div>
       )}
+    </>
+  )
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className="block rounded-2xl border border-border/60 bg-card/80 p-3 backdrop-blur-sm transition-colors hover:border-border hover:bg-card active:scale-[0.99]"
+      >
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card/80 p-3 backdrop-blur-sm">
+      {content}
     </div>
   )
 }
@@ -122,6 +143,7 @@ export function ProfilePage() {
             label="Total palpites"
             value={stats.data?.total_predictions ?? 0}
             hint={`${accuracy}% aproveitamento`}
+            to="/me/predictions"
           />
         </div>
       </section>
