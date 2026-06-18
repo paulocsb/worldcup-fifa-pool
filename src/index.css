@@ -274,6 +274,13 @@
   .pb-nav {
     padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
   }
+  /* Scrollbar invisível em pílulas/tabs horizontais */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 
   /* Tipografia display — Saira Condensed (FWC2026-flavor) */
   .font-display {
