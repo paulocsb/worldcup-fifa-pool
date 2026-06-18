@@ -74,7 +74,8 @@
       "Bash(awk '{print \"  \"$NF}')",
       "Bash(grep -v \"^\\\\.$\\\\|^\\\\.\\\\.$\")",
       "Bash(grep \"\\\\.md$\")",
-      "Bash(awk '{print \"  docs/\"$NF}')"
+      "Bash(awk '{print \"  docs/\"$NF}')",
+      "Bash(pnpm lint *)"
     ]
   }
 }

@@ -1,9 +1,13 @@
 import { useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
+import { BracketPhase } from '@/components/BracketPhase'
 import { GroupPill } from '@/components/GroupPill'
 import { PageHeader } from '@/components/PageHeader'
+import { SubTabs } from '@/components/SubTabs'
 import { TeamFlag } from '@/components/TeamFlag'
 import { useGroupStandings } from '@/hooks/useGroupStandings'
+import { useMatches } from '@/hooks/useMatches'
 import { useRealtimeInvalidator } from '@/hooks/useRealtimeInvalidator'
 import { usePageBackground } from '@/hooks/usePageBackground'
 import {
@@ -11,17 +15,74 @@ import {
   type GroupLetter,
 } from '@/hooks/useGroupPredictions'
 import { groupColorToken } from '@/lib/groupColors'
+import {
+  currentPhase,
+  subtitleForTab,
+  TABS,
+  tabBySlug,
+  type TabSlug,
+} from '@/lib/tournamentPhase'
 import type { GroupStanding } from '@/types/db'
 import { cn } from '@/lib/utils'
 
 /**
- * Tela de classificação atual dos grupos (computada a partir dos jogos
- * finalizados). Top 2 de cada grupo se classifica direto aos 32-avos; 3º
- * concorre como melhores 3ºs (depende do quadro global).
+ * Tela de classificação do torneio com tabs por fase.
+ *
+ * - Fase de Grupos: 12 tabelas (top 2 verde, 3º amber)
+ * - 32-avos → Final: lista de cards via BracketPhase
+ *
+ * A tab inicial é determinada pelo estado do torneio (currentPhase) ou pode
+ * vir explicitamente via ?phase=r32 na URL (deep link).
  */
 export function StandingsPage() {
+  const [params, setParams] = useSearchParams()
+  const matches = useMatches()
+
+  const initialPhase = useMemo(
+    () => currentPhase(matches.data ?? []),
+    [matches.data],
+  )
+  const urlPhase = tabBySlug(params.get('phase') ?? '')
+  const activeTab: TabSlug = urlPhase ?? initialPhase
+
+  // Background contextual segue a fase ativa
+  usePageBackground(
+    activeTab === 'group'
+      ? 'group-stage'
+      : activeTab === 'final'
+        ? 'final'
+        : 'knockouts',
+  )
+
+  function handleChangeTab(slug: TabSlug) {
+    const next = new URLSearchParams(params)
+    next.set('phase', slug)
+    setParams(next, { replace: true })
+  }
+
+  const activeTabDef = TABS.find((t) => t.slug === activeTab)!
+
+  return (
+    <section className="container space-y-4 py-4">
+      <PageHeader
+        title="Classificação"
+        subtitle={subtitleForTab(activeTab)}
+        backTo="/"
+      />
+
+      <SubTabs tabs={TABS} active={activeTab} onChange={handleChangeTab} />
+
+      {activeTab === 'group' ? (
+        <GroupStandingsContent />
+      ) : (
+        <BracketPhase stages={activeTabDef.stages} slug={activeTab} />
+      )}
+    </section>
+  )
+}
+
+function GroupStandingsContent() {
   const standings = useGroupStandings()
-  usePageBackground('group-stage')
   useRealtimeInvalidator({
     tables: ['matches'],
     queryKeys: [['group-standings']],
@@ -37,30 +98,32 @@ export function StandingsPage() {
     return map
   }, [standings.data])
 
-  return (
-    <section className="container space-y-4 py-4">
-      <PageHeader
-        title="Classificação"
-        subtitle="Top 2 de cada grupo + 8 melhores 3ºs vão pros 32-avos"
-        backTo="/"
-      />
+  if (standings.isPending) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
-      {standings.isPending ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : standings.isError ? (
-        <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
-          Erro: {(standings.error as Error).message}
-        </p>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {ALL_GROUPS.map((letter: GroupLetter) => (
-            <GroupTable key={letter} letter={letter} rows={byGroup.get(letter) ?? []} />
-          ))}
-        </div>
-      )}
-    </section>
+  if (standings.isError) {
+    return (
+      <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+        Erro: {(standings.error as Error).message}
+      </p>
+    )
+  }
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {ALL_GROUPS.map((letter: GroupLetter) => (
+        <GroupTable
+          key={letter}
+          letter={letter}
+          rows={byGroup.get(letter) ?? []}
+        />
+      ))}
+    </div>
   )
 }
 
