@@ -1,15 +1,19 @@
 // ---------------------------------------------------------------------------
 // sync-live
 //
-// Atualiza placar/status de partidas do dia. Após atualizar, se houver
-// transição para 'finished', invoca compute-scores internamente.
+// Atualiza placar/status de partidas. Faz fetch num range de 2 dias UTC
+// (ontem + hoje) pra cobrir partidas que cruzam meia-noite UTC. Adicional-
+// mente, partidas com status='live' no DB que NÃO apareceram no response
+// (geralmente porque ficaram presas há mais de 2 dias) são buscadas indivi-
+// dualmente por ID. Após atualizar, se houver transição para 'finished',
+// invoca compute-scores internamente.
 //
 // Uso:
-//   curl -X POST .../functions/v1/sync-live              # hoje (UTC)
-//   curl -X POST .../functions/v1/sync-live -d '{"date":"2026-06-16"}'
+//   curl -X POST .../functions/v1/sync-live                   # padrão: ontem+hoje
+//   curl -X POST .../functions/v1/sync-live -d '{"date":"2026-06-17"}'  # único dia
 //
 // Pensado para rodar a cada 30-60s durante dias de jogo (via pg_cron ou
-// scheduler externo). Em dias sem jogo retorna instantaneamente (0 fixtures).
+// scheduler externo). Em dias sem jogo retorna rapidamente (0 fixtures).
 // ---------------------------------------------------------------------------
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -23,8 +27,9 @@ const SEASON = Deno.env.get('API_FOOTBALL_SEASON') ?? '2026'
 
 interface SyncLiveReport {
   ok: boolean
-  date: string
+  range: string
   fixtures_returned: number
+  stuck_rescued: number
   matches_updated: number
   matches_unchanged: number
   newly_finished: number[]
@@ -35,8 +40,9 @@ interface SyncLiveReport {
 Deno.serve(async (req) => {
   const report: SyncLiveReport = {
     ok: false,
-    date: '',
+    range: '',
     fixtures_returned: 0,
+    stuck_rescued: 0,
     matches_updated: 0,
     matches_unchanged: 0,
     newly_finished: [],
@@ -44,16 +50,21 @@ Deno.serve(async (req) => {
     errors: [],
   }
 
-  let date = utcDateToday()
+  // Default: range ontem+hoje UTC. Override: { date: 'YYYY-MM-DD' } pra dia único.
+  let from = utcDateOffset(-1)
+  let to = utcDateOffset(0)
   if (req.method === 'POST') {
     try {
       const body = await req.json()
-      if (body?.date) date = String(body.date)
+      if (body?.date) {
+        from = String(body.date)
+        to = String(body.date)
+      }
     } catch {
       // body opcional
     }
   }
-  report.date = date
+  report.range = from === to ? from : `${from}..${to}`
 
   if (!API_KEY) {
     report.errors.push('API_FOOTBALL_KEY ausente')
@@ -65,11 +76,39 @@ Deno.serve(async (req) => {
 
   let fixtures
   try {
-    fixtures = await api.fixtures({ league: LEAGUE_ID, season: SEASON, date })
+    fixtures =
+      from === to
+        ? await api.fixtures({ league: LEAGUE_ID, season: SEASON, date: from })
+        : await api.fixtures({ league: LEAGUE_ID, season: SEASON, from, to })
     report.fixtures_returned = fixtures.length
   } catch (err) {
     report.errors.push(`fetch: ${(err as Error).message}`)
     return json(report, 500)
+  }
+
+  // Rede de segurança: partidas com status='live' no DB que NÃO apareceram no
+  // response (presas há mais de 2 dias). Busca cada uma individualmente por ID.
+  try {
+    const seenIds = new Set(fixtures.map((f) => f.fixture.id))
+    const { data: stuck } = await supabase
+      .from('matches')
+      .select('id')
+      .eq('status', 'live')
+    const stuckIds =
+      stuck?.map((m) => m.id as number).filter((id) => !seenIds.has(id)) ?? []
+    for (const id of stuckIds) {
+      try {
+        const f = await api.fixtureById(id)
+        if (f) {
+          fixtures.push(f)
+          report.stuck_rescued += 1
+        }
+      } catch (err) {
+        report.errors.push(`stuck m=${id}: ${(err as Error).message}`)
+      }
+    }
+  } catch (err) {
+    report.errors.push(`stuck-scan: ${(err as Error).message}`)
   }
 
   for (const f of fixtures) {
@@ -156,8 +195,10 @@ Deno.serve(async (req) => {
   return json(report, report.ok ? 200 : 207)
 })
 
-function utcDateToday(): string {
+/** Retorna YYYY-MM-DD UTC com offset em dias (0 = hoje, -1 = ontem). */
+function utcDateOffset(days: number): string {
   const d = new Date()
+  d.setUTCDate(d.getUTCDate() + days)
   return d.toISOString().slice(0, 10)
 }
 
