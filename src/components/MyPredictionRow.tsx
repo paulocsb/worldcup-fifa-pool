@@ -108,18 +108,11 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
         </div>
       </div>
 
-      {/* Sub-linha abaixo do palpite (3 cenários, mesmo espaço visual):
+      {/* Sub-linha abaixo do palpite (mesmo espaço, 2 cenários):
             1. Partida ainda não rolou → "Início [data/hora]"
-            2. Live ou finalizada → "Parcial/Resultado X-Y"
-            3. Cravou + pontuou → escondido (o badge "+N pts" já diz tudo) */}
-      {!showRealScore ? (
-        <p className="mt-2 text-center text-[11px] text-muted-foreground">
-          <span className="uppercase tracking-wider">Início</span>{' '}
-          <span className="font-medium text-foreground/70">
-            {kickoffLabel(match.kickoff_at)}
-          </span>
-        </p>
-      ) : !isExact || isFinishedNotScoring ? (
+            2. Live ou finalizada → "Parcial/Resultado X-Y" (sempre, mesmo
+               quando cravou — pra manter consistência visual) */}
+      {showRealScore ? (
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           <span className="uppercase tracking-wider">
             {isLive ? 'Parcial' : 'Resultado'}
@@ -127,13 +120,24 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
           <span
             className={cn(
               'font-display font-bold tabular-nums',
-              isLive ? 'text-destructive' : 'text-foreground/70',
+              isLive
+                ? 'text-destructive'
+                : isExact
+                  ? 'text-gold'
+                  : 'text-foreground/70',
             )}
           >
             {match.home_score ?? '-'}–{match.away_score ?? '-'}
           </span>
         </p>
-      ) : null}
+      ) : (
+        <p className="mt-2 text-center text-[11px] text-muted-foreground">
+          <span className="uppercase tracking-wider">Início</span>{' '}
+          <span className="font-medium text-foreground/70">
+            {kickoffLabel(match.kickoff_at)}
+          </span>
+        </p>
+      )}
     </Link>
   )
 }
