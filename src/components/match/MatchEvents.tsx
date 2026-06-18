@@ -41,11 +41,11 @@ export function MatchEvents({
     )
   }
 
-  // Ordena cronologicamente
+  // Mais recente no topo: ordena descendente pelo minuto do jogo.
   const sorted = [...events].sort((a, b) => {
     const aMin = a.time.elapsed + (a.time.extra ?? 0) / 100
     const bMin = b.time.elapsed + (b.time.extra ?? 0) / 100
-    return aMin - bMin
+    return bMin - aMin
   })
 
   return (

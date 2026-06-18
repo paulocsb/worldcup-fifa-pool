@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { MatchEvents } from '@/components/match/MatchEvents'
 import { MatchLineups } from '@/components/match/MatchLineups'
 import { MatchStatistics } from '@/components/match/MatchStatistics'
+import { MatchTimer } from '@/components/match/MatchTimer'
 import {
   useMatchDetail,
   useTriggerMatchDetailSync,
@@ -132,6 +133,11 @@ export function MatchDetailPage() {
       )}
 
       <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        {(m.status === 'live' || m.status === 'finished') && (
+          <div className="mb-3 flex justify-center">
+            <MatchTimer match={m} />
+          </div>
+        )}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
           <ScoreboardTeam team={m.home_team} />
           <div className="px-1 text-center">
