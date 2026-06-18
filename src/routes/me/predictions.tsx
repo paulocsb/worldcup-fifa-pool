@@ -1,6 +1,14 @@
 import { useMemo } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { Loader2, Crown, Award, Medal, Radio } from 'lucide-react'
+import {
+  Loader2,
+  Crown,
+  Award,
+  Medal,
+  Radio,
+  CheckCircle2,
+  Clock,
+} from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionHeader } from '@/components/SectionHeader'
@@ -192,59 +200,80 @@ function MatchPalpites({
   const isPending =
     matches.isPending || predictions.isPending || scores.isPending
 
-  const { live, grouped } = useMemo(() => {
+  const {
+    live,
+    finishedGroups,
+    scheduledGroups,
+    finishedCount,
+    scheduledCount,
+    totalCount,
+  } = useMemo(() => {
     const byMatch = new Map(
       (matches.data ?? []).map((m) => [m.id, m] as const),
     )
+    type Row = {
+      match: NonNullable<ReturnType<typeof byMatch.get>>
+      prediction: typeof predictions.data extends Array<infer T> ? T : never
+    }
     const rows = (predictions.data ?? [])
       .map((p) => {
         const m = byMatch.get(p.match_id)
         return m ? { match: m, prediction: p } : null
       })
-      .filter(
-        (
-          x,
-        ): x is {
-          match: NonNullable<ReturnType<typeof byMatch.get>>
-          prediction: typeof predictions.data extends Array<infer T>
-            ? T
-            : never
-        } => Boolean(x),
-      )
-      // Visão pública: filtra fora palpites ainda em aberto (lock não passou).
+      .filter((x): x is Row => Boolean(x))
+      // Visão pública: filtra palpites ainda em aberto (lock não passou).
       .filter((r) => (isPublicView ? !isPredictionOpen(r.match) : true))
-      // Mais recente primeiro
-      .sort(
-        (a, b) =>
-          new Date(b.match.kickoff_at).getTime() -
-          new Date(a.match.kickoff_at).getTime(),
-      )
 
-    // Separa LIVE pra seção destacada no topo; resto vai pro agrupamento
-    const live = rows.filter((r) => r.match.status === 'live')
-    const others = rows.filter((r) => r.match.status !== 'live')
-
-    // Agrupa por (stage, matchday)
-    const groups = new Map<
-      string,
-      { key: string; title: string; rows: typeof rows }
-    >()
-    for (const r of others) {
-      const md = r.match.matchday
-      const stageLabel = PHASE_LABEL_PT[r.match.stage as MatchStage]
-      const key =
-        r.match.stage === 'group' && md != null
-          ? `${r.match.stage}-md${md}`
-          : r.match.stage
-      const title =
-        r.match.stage === 'group' && md != null
-          ? `${stageLabel} · MD${md}`
-          : stageLabel
-      const bucket = groups.get(key) ?? { key, title, rows: [] }
-      bucket.rows.push(r)
-      groups.set(key, bucket)
+    function ts(r: Row) {
+      return new Date(r.match.kickoff_at).getTime()
     }
-    return { live, grouped: Array.from(groups.values()) }
+
+    // Live: ordenado por kickoff asc (não faz muita diferença)
+    const live = rows
+      .filter((r) => r.match.status === 'live')
+      .sort((a, b) => ts(a) - ts(b))
+
+    // Finalizados: mais recente primeiro
+    const finished = rows
+      .filter((r) => r.match.status === 'finished')
+      .sort((a, b) => ts(b) - ts(a))
+
+    // Aguardando: próximo primeiro
+    const scheduled = rows
+      .filter((r) => r.match.status === 'scheduled')
+      .sort((a, b) => ts(a) - ts(b))
+
+    function groupByPhase(list: Row[]) {
+      const groups = new Map<
+        string,
+        { key: string; title: string; rows: Row[] }
+      >()
+      for (const r of list) {
+        const md = r.match.matchday
+        const stageLabel = PHASE_LABEL_PT[r.match.stage as MatchStage]
+        const key =
+          r.match.stage === 'group' && md != null
+            ? `${r.match.stage}-md${md}`
+            : r.match.stage
+        const title =
+          r.match.stage === 'group' && md != null
+            ? `${stageLabel} · MD${md}`
+            : stageLabel
+        const bucket = groups.get(key) ?? { key, title, rows: [] }
+        bucket.rows.push(r)
+        groups.set(key, bucket)
+      }
+      return Array.from(groups.values())
+    }
+
+    return {
+      live,
+      finishedGroups: groupByPhase(finished),
+      scheduledGroups: groupByPhase(scheduled),
+      finishedCount: finished.length,
+      scheduledCount: scheduled.length,
+      totalCount: live.length + finished.length + scheduled.length,
+    }
   }, [matches.data, predictions.data, isPublicView])
 
   if (isPending) {
@@ -254,7 +283,7 @@ function MatchPalpites({
       </div>
     )
   }
-  if (grouped.length === 0 && live.length === 0) {
+  if (totalCount === 0) {
     return (
       <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
         {isPublicView
@@ -265,7 +294,7 @@ function MatchPalpites({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {live.length > 0 && (
         <section className="space-y-2">
           <SectionHeader
@@ -287,24 +316,68 @@ function MatchPalpites({
           </ul>
         </section>
       )}
-      {grouped.map((g) => (
-        <section key={g.key} className="space-y-2">
-          <h2 className="font-display text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
-            {g.title}
-          </h2>
-          <ul className="space-y-2">
-            {g.rows.map((r) => (
-              <li key={r.match.id}>
-                <MyPredictionRow
-                  match={r.match}
-                  prediction={r.prediction}
-                  score={scores.data?.byMatch.get(r.match.id) ?? null}
-                />
-              </li>
+
+      {finishedGroups.length > 0 && (
+        <section className="space-y-3">
+          <SectionHeader
+            title="Finalizados"
+            tone="primary"
+            icon={<CheckCircle2 className="size-4" />}
+            trailing={`${finishedCount} jogo${finishedCount === 1 ? '' : 's'}`}
+          />
+          <div className="space-y-4">
+            {finishedGroups.map((g) => (
+              <div key={g.key} className="space-y-2">
+                <h3 className="font-display text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+                  {g.title}
+                </h3>
+                <ul className="space-y-2">
+                  {g.rows.map((r) => (
+                    <li key={r.match.id}>
+                      <MyPredictionRow
+                        match={r.match}
+                        prediction={r.prediction}
+                        score={scores.data?.byMatch.get(r.match.id) ?? null}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
-      ))}
+      )}
+
+      {scheduledGroups.length > 0 && (
+        <section className="space-y-3">
+          <SectionHeader
+            title="Aguardando"
+            tone="muted"
+            icon={<Clock className="size-4" />}
+            trailing={`${scheduledCount} jogo${scheduledCount === 1 ? '' : 's'}`}
+          />
+          <div className="space-y-4">
+            {scheduledGroups.map((g) => (
+              <div key={g.key} className="space-y-2">
+                <h3 className="font-display text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+                  {g.title}
+                </h3>
+                <ul className="space-y-2">
+                  {g.rows.map((r) => (
+                    <li key={r.match.id}>
+                      <MyPredictionRow
+                        match={r.match}
+                        prediction={r.prediction}
+                        score={scores.data?.byMatch.get(r.match.id) ?? null}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }
