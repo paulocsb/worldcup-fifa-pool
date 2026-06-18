@@ -150,7 +150,7 @@ function GroupTable({
       />
       <header className="flex items-center justify-between px-3 py-2.5">
         <GroupPill letter={letter} size="md" withLabel />
-        <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           <span className="w-5 text-center">V</span>
           <span className="w-5 text-center">E</span>
           <span className="w-5 text-center">D</span>
