@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { Loader2, Crown, Award, Medal } from 'lucide-react'
+import { Loader2, Crown, Award, Medal, Radio } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { PageHeader } from '@/components/PageHeader'
+import { SectionHeader } from '@/components/SectionHeader'
 import { SubTabs } from '@/components/SubTabs'
 import { MyPredictionRow } from '@/components/MyPredictionRow'
 import { TeamFlag } from '@/components/TeamFlag'
@@ -191,7 +192,7 @@ function MatchPalpites({
   const isPending =
     matches.isPending || predictions.isPending || scores.isPending
 
-  const grouped = useMemo(() => {
+  const { live, grouped } = useMemo(() => {
     const byMatch = new Map(
       (matches.data ?? []).map((m) => [m.id, m] as const),
     )
@@ -219,12 +220,16 @@ function MatchPalpites({
           new Date(a.match.kickoff_at).getTime(),
       )
 
+    // Separa LIVE pra seção destacada no topo; resto vai pro agrupamento
+    const live = rows.filter((r) => r.match.status === 'live')
+    const others = rows.filter((r) => r.match.status !== 'live')
+
     // Agrupa por (stage, matchday)
     const groups = new Map<
       string,
       { key: string; title: string; rows: typeof rows }
     >()
-    for (const r of rows) {
+    for (const r of others) {
       const md = r.match.matchday
       const stageLabel = PHASE_LABEL_PT[r.match.stage as MatchStage]
       const key =
@@ -239,7 +244,7 @@ function MatchPalpites({
       bucket.rows.push(r)
       groups.set(key, bucket)
     }
-    return Array.from(groups.values())
+    return { live, grouped: Array.from(groups.values()) }
   }, [matches.data, predictions.data, isPublicView])
 
   if (isPending) {
@@ -249,7 +254,7 @@ function MatchPalpites({
       </div>
     )
   }
-  if (grouped.length === 0) {
+  if (grouped.length === 0 && live.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
         {isPublicView
@@ -261,6 +266,27 @@ function MatchPalpites({
 
   return (
     <div className="space-y-5">
+      {live.length > 0 && (
+        <section className="space-y-2">
+          <SectionHeader
+            title="Ao vivo agora"
+            tone="destructive"
+            icon={<Radio className="size-4" />}
+            trailing={`${live.length} jogo${live.length === 1 ? '' : 's'}`}
+          />
+          <ul className="space-y-2">
+            {live.map((r) => (
+              <li key={r.match.id}>
+                <MyPredictionRow
+                  match={r.match}
+                  prediction={r.prediction}
+                  score={scores.data?.byMatch.get(r.match.id) ?? null}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {grouped.map((g) => (
         <section key={g.key} className="space-y-2">
           <h2 className="font-display text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
