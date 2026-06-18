@@ -1,11 +1,17 @@
-import { Link } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface PageHeaderProps {
   title: string
   subtitle?: string
-  /** Se passado, renderiza um botão de voltar à esquerda do título */
+  /**
+   * Se passado, renderiza um botão de voltar à esquerda do título.
+   *
+   * Comportamento: prioriza `navigate(-1)` (volta na pilha do browser pra
+   * respeitar de onde o usuário veio). Cai pro destino do `backTo` apenas
+   * quando não há histórico (deep-link direto).
+   */
   backTo?: string
   /** Conteúdo opcional à direita (badges, pills, etc) */
   trailing?: React.ReactNode
@@ -32,6 +38,19 @@ export function PageHeader({
   accent = 'primary',
   className,
 }: PageHeaderProps) {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  function handleBack() {
+    // `location.key === 'default'` quando é a primeira navegação da SPA
+    // (deep-link direto, refresh, etc). Senão, há histórico — volta nele.
+    if (location.key !== 'default') {
+      navigate(-1)
+    } else if (backTo) {
+      navigate(backTo, { replace: true })
+    }
+  }
+
   const accentColor =
     accent === 'primary'
       ? 'bg-primary'
@@ -45,13 +64,14 @@ export function PageHeader({
     <header className={cn('relative space-y-2 pb-3', className)}>
       <div className="flex items-start gap-3">
         {backTo && (
-          <Link
-            to={backTo}
+          <button
+            type="button"
+            onClick={handleBack}
             aria-label="Voltar"
-            className="mt-1 grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="mt-1 grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95"
           >
             <ArrowLeft className="size-5" />
-          </Link>
+          </button>
         )}
 
         <div className="min-w-0 flex-1">
