@@ -91,6 +91,27 @@ export class ApiFootballClient {
     return body.response
   }
 
+  /** Busca uma fixture específica por ID (independente de data). */
+  async fixtureById(id: number): Promise<ApiFixture | null> {
+    const url = new URL(`${BASE}/fixtures`)
+    url.searchParams.set('id', String(id))
+    const res = await fetch(url, {
+      headers: { 'x-apisports-key': this.apiKey },
+    })
+    if (!res.ok) {
+      throw new Error(`API-Football fixtureById ${res.status}: ${await res.text()}`)
+    }
+    const body = (await res.json()) as ApiResponse<ApiFixture[]>
+    const errs = body.errors
+    if (errs) {
+      const hasErrors = Array.isArray(errs) ? errs.length > 0 : Object.keys(errs).length > 0
+      if (hasErrors) {
+        throw new Error(`API-Football fixtureById errors: ${JSON.stringify(errs)}`)
+      }
+    }
+    return body.response?.[0] ?? null
+  }
+
   async lineups(fixtureId: number): Promise<unknown[]> {
     return this.getJsonArray('/fixtures/lineups', { fixture: String(fixtureId) })
   }
