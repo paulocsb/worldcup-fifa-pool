@@ -37,3 +37,4 @@ supabase/.env
 supabase/.env.local
 supabase/functions/.env
 supabase/functions/.env.local
+supabase/snippets/
