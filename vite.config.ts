@@ -4,8 +4,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { VitePWA } from 'vite-plugin-pwa'
 
-import { cloudflare } from "@cloudflare/vite-plugin";
-
 // Polyfill para Node 18 (crypto global ausente; workbox-build precisa)
 if (!('crypto' in globalThis)) {
   Object.defineProperty(globalThis, 'crypto', { value: webcrypto })
@@ -99,7 +97,7 @@ export default defineConfig({
     devOptions: {
       enabled: false,
     },
-  }), cloudflare()],
+  })],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

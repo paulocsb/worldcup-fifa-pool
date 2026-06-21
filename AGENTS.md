@@ -14,7 +14,7 @@ precedence for Claude Code; this file is the source of truth for everyone else.
 ## Project at a glance
 
 - **What**: a mobile-first PWA for a friends' FIFA World Cup 2026 prediction pool ("Bolão")
-- **Stack**: React 18 + TypeScript + Vite 6 + Tailwind + shadcn/ui + TanStack Query (frontend); Supabase (Postgres + Auth + Edge Functions + pg_cron + Vault); API-Football (live data); Cloudflare Pages (hosting); Resend (SMTP)
+- **Stack**: React 18 + TypeScript + Vite 6 + Tailwind + shadcn/ui + TanStack Query (frontend); Supabase (Postgres + Auth + Edge Functions + pg_cron + Vault); API-Football (live data); Cloudflare Workers (hosting, see `wrangler.jsonc`); Resend (SMTP)
 - **Audience**: Brazilian friends. UI strings are pt-BR. Codebase + docs are English.
 - **Status**: shipped to production. ~20 users. Built mid-tournament starting 2026-06-15.
 
