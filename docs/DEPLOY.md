@@ -1,103 +1,103 @@
-# Deploy — Produção
+# Production Deploy
 
-Stack escolhida:
+Selected stack:
 
-| Camada | Serviço | Custo |
+| Layer | Service | Cost |
 |---|---|---|
-| Frontend | **Cloudflare Pages** | grátis |
-| Backend/DB | **Supabase managed** (us-east-1) | grátis (free tier) |
-| Email (magic link) | **Resend** | grátis (10k emails/mês) |
-| DNS + SSL | **Cloudflare** | grátis |
-| Dados ao vivo | **API-Football Pro** | $19/mês (já pago) |
-| CI | **Cloudflare Pages auto-deploy** | grátis |
+| Frontend | **Cloudflare Pages** | free |
+| Backend/DB | **Supabase managed** (us-east-1) | free (free tier) |
+| Email (magic link) | **Resend** | free (10k emails/month) |
+| DNS + SSL | **Cloudflare** | free |
+| Live data | **API-Football Pro** | $19/month |
+| CI | **Cloudflare Pages auto-deploy** | free |
 
-**Custo mensal total: $19** (apenas API-Football).
+**Total monthly cost: $19** (API-Football only).
 
 ---
 
-## Fase 0 · Pré-deploy
+## Phase 0 · Pre-deploy
 
-Limpeza do repo antes de subir.
+Clean up the repo before going live.
 
 ```bash
-# 1. Conferir que .env*.local NÃO está no git
+# 1. Confirm .env*.local is NOT in git
 git status --ignored | grep -i env
 
-# 2. Conferir que credenciais estão em .env.example com valores VAZIOS
+# 2. Confirm credentials are in .env.example with EMPTY values
 cat .env.example
 cat supabase/functions/.env.example
 
-# 3. Build limpo
+# 3. Clean build
 pnpm typecheck && pnpm build
 ```
 
-**Checklist** antes de prosseguir:
-- [ ] `.gitignore` ignora `.env`, `.env.local`, `supabase/.env*`, `supabase/functions/.env`, `supabase/functions/.env.local`
-- [ ] `supabase/.temp/` ignorado
-- [ ] `dist/` ignorado
-- [ ] `node_modules/` ignorado
-- [ ] Nenhum segredo hardcoded no código (procurar por `eyJhbGc...`)
+**Checklist** before proceeding:
+- [ ] `.gitignore` ignores `.env`, `.env.local`, `supabase/.env*`, `supabase/functions/.env`, `supabase/functions/.env.local`
+- [ ] `supabase/.temp/` ignored
+- [ ] `dist/` ignored
+- [ ] `node_modules/` ignored
+- [ ] No hardcoded secrets in code (search for `eyJhbGc...`)
 
 ---
 
-## Fase 1 · GitHub (repo privado)
+## Phase 1 · GitHub (private repo)
 
-1. **Criar repo** em https://github.com/new
-   - Visibilidade: **Private**
-   - Não inicializar com README/gitignore/license (já temos no local)
+1. **Create repo** at https://github.com/new
+   - Visibility: **Private** (you can switch to public later — see CONTRIBUTING.md)
+   - Don't initialize with README/gitignore/license (we already have them locally)
 
-2. **Conectar local ao remote**:
+2. **Connect local to remote**:
    ```bash
-   cd /Users/paulocsb/Workspace/dev/fifa-bolao
-   git init  # se ainda não inicializado
+   cd path/to/fifa-bolao
+   git init  # if not yet initialized
    git add .
    git commit -m "feat: initial commit — FIFA bolão app"
    git branch -M main
-   git remote add origin git@github.com:<seu-user>/<repo>.git
+   git remote add origin git@github.com:<your-user>/<repo>.git
    git push -u origin main
    ```
 
-3. **Verificar branch `main`** está protegida (opcional, settings → branches)
+3. **Verify branch `main`** is protected (optional, settings → branches)
 
 ---
 
-## Fase 2 · Supabase produção
+## Phase 2 · Supabase production
 
-### 2.1 Criar projeto
+### 2.1 Create the project
 
 1. https://supabase.com/dashboard → **New project**
-2. Configurar:
+2. Configure:
    - **Name**: `fifa-bolao`
-   - **Database password**: gerar e guardar em password manager
+   - **Database password**: generate and store in a password manager
    - **Region**: **East US (North Virginia)** `us-east-1`
    - Plan: Free
-3. Aguardar ~2 min provisionar
-4. Em **Settings → API**, anotar:
+3. Wait ~2 min for provisioning
+4. In **Settings → API**, note down:
    - `Project URL` (https://xxx.supabase.co)
-   - `anon` key (pública, vai pro frontend)
-   - `service_role` key (secreta, só backend)
+   - `anon` key (public, ships to frontend)
+   - `service_role` key (secret, server-only)
 
-### 2.2 Linkar CLI ao projeto
+### 2.2 Link the CLI to the project
 
 ```bash
-# Login na CLI (abre browser)
+# Login to the CLI (opens browser)
 supabase login
 
-# Link ao projeto remoto
-supabase link --project-ref <ID_DO_PROJETO>
-# (project ref está na URL: supabase.com/dashboard/project/XXXXXX)
+# Link to the remote project
+supabase link --project-ref <PROJECT_ID>
+# (project ref is in the URL: supabase.com/dashboard/project/XXXXXX)
 ```
 
-### 2.3 Push das migrations
+### 2.3 Push the migrations
 
 ```bash
-# Aplica todas as migrations do supabase/migrations/ no remoto
+# Applies all migrations in supabase/migrations/ to the remote
 supabase db push
 ```
 
-Vai mostrar a lista de 21+ migrations a serem aplicadas. Confirmar.
+It will show the list of 21+ migrations to be applied. Confirm.
 
-### 2.4 Deploy das edge functions
+### 2.4 Deploy the edge functions
 
 ```bash
 supabase functions deploy sync-fixtures
@@ -106,97 +106,97 @@ supabase functions deploy compute-scores
 supabase functions deploy sync-match-detail
 ```
 
-### 2.5 Secrets das edge functions
+### 2.5 Edge function secrets
 
 ```bash
-# Sobe as 3 vars (API_FOOTBALL_*) pro env das functions em prod
+# Uploads the API_FOOTBALL_* vars to the functions' env in prod
 supabase secrets set --env-file supabase/functions/.env
 ```
 
-Verificar no dashboard: Settings → Edge Functions → Secrets.
+Verify in the dashboard: Settings → Edge Functions → Secrets.
 
-### 2.6 Atualizar vault para apontar pro endpoint de produção
+### 2.6 Update vault to point at the production endpoint
 
-A migration `20260616000004_scheduling.sql` seeda vault com `host.docker.internal:54321` (local). Em prod, precisa apontar pro endpoint remoto.
+The `20260616000004_scheduling.sql` migration seeds vault with
+`host.docker.internal:54321` (local). In production, it needs to point at the
+remote endpoint.
 
-No **SQL Editor do dashboard**, executar:
+In the **SQL Editor on the dashboard**, run:
 
 ```sql
--- Substituir 'xxx' pelo subdomínio do projeto Supabase
-update vault.secrets
-set secret = 'https://xxx.supabase.co/functions/v1'
-where name = 'fifa.edge_url';
+-- Replace 'xxx' with your Supabase project subdomain
+select vault.update_secret(id, 'https://xxx.supabase.co/functions/v1', name)
+from vault.secrets where name = 'fifa.edge_url';
 
--- Substituir pelo service_role key real (Settings → API)
-update vault.secrets
-set secret = 'eyJhbG...SERVICE_ROLE_KEY_AQUI...'
-where name = 'fifa.service_role';
+-- Replace with your real service_role key (Settings → API)
+select vault.update_secret(id, 'eyJhbG...SERVICE_ROLE_KEY_HERE...', name)
+from vault.secrets where name = 'fifa.service_role';
 
--- Confirmar
+-- Confirm
 select name, description from vault.decrypted_secrets where name like 'fifa.%';
 ```
 
-### 2.7 Habilitar extensions
+### 2.7 Enable extensions
 
-Dashboard → **Database → Extensions**, habilitar (se não estiverem):
+Dashboard → **Database → Extensions**, enable (if not already):
 - ✅ `pg_cron`
 - ✅ `pg_net`
 - ✅ `supabase_vault`
 
-### 2.8 Auth — Site URL e redirects
+### 2.8 Auth — Site URL and redirects
 
-(Vamos voltar aqui depois de configurar o domínio na Fase 4)
+(We come back here after configuring the domain in Phase 4.)
 
-Por enquanto, deixar como está. Após a Fase 4 voltamos.
+For now, leave as-is. After Phase 4 we return.
 
 ---
 
-## Fase 3 · Resend (SMTP)
+## Phase 3 · Resend (SMTP)
 
-### 3.1 Criar conta
+### 3.1 Create an account
 
 1. https://resend.com → Sign up (free)
-2. **Domains → Add Domain** → digitar `seudominio.com`
-3. Resend mostra 3 DNS records (MX, SPF/TXT, DKIM/TXT)
+2. **Domains → Add Domain** → enter `yourdomain.com`
+3. Resend shows 3 DNS records (MX, SPF/TXT, DKIM/TXT)
 
-### 3.2 DNS no Cloudflare
+### 3.2 DNS at Cloudflare
 
-1. Cloudflare dashboard → seu domínio → **DNS**
-2. Adicionar os 3 records exatamente como o Resend mostrou
+1. Cloudflare dashboard → your domain → **DNS**
+2. Add the 3 records exactly as Resend showed
    - **MX** record (proxy OFF — DNS only)
    - **TXT** SPF
    - **TXT** DKIM
-3. Esperar verificação (1–5 min). Status no Resend vira "verified".
+3. Wait for verification (1–5 min). Status in Resend turns "verified".
 
-### 3.3 Criar API key no Resend
+### 3.3 Create an API key in Resend
 
 1. Resend → **API Keys → Create API Key**
-2. Nome: "Supabase Production"
+2. Name: "Supabase Production"
 3. Permission: Sending access
-4. Anotar o `re_xxx` (só aparece uma vez)
+4. Save the `re_xxx` (only shown once)
 
-### 3.4 Configurar no Supabase
+### 3.4 Configure in Supabase
 
-Dashboard Supabase → **Project Settings → Authentication → SMTP Settings**:
+Supabase dashboard → **Project Settings → Authentication → SMTP Settings**:
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
 | Enable Custom SMTP | ✅ |
-| Sender email | `bolao@seudominio.com` |
+| Sender email | `bolao@yourdomain.com` |
 | Sender name | `Bolão FIFA 2026` |
 | Host | `smtp.resend.com` |
 | Port number | `587` |
 | Min interval | `60` |
 | Username | `resend` |
-| Password | (a API key `re_xxx` do passo 3.3) |
+| Password | (the `re_xxx` API key from step 3.3) |
 
 **Save**.
 
-### 3.5 Customizar template do magic link
+### 3.5 Customize the magic-link template
 
 Dashboard → **Authentication → Email Templates → Magic Link**.
 
-Sugestão em PT-BR:
+Suggested template in pt-BR (the user-facing language):
 
 ```html
 <h2>Entre no Bolão FIFA 2026</h2>
@@ -217,171 +217,171 @@ Sugestão em PT-BR:
 
 ---
 
-## Fase 4 · Cloudflare Pages
+## Phase 4 · Cloudflare Pages
 
-### 4.1 Conectar GitHub
+### 4.1 Connect GitHub
 
 1. Cloudflare dashboard → **Workers & Pages → Create application → Pages**
-2. **Connect to Git** → autorizar → escolher seu repo `fifa-bolao`
+2. **Connect to Git** → authorize → choose your `fifa-bolao` repo
 3. **Production branch**: `main`
 
 ### 4.2 Build settings
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
 | Framework preset | Vite |
 | Build command | `pnpm install --frozen-lockfile && pnpm build` |
 | Build output directory | `dist` |
 | Root directory | `/` |
-| Node version | `20` (Environment variables → `NODE_VERSION=20`) |
+| Node version | `22` (Environment variables → `NODE_VERSION=22`) |
 
 ### 4.3 Environment variables (Production)
 
-Em **Settings → Environment variables → Production**:
+Under **Settings → Environment variables → Production**:
 
-| Variável | Valor |
+| Variable | Value |
 |---|---|
 | `VITE_SUPABASE_URL` | `https://xxx.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | (anon key do dashboard Supabase) |
-| `NODE_VERSION` | `20` |
+| `VITE_SUPABASE_ANON_KEY` | (anon key from the Supabase dashboard) |
+| `NODE_VERSION` | `22` |
 
-### 4.4 Primeiro deploy
+### 4.4 First deploy
 
-**Save and deploy**. Aguardar build (~2–3 min). Vai gerar URL `xxx.pages.dev`.
+**Save and deploy**. Wait for the build (~2–3 min). Generates a `xxx.pages.dev` URL.
 
-Acessar a URL — deve carregar o app (vai ver "Bolão privado" porque ainda não tem invite na URL).
+Open the URL — the app should load (you'll see "Bolão privado" because there's no invite in the URL yet).
 
-### 4.5 Custom domain (subdomínio)
+### 4.5 Custom domain (subdomain)
 
-1. No projeto Pages → **Custom domains → Set up a custom domain**
-2. Digitar `bolao.seudominio.com` (ou o subdomínio que você escolher)
-3. Cloudflare **cria automaticamente** o CNAME no DNS (porque o domínio já está no Cloudflare)
-4. SSL provisionado em ~1 min
+1. In the Pages project → **Custom domains → Set up a custom domain**
+2. Type `bolao.yourdomain.com` (or whatever subdomain you choose)
+3. Cloudflare **automatically creates** the CNAME in DNS (because the domain is already at Cloudflare)
+4. SSL provisioned in ~1 min
 
 ---
 
-## Fase 5 · Fechando o loop (Auth + URLs)
+## Phase 5 · Closing the loop (Auth + URLs)
 
-Agora que tem domínio final:
+Now that you have a final domain:
 
 1. **Supabase dashboard → Authentication → URL Configuration**:
-   - **Site URL**: `https://bolao.seudominio.com`
+   - **Site URL**: `https://bolao.yourdomain.com`
    - **Redirect URLs** (allow list):
-     - `https://bolao.seudominio.com/auth/callback`
-     - `https://bolao.seudominio.com/**`
+     - `https://bolao.yourdomain.com/auth/callback`
+     - `https://bolao.yourdomain.com/**`
    - Save
 
-2. **Resend**: verificar que `bolao@seudominio.com` está autorizado (foi configurado na Fase 3.4)
+2. **Resend**: verify that `bolao@yourdomain.com` is authorized (configured in Phase 3.4)
 
 ---
 
-## Fase 6 · Smoke test em produção
+## Phase 6 · Production smoke test
 
 ```sql
--- No SQL Editor do Supabase, criar invite de teste
+-- In the Supabase SQL Editor, create a test invite
 insert into public.invites (code, description, max_uses)
 values ('teste_deploy', 'Smoke test', 1);
 ```
 
-1. Abrir `https://bolao.seudominio.com/login` → deve mostrar **"Bolão privado"**
-2. Abrir `https://bolao.seudominio.com/login?invite=teste_deploy` → form aparece
-3. Inserir seu email real → enviar magic link
-4. Checar inbox (não spam!) — chega de `bolao@seudominio.com`
-5. Clicar no botão **Entrar no bolão**
+1. Open `https://bolao.yourdomain.com/login` → should show **"Bolão privado"**
+2. Open `https://bolao.yourdomain.com/login?invite=teste_deploy` → form appears
+3. Enter your real email → send the magic link
+4. Check inbox (not spam!) — arrives from `bolao@yourdomain.com`
+5. Click **Entrar no bolão**
 6. Redirect → `/auth/callback` → `/onboarding`
-7. Preencher nome + escolher avatar → **Entrar no bolão**
-8. Você cai na Home, **profile criado**, **invite consumido** (uses_count=1)
-9. **Você vira admin** automaticamente (primeiro signup via trigger)
-10. **Profile → Admin → Gerenciar convites** aparece
+7. Enter name + pick avatar → **Entrar no bolão**
+8. You land on Home, **profile created**, **invite consumed** (uses_count=1)
+9. **You become admin** automatically (first signup via trigger)
+10. **Profile → Admin → Manage invites** appears
 
-### 6.1 Verificar pipeline backend
+### 6.1 Verify the backend pipeline
 
-No SQL Editor:
+In the SQL Editor:
 
 ```sql
--- Cron rodando?
+-- Is cron running?
 select jobname, schedule, active from cron.job;
 
--- Últimas execuções (deve ter sucessos recentes)
+-- Latest executions (should have recent successes)
 select jobname, start_time, status from cron.job_run_details
 order by start_time desc limit 5;
 
--- pg_net respondendo?
+-- Is pg_net responding?
 select status_code, content::text from net._http_response
 order by created desc limit 3;
 
--- Matches populadas? (caso ainda não tenha rodado o sync-fixtures, invocar)
+-- Matches populated? (if sync-fixtures hasn't run yet, invoke it)
 select public.invoke_edge_function('sync-fixtures');
--- esperar 30s, depois:
+-- wait 30s, then:
 select count(*) from public.matches;
--- esperado: 72
+-- expected: 72 (group stage alone) or 104 (full tournament)
 ```
 
 ---
 
-## Fase 7 · Abrir pros amigos
+## Phase 7 · Open to friends
 
-1. `/profile → Admin → Gerenciar convites`
-2. **Criar invite**:
-   - Código: `amigos2026` (ou outro memorável)
-   - Descrição: "Grupo de amigos · WhatsApp"
-   - Usos: **∞**
-   - Expira: **Nunca**
-3. Botão "Link" copia: `https://bolao.seudominio.com/login?invite=amigos2026`
-4. Compartilhar no WhatsApp
+1. `/profile → Admin → Manage invites`
+2. **Create invite**:
+   - Code: `amigos2026` (or any memorable code)
+   - Description: "Friends group · WhatsApp"
+   - Uses: **∞**
+   - Expires: **Never**
+3. The "Link" button copies: `https://bolao.yourdomain.com/login?invite=amigos2026`
+4. Share in WhatsApp
 
-Cada amigo:
-- Clica → cria conta com magic link → cai no onboarding → entra no bolão
+Each friend:
+- Clicks → creates an account with magic link → lands in onboarding → joins the pool
 
 ---
 
-## Limites do free tier (referência)
+## Free-tier limits (reference)
 
-| Serviço | Limite free | Nosso uso estimado |
+| Service | Free limit | Our estimated usage |
 |---|---|---|
-| Supabase DB | 500 MB | ~10 MB pra um grupo de amigos |
-| Supabase auth users | 50k MAU | ~20 amigos |
-| Supabase edge functions | 500k invocations/mês | ~50k/mês (sync a cada 1min × 30 dias) |
-| Supabase egress | 5 GB/mês | ~1 GB confortável |
+| Supabase DB | 500 MB | ~10 MB for a friend group |
+| Supabase auth users | 50k MAU | ~20 friends |
+| Supabase edge functions | 500k invocations/month | ~50k/month (sync every 1min × 30 days) |
+| Supabase egress | 5 GB/month | ~1 GB comfortably |
 | Cloudflare Pages | unlimited bandwidth | n/a |
-| Resend | 10k emails/mês | ~50/mês |
-| API-Football | 7,500 reqs/dia (Pro) | ~1k/dia |
+| Resend | 10k emails/month | ~50/month |
+| API-Football | 7,500 reqs/day (Pro) | ~1k/day |
 
-Sobra muito espaço. Free tier dá conta sem stress.
+Plenty of headroom. The free tier handles it easily.
 
 ---
 
-## Manutenção contínua
+## Ongoing maintenance
 
-| O quê | Onde | Frequência |
+| What | Where | Frequency |
 |---|---|---|
-| Logs de erro | Supabase → Logs → Edge Functions | semanal |
-| Status do cron | SQL: `cron.job_run_details` | quando suspeitar |
-| Uso da API-Football | dashboard api-football.com | mensal |
-| Backups | Supabase faz daily automáticos (free 7 dias retention) | n/a |
+| Error logs | Supabase → Logs → Edge Functions | weekly |
+| Cron status | SQL: `cron.job_run_details` | when something seems off |
+| API-Football usage | api-football.com dashboard | monthly |
+| Backups | Supabase auto-daily (free 7-day retention) | n/a |
 
 ---
 
-## Riscos & rollback
+## Risks & rollback
 
-| Cenário | Mitigação |
+| Scenario | Mitigation |
 |---|---|
-| **Build do Pages falha** | Pages tem "Deployments" tab — rollback pra build anterior em 1 clique |
-| **Migration ruim em prod** | Sempre testar local primeiro. Em prod usar `supabase db push --dry-run` antes |
-| **Cron não roda** | Re-aplicar migration `20260616000004_scheduling.sql` + verificar vault secrets atualizados |
-| **DB cheio (500MB)** | Upgrade pro Pro tier ($25/mês) ou limpar dados antigos |
-| **API-Football fora** | Sync-live falha silenciosamente; partidas continuam no estado prévio até API voltar |
-| **Domínio falha** | Cloudflare DNS é estável; fallback é `xxx.pages.dev` continuar funcionando |
+| **Pages build fails** | Pages has a "Deployments" tab — 1-click rollback to the previous build |
+| **Bad migration in prod** | Always test locally first. In prod use `supabase db push --dry-run` first |
+| **Cron doesn't run** | Re-apply migration `20260616000004_scheduling.sql` + verify vault secrets are updated |
+| **DB full (500MB)** | Upgrade to Pro tier ($25/month) or clean old data |
+| **API-Football down** | sync-live fails silently; matches stay in their last-known state until the API returns |
+| **Domain fails** | Cloudflare DNS is stable; fallback is the `xxx.pages.dev` URL keeps working |
 
 ---
 
-## Commits desse plano (sugestão)
+## Suggested commits for this plan
 
-Antes do deploy:
+Before deploy:
 ```bash
 git add docs/DEPLOY.md
-git commit -m "docs: plano de deploy em produção"
+git commit -m "docs: production deploy plan"
 git push origin main
 ```
 
-Cada subsequente change em prod → commit + push → Pages re-deploya automaticamente.
+Each subsequent change in prod → commit + push → Pages auto-redeploys.

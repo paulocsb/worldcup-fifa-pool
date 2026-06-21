@@ -1,121 +1,134 @@
 # CLAUDE.md — Bolão FIFA 2026
 
-Diretrizes para agentes (Claude Code) trabalhando neste repositório. Leia antes de qualquer mudança.
+Directives for AI agents (Claude Code) working in this repository. Read this
+before making any change.
 
-> **Documentos canônicos** (ordem de precedência em caso de conflito):
-> 1. [`docs/FIFA-2026-FORMAT.md`](docs/FIFA-2026-FORMAT.md) — regras oficiais do torneio (grupos, fases, classificação, desempates). Fonte para qualquer dúvida sobre formato.
-> 2. [`docs/PLAN.md`](docs/PLAN.md) — plano aprovado de implementação (escopo, modelo de dados, scoring, fases de entrega).
-> 3. Este CLAUDE.md — diretrizes de agente.
-
----
-
-## 1. Contexto do projeto
-
-App de **bolão da Copa do Mundo FIFA 2026** para um grupo de amigos. **Mobile-first** (a maioria dos usuários acessa via celular). A Copa começou em **11/06/2026** e o app está sendo construído em paralelo ao torneio — entregar valor rapidamente é mais importante que perfeição.
-
-**Regra de equidade**: jogos anteriores a 15/06/2026 não pontuam para ninguém. Comunicar no onboarding.
+> **Canonical documents** (precedence order in case of conflict):
+> 1. [`docs/FIFA-2026-FORMAT.md`](docs/FIFA-2026-FORMAT.md) — official tournament rules (groups, phases, qualification, tiebreakers). Source of truth for any format question.
+> 2. [`docs/PLAN.md`](docs/PLAN.md) — approved implementation plan (scope, data model, scoring, delivery phases).
+> 3. This CLAUDE.md — agent directives.
 
 ---
 
-## 2. Stack & convenções
+## 1. Project context
 
-| Camada | Tecnologia |
+A **FIFA World Cup 2026 prediction pool ("Bolão")** app for a group of friends.
+**Mobile-first** (most users access via phone). The World Cup began on
+**June 11, 2026** and the app was built in parallel with the tournament —
+shipping value quickly beats perfection.
+
+**Equity rule**: matches played before June 15, 2026 don't score for anyone.
+Communicated during onboarding.
+
+The user-facing audience is **Brazilian Portuguese (pt-BR)**. The codebase,
+docs, agents, and skills are in English so non-Portuguese contributors can
+help. Conversations with the user mirror the user's language (default pt-BR).
+
+---
+
+## 2. Stack & conventions
+
+| Layer | Technology |
 |---|---|
-| Frontend | React 18 + TypeScript + Vite |
+| Frontend | React 18 + TypeScript + Vite 6 |
 | Styling | Tailwind CSS + shadcn/ui |
-| Estado servidor | TanStack Query (`@tanstack/react-query`) |
-| Roteamento | React Router (`react-router-dom`) |
-| Backend | Supabase (Auth, Postgres, Realtime, Edge Functions, Storage) |
-| Dados ao vivo | API-Football (api-sports.io) |
-| Avatares | DiceBear (URL gerada por seed) |
-| Datas/i18n | `date-fns` + locale `pt-BR` |
+| Server state | TanStack Query (`@tanstack/react-query`) |
+| Routing | React Router (`react-router-dom`) |
+| Backend | Supabase (Auth, Postgres, Realtime, Edge Functions, Storage, Vault) |
+| Live data | API-Football (api-sports.io) |
+| Avatars | DiceBear (URL generated from seed) |
+| Dates / i18n | `date-fns` with `pt-BR` locale |
 | Package manager | pnpm |
-| Hosting | Vercel (frontend) + Supabase managed (backend) |
+| Hosting (prod) | Cloudflare Pages (frontend) + Supabase managed (backend) |
 
-**Convenções de código**:
-- TypeScript estrito (`strict: true`, sem `any` implícito). Types gerados via `supabase gen types typescript`.
-- Componentes em PascalCase; hooks em `useCamelCase`; arquivos kebab-case quando representam rota (`match-detail.tsx`), PascalCase para componentes (`MatchCard.tsx`).
-- Imports absolutos via alias `@/` (configurar em `vite.config.ts` + `tsconfig.json`).
-- Tailwind com `prefers-color-scheme` para dark mode automático.
-- Mensagens de UI em **pt-BR** (audiência: amigos brasileiros).
-- Targets de tap ≥44px; layout testado a partir de 320px.
+**Code conventions**:
+- Strict TypeScript (`strict: true`, no implicit `any`). Types generated via `supabase gen types typescript`.
+- Components in PascalCase; hooks in `useCamelCase`; route filenames in kebab-case (`match-detail.tsx`), components in PascalCase (`MatchCard.tsx`).
+- Absolute imports via the `@/` alias (configured in `vite.config.ts` + `tsconfig.json`).
+- Tailwind with `prefers-color-scheme` for automatic dark mode.
+- UI strings in **pt-BR** (audience: Brazilian friends).
+- Tap targets ≥ 44px; layout tested from 320px width.
 
-**Estrutura de pastas**: ver árvore em `docs/PLAN.md`. Seguir exatamente para evitar drift.
+**Folder structure**: see tree in `docs/PLAN.md`. Follow exactly to avoid drift.
 
 ---
 
-## 3. Skills a usar (Claude Code)
+## 3. External skills to use (Claude Code generic harness)
 
-Sempre que a tarefa se enquadrar, invoque o skill correspondente **antes** de codificar/responder:
+When the task fits, invoke the corresponding skill **before** coding/answering:
 
-| Tarefa | Skill |
+| Task | Skill |
 |---|---|
-| Build/arquitetura/review de React + TypeScript + Tailwind + shadcn | `react-typescript-stack` |
-| Padrões de UI/UX, responsividade mobile, performance, acessibilidade | `frontend-expert` |
-| Replanjar uma feature ou refatoração não-trivial | `/plan` (skill `plan` deste harness) |
-| Simplificar/revisar código alterado | `simplify` |
-| Revisar PR ou conjunto de mudanças | `review` |
-| Auditoria de segurança nas mudanças pendentes | `security-review` |
-| Loop de polling em deploy/CI | `loop` |
-| Agendar tarefas recorrentes (ex.: monitorar sync diário) | `schedule` |
+| React + TypeScript + Tailwind + shadcn architecture/review | `react-typescript-stack` |
+| Mobile UX, responsive, performance, accessibility patterns | `frontend-expert` |
+| Re-planning a feature or non-trivial refactor | `/plan` (this harness's `plan` skill) |
+| Simplify / review changed code | `simplify` |
+| Review PR or change set | `review` |
+| Security audit of pending changes | `security-review` |
+| Polling loop in deploy/CI | `loop` |
+| Scheduling recurring tasks (e.g., monitor daily sync) | `schedule` |
 
-Para investigações exploratórias amplas em código, use o agent `Explore`. Para implementações que exigem arquitetura/trade-offs, use o agent `Plan`. Para escrita normal de código, apenas o skill correspondente já carrega o expertise.
+For broad exploratory codebase investigations, use the `Explore` agent. For
+implementations requiring architecture/trade-off analysis, use `Plan`. Routine
+code writing just needs the matching skill.
 
-> **Não invente skill names.** Use apenas os listados no system reminder da sessão.
+> **Do not invent skill names.** Use only what is listed in the session's system reminder.
+
+For project-specific agents and slash commands, see sections 9 and 10 below.
 
 ---
 
-## 4. Fluxo de trabalho (planning → dev → debugging)
+## 4. Workflow (planning → dev → debugging)
 
-### 4.1 Planejamento (`/plan`)
-1. Para qualquer mudança que toque >2 arquivos, novas features, ou afete schema/RLS: comece com `/plan`.
-2. O agent `Plan` deve consultar `docs/PLAN.md` para alinhar contexto antes de propor.
-3. Plano aprovado → seguir para implementação. Plano substancial vira PR descritivo.
+### 4.1 Planning (`/plan`)
+1. For any change touching more than 2 files, new features, or affecting schema/RLS: start with `/plan`.
+2. The `Plan` agent should consult `docs/PLAN.md` to align context before proposing.
+3. Approved plan → proceed to implementation. Substantial plan becomes the PR description.
 
-### 4.2 Desenvolvimento
-1. Invocar skill `react-typescript-stack` para qualquer trabalho em componentes/hooks/rotas. Para questões de UX, layout responsivo, animações, acessibilidade — adicionar `frontend-expert`.
-2. Antes de criar novo arquivo, **buscar utilitários existentes** em `src/lib/`, `src/hooks/`, `src/components/`. Reuso > novo código.
-3. Manter `src/lib/scoring.ts` (client) sincronizado com `supabase/functions/compute-scores/` (server). A pontuação no servidor é a verdade; o cliente é só preview.
-4. Toda escrita em `predictions`, `group_predictions`, `tournament_predictions` deve ser validada por **RLS** (não só no cliente). Quando criar/alterar policy, escrever teste SQL no `supabase/tests/`.
-5. Migrations versionadas em `supabase/migrations/NNN_descricao.sql`. Nunca editar uma migration já aplicada em produção — sempre criar nova.
-6. Componentes shadcn instalados sob demanda via `pnpm dlx shadcn@latest add <component>` e residem em `src/components/ui/`. Não editar diretamente — preferir wrappers em `src/components/`.
+### 4.2 Development
+1. Invoke the `react-typescript-stack` skill for any component/hook/route work. For UX, responsive layout, animations, accessibility — also add `frontend-expert`.
+2. Before creating a new file, **search for existing utilities** in `src/lib/`, `src/hooks/`, `src/components/`. Reuse > new code.
+3. Keep `src/lib/scoring.ts` (client) in sync with `supabase/functions/_shared/scoring.ts` (server). The server is the source of truth; the client is just preview.
+4. Every write to `predictions`, `group_predictions`, `tournament_predictions` must be validated by **RLS** (not just the client). When creating/altering a policy, provide a SQL test the user can run.
+5. Migrations are versioned in `supabase/migrations/YYYYMMDDNNNNNN_description.sql`. Never edit a migration already applied to production — always create a new one.
+6. shadcn components are installed on demand via `pnpm dlx shadcn@latest add <component>` and live in `src/components/ui/`. Don't edit them directly — prefer wrappers in `src/components/`.
 
 ### 4.3 Debugging
-1. Reproduzir o bug com inputs concretos antes de teorizar.
-2. Logs de Edge Functions: `supabase functions logs <name>` ou no dashboard.
-3. Para problemas de RLS: testar query como `anon` role no SQL editor do Supabase com `SET request.jwt.claims = '{...}'`.
-4. Para problemas de sync com API-Football: checar `last_synced_at` da `match` e logs da função `sync-live`.
-5. UI mobile: testar em dispositivo real via `vite --host` antes de declarar fix completo. Não confiar apenas em DevTools responsive mode.
-6. Quando encontrar bug profundo, considere usar o agent `Plan` para mapear root cause + fix antes de mexer no código.
+1. Reproduce the bug with concrete inputs before theorizing.
+2. Edge Function logs: `supabase functions logs <name>` or via the dashboard.
+3. For RLS issues: test as `anon` role in the Supabase SQL editor with `SET request.jwt.claims = '{...}'`.
+4. For API-Football sync issues: check `last_synced_at` on the `match` and `sync-live` function logs.
+5. Mobile UI: test on a real device via `vite --host` before declaring a fix done. DevTools responsive mode alone is not enough.
+6. For deep bugs, consider using the `Plan` agent to map root cause + fix before touching the code.
 
 ### 4.4 Review & merge
-1. Antes de declarar uma tarefa pronta: rodar `pnpm typecheck`, `pnpm lint`, `pnpm test` (quando existirem).
-2. Invocar skill `simplify` no conjunto de mudanças para eliminar reuso perdido e código morto.
-3. Para PRs com mudanças sensíveis (RLS, scoring, auth): invocar `security-review`.
-4. Commits sem `--no-verify`. Hooks que falhem devem ser corrigidos, não pulados.
+1. Before declaring a task done: run `pnpm typecheck`, `pnpm lint`, `pnpm test` (where they exist).
+2. Invoke the `simplify` skill on the change set to eliminate missed reuse and dead code.
+3. For PRs with sensitive changes (RLS, scoring, auth): invoke `security-review`.
+4. Commits without `--no-verify`. Failing hooks should be fixed, not bypassed.
 
 ---
 
-## 5. Comandos comuns
+## 5. Common commands
 
 ```bash
-# Setup inicial (rodar uma vez)
+# Initial setup (run once)
 pnpm install
-supabase start                              # postgres local + studio
-supabase db reset                           # aplica migrations + seeds
+supabase start                              # local Postgres + Studio
+supabase db reset                           # apply migrations + seeds
 supabase gen types typescript --local > src/types/db.ts
 
-# Desenvolvimento
-pnpm dev                                    # vite no http://localhost:5173
-pnpm dev --host                             # exposto na LAN (teste mobile real)
-supabase functions serve sync-live          # rodar edge function local
+# Development
+pnpm dev                                    # Vite at http://localhost:5173
+pnpm dev --host                             # exposed on LAN (real mobile testing)
+supabase functions serve sync-live          # run edge function locally
 
-# Operações
-supabase functions invoke sync-fixtures     # sync manual
-supabase db push                            # aplica migrations no remoto
-supabase functions deploy compute-scores    # deploy de edge function
+# Operations
+supabase functions invoke sync-fixtures     # manual sync
+supabase db push                            # push migrations to remote
+supabase functions deploy compute-scores    # deploy an edge function
 
-# Qualidade
+# Quality
 pnpm typecheck
 pnpm lint
 pnpm test
@@ -123,28 +136,75 @@ pnpm test
 
 ---
 
-## 6. Segurança & dados sensíveis
+## 6. Security & sensitive data
 
-- **Nunca** commitar `.env`, `.env.local`, `SUPABASE_SERVICE_ROLE_KEY`, `API_FOOTBALL_KEY`. Manter `.env.example` atualizado com chaves vazias.
-- Service role key **só** em Edge Functions. Cliente usa apenas `VITE_SUPABASE_ANON_KEY`.
-- RLS habilitada em **todas** as tabelas. Default = deny. Cada nova tabela exige policy explícita.
-- Validar lock de palpites em **dois lugares** (cliente UX + RLS no servidor). Cliente é cosmético; servidor é segurança.
-
----
-
-## 7. Não fazer
-
-- ❌ Não introduzir múltiplos bolões (feature explicitamente fora do MVP).
-- ❌ Não escrever em `matches`, `teams` ou `scores` a partir do cliente — só Edge Functions.
-- ❌ Não usar polling no cliente para placares ao vivo — usar Supabase Realtime.
-- ❌ Não importar componentes de `src/components/ui/` em outras `ui/`. Composição vai em `src/components/`.
-- ❌ Não amend em commits já enviados ao remoto.
-- ❌ Não criar arquivos de documentação (READMEs, NOTES) sem solicitação explícita do usuário. Exceção: este `CLAUDE.md` e `docs/PLAN.md`.
+- **Never** commit `.env`, `.env.local`, `SUPABASE_SERVICE_ROLE_KEY`, `API_FOOTBALL_KEY`. Keep `.env.example` up to date with empty values.
+- Service role key **only** in Edge Functions. Client uses only `VITE_SUPABASE_ANON_KEY`.
+- RLS enabled on **every** table. Default = deny. Every new table requires explicit policies.
+- Validate the prediction lock in **two places** (client UX + server RLS). Client is cosmetic; server is security.
 
 ---
 
-## 8. Idioma
+## 7. Do not
 
-- **Código, identificadores, comentários (quando inevitáveis), commits**: inglês.
-- **UI e mensagens de erro voltadas ao usuário**: pt-BR.
-- **Conversas com o usuário neste repositório**: pt-BR (preferência demonstrada).
+- ❌ Do not introduce multiple pools (explicitly out of MVP scope).
+- ❌ Do not write to `matches`, `teams`, or `scores` from the client — only Edge Functions.
+- ❌ Do not use polling on the client for live scores — use Supabase Realtime.
+- ❌ Do not import components from `src/components/ui/` into other `ui/`. Composition lives in `src/components/`.
+- ❌ Do not amend commits already pushed to the remote.
+- ❌ Do not create documentation files (READMEs, NOTES) without explicit user request. Exceptions: this `CLAUDE.md` and `docs/PLAN.md`.
+
+---
+
+## 8. Language
+
+- **Code, identifiers, comments (when unavoidable), commit messages, docs**: English.
+- **UI strings and user-facing error messages**: pt-BR (audience is Brazilian).
+- **Conversations with the user in this repository**: mirror the user's language. Default pt-BR (demonstrated preference); follow if they switch to English.
+
+---
+
+## 9. Specialized agents (when to invoke)
+
+This repo has local agents in `.claude/agents/` with deep codebase knowledge.
+Prefer them over the generic agents (Plan, Explore) when the task falls within
+their scope.
+
+| Task | Agent | Complementary skill |
+|---|---|---|
+| New/changed UI, component, or route | `frontend` | `react-typescript-stack` + `frontend-expert` |
+| Deep mobile/responsive review | `frontend` (mobile-native by design) | `/mobile-audit` |
+| Migration, RLS, schema, edge function | `supabase` | `security-review` (sensitive change) |
+| Scoring change (formula, cutoff, config) | `scoring` | `/scoring-verify` |
+| Code review before PR/big commit | `code-reviewer` *(if available)* + domain agent | `security-review` |
+| Plan a non-trivial feature | `Plan` (generic) | `/plan` |
+| Broad codebase search | `Explore` (generic) | — |
+
+**Routing rule**: if the task is multi-domain (e.g., feature touches UI + DB + scoring), invoke agents in **parallel** (a single call with multiple Agent tool uses) to reduce wall-clock time.
+
+---
+
+## 10. Project slash commands
+
+Local skills in `.claude/skills/`:
+
+### Utility (routine)
+| Command | Use |
+|---|---|
+| `/db-status` | Database health check before schema changes (cron, RLS policies, stuck matches, ranking sanity) |
+| `/scoring-verify` | Validate scoring in production (finished matches without scores, recompute) |
+| `/deploy-fn <name>` | Deploy + smoke-test an edge function |
+
+### Senior (decision / risk)
+| Command | Use |
+|---|---|
+| `/mobile-audit` | Mobile/PWA checklist before declaring UI work done (10 criteria) |
+| `/impact` | Blast-radius map of a proposed but not-yet-implemented change |
+| `/security-sweep` | Periodic RLS / secrets / auth audit (pre-release, before mass onboarding) |
+| `/release-notes` | Friendly pt-BR changelog for the friends group (WhatsApp) |
+
+**Usage rule**:
+- Before schema/scoring change → `/impact`
+- Before declaring UI done → `/mobile-audit`
+- Pre-release or after RLS change → `/security-sweep`
+- Before announcing to friends → `/release-notes`
