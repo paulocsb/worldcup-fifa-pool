@@ -1,6 +1,6 @@
 # Bolão FIFA 2026
 
-[![CI](https://github.com/paulocsb/bola-fifa/actions/workflows/ci.yml/badge.svg)](https://github.com/paulocsb/bola-fifa/actions/workflows/ci.yml)
+[![CI](https://github.com/paulocsb/bolao-fifa/actions/workflows/ci.yml/badge.svg)](https://github.com/paulocsb/bolao-fifa/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![AI-first](https://img.shields.io/badge/AI--first-Claude%20%C2%B7%20Cursor%20%C2%B7%20Aider-purple)](AGENTS.md)
 [![PWA](https://img.shields.io/badge/PWA-installable-orange)](https://web.dev/progressive-web-apps/)
