@@ -46,3 +46,9 @@ supabase/snippets/
 # .claude/settings.json IS versioned (shared project config: hooks, etc.)
 # .claude/settings.local.json IS NOT (personal: approved tool perms, secrets)
 .claude/settings.local.json
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
