@@ -1,0 +1,59 @@
+name: ✨ Feature / improvement
+description: Propose a new feature or an improvement to an existing one
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Please scope it clearly so a contributor (or an AI agent) can pick it up.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Be concrete — describe the friction or missing capability, not the proposed solution yet.
+      placeholder: |
+        Right now, users can't see their cumulative points per group stage round. They have to mentally sum every individual match...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: Concrete design or implementation idea. Reference files if you can.
+      placeholder: |
+        Add a "By round" toggle on `/me/predictions` that aggregates points per matchday using `useMyScores`.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: agent-suggestion
+    attributes:
+      label: Which agent area does this touch?
+      description: Helps a contributor / AI choose the right specialized agent.
+      options:
+        - "Frontend (UI, components, routes, hooks)"
+        - "Supabase (migrations, RLS, edge functions, cron)"
+        - "Scoring (compute-scores, scoring_config, ranking)"
+        - "Multi-domain (touches more than one)"
+        - "Docs / repo infrastructure"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: This change touches the database (new migration / RLS update)
+        - label: This change affects scoring or ranking computation
+        - label: This change has UX impact on mobile
+        - label: This change has a security boundary (auth, RLS, secrets)
+        - label: This change is contained to one or two files
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope (explicit non-goals)
+      description: What this feature should NOT include — keeps PRs focused.

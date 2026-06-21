@@ -1,0 +1,28 @@
+# Aider configuration for the Bolão FIFA 2026 repo.
+# Docs: https://aider.chat/docs/config/aider_conf.html
+#
+# Auto-loaded files give Aider the project's directives and agent specs as
+# context on every session start, so the model behaves consistently regardless
+# of which file you bring into the chat.
+
+read:
+  - AGENTS.md
+  - CLAUDE.md
+  - docs/PLAN.md
+  - docs/SCORING.md
+  - .claude/agents/frontend.md
+  - .claude/agents/supabase.md
+  - .claude/agents/scoring.md
+
+# pt-BR mirroring is handled by the agent docs themselves (they instruct to
+# follow the user's language). No need to force a chat-language here.
+
+# Match the project's package manager.
+test-cmd: pnpm typecheck
+
+# Cache prompts to reduce token cost across sessions.
+cache-prompts: true
+
+# Auto-commit message conventions follow Conventional Commits (see CONTRIBUTING.md).
+attribute-author: true
+attribute-committer: false

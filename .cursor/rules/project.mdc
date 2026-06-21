@@ -1,0 +1,63 @@
+---
+description: Project-wide rules for the Bolão FIFA 2026 codebase. Read AGENTS.md and CLAUDE.md for full context.
+globs: "**/*"
+alwaysApply: true
+---
+
+# Bolão FIFA 2026 — Cursor Rules
+
+This repo ships specialized agent definitions and project conventions. Cursor
+should read these two root files for full context before answering:
+
+- `AGENTS.md` — tool-agnostic agent spec (cross-tool source of truth)
+- `CLAUDE.md` — directives doc (most of it applies regardless of the AI tool)
+
+When the user's task matches one of the specialized agents in `.claude/agents/`,
+take inspiration from that agent's expertise:
+
+- **Frontend tasks** (anything in `src/`): read `.claude/agents/frontend.md` —
+  mobile-first React/TS/Vite/PWA with strict conventions (no `100vh`, no
+  `position: sticky bottom-0`, use `h-dvh` + inner scroll, etc.).
+- **Backend tasks** (anything in `supabase/`): read `.claude/agents/supabase.md` —
+  immutable migrations, RLS on every table, helper functions
+  (`match_predictions_open`, `group_predictions_open`,
+  `tournament_predictions_open`) for lock logic.
+- **Scoring changes** (`src/lib/scoring.ts` or `supabase/functions/_shared/scoring.ts`):
+  read `.claude/agents/scoring.md` — BOTH files must stay in sync (client preview
+  ↔ server source of truth).
+
+## Critical conventions (must follow)
+
+- **TypeScript strict**: no implicit `any`, use `unknown` + narrowing.
+- **Mobile-first**: design from 320px, tap targets ≥ 44px, `h-dvh` on root.
+- **No polling**: live data via Supabase Realtime + `useRealtimeInvalidator`.
+- **No client writes** to `matches`, `teams`, `scores`, `scoring_config` —
+  those are server-only (Edge Functions with service role).
+- **Migrations immutable** once applied to production — create new ones.
+- **UI strings in pt-BR** (audience: Brazilian friends). Code, identifiers,
+  commits, comments, docstrings in English.
+- **Mirror user's language** in conversation. Default pt-BR; switch if they do.
+- **Reuse over new code**: search `src/lib/`, `src/hooks/`, `src/components/`
+  before creating a file. Common components/hooks catalog in `AGENTS.md`.
+
+## Anti-patterns (NEVER repeat)
+
+- ❌ `sticky bottom-0` on BottomNav (use inner scroll pattern)
+- ❌ `100vh` on layout root (use `h-dvh`)
+- ❌ Polling for live scores (use Realtime)
+- ❌ Hardcoded scoring values (read from `scoring_config`)
+- ❌ Editing applied migration (create new one)
+- ❌ Importing from `src/components/ui/` into other `ui/` files
+- ❌ Body-text color in `gold` (poor contrast — only icons/borders)
+
+## Before declaring done
+
+- `pnpm typecheck && pnpm build` must pass
+- For UI changes: test on a real iPhone via `pnpm dev --host`
+- Reference the `.claude/skills/mobile-audit.md` checklist for UI work
+- Reference the `.claude/skills/scoring-verify.md` for scoring changes
+
+## Output
+
+Mirror the user's language (default pt-BR). Code and commits stay in English.
+Be concise. Cite `file:line` when referencing code.

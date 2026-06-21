@@ -1,11 +1,41 @@
 # Bolão FIFA 2026
 
+[![CI](https://github.com/paulocsb/bola-fifa/actions/workflows/ci.yml/badge.svg)](https://github.com/paulocsb/bola-fifa/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![AI-first](https://img.shields.io/badge/AI--first-Claude%20%C2%B7%20Cursor%20%C2%B7%20Aider-purple)](AGENTS.md)
+[![PWA](https://img.shields.io/badge/PWA-installable-orange)](https://web.dev/progressive-web-apps/)
+
 > **An AI-first, mobile-first PWA for friend group football pools (Bolão) during the FIFA World Cup 2026.**
 > Built with React + Vite + TypeScript on the front, Supabase on the back, and live data from API-Football.
 
 This repository is designed to be contributed to with the help of AI agents (Claude Code, Cursor, Aider, etc).
 The `.claude/` directory ships specialized agents and skills calibrated to this codebase, so a contributor
 without deep familiarity can produce production-quality changes through their AI assistant of choice.
+
+## AI agent suite at a glance
+
+```mermaid
+graph LR
+    User[👤 Contributor] -->|uses| Tool{AI tool}
+    Tool -->|Claude Code| Claude[.claude/]
+    Tool -->|Cursor| Cursor[.cursor/rules/]
+    Tool -->|Aider / Cline / Continue| Agents[AGENTS.md]
+
+    Claude --> Agents
+    Cursor --> Agents
+
+    Agents -->|domain dispatch| F[frontend]
+    Agents -->|domain dispatch| S[supabase]
+    Agents -->|domain dispatch| C[scoring]
+
+    F -->|edits| Src[src/]
+    S -->|edits| Sup[supabase/]
+    C -->|keeps in sync| Dual[src/lib/scoring.ts ↔<br/>supabase/functions/_shared/scoring.ts]
+
+    Claude -.->|slash commands| Skills[/db-status /scoring-verify /deploy-fn<br/>/mobile-audit /impact /security-sweep /release-notes/]
+```
+
+See [`docs/AI-WORKFLOW.md`](docs/AI-WORKFLOW.md) for tool-specific entry points.
 
 📚 **Detailed docs in `docs/`** — start with [PLAN.md](docs/PLAN.md) (scope & data model), [SETUP.md](docs/SETUP.md) (setting up from scratch), [SCORING.md](docs/SCORING.md) (scoring pipeline), and [DEPLOY.md](docs/DEPLOY.md) (production deployment).
 

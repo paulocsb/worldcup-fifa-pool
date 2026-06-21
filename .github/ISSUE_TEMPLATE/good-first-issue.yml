@@ -1,0 +1,69 @@
+name: 🌱 Good first issue
+description: Use this template when *creating* a starter issue for new contributors
+labels: ["good first issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for maintainers creating well-scoped starter issues.
+        Contributors picking one up: open the issue from the list — no template needed.
+
+  - type: input
+    id: title
+    attributes:
+      label: One-line summary
+      placeholder: "Add 'last 5 matches form' badge to TeamFlag"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Suggested specialized agent
+      options:
+        - "frontend"
+        - "supabase"
+        - "scoring"
+        - "multi-domain"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: 1–2 paragraphs of background. Link to relevant docs.
+    validations:
+      required: true
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Files likely to touch
+      description: List paths the contributor will probably edit.
+      placeholder: |
+        - src/components/TeamFlag.tsx
+        - src/hooks/useTeams.ts
+        - new: src/hooks/useTeamForm.ts
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Concrete observable conditions. Each item should be testable.
+      placeholder: |
+        - [ ] New badge shows W/D/L for last 5 matches of a team
+        - [ ] `pnpm typecheck && pnpm build` passes
+        - [ ] Renders correctly on 320px screen width
+    validations:
+      required: true
+
+  - type: textarea
+    id: skills
+    attributes:
+      label: Relevant slash commands to run
+      placeholder: |
+        - /mobile-audit (after UI changes)
+        - /impact (before starting, to map blast radius)

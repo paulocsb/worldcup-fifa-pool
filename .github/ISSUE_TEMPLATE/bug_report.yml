@@ -1,0 +1,58 @@
+name: 🐛 Bug report
+description: Report something broken or unexpected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! The more concrete you are, the faster we (or an AI agent) can fix it.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, and what went wrong?
+      placeholder: |
+        Steps to reproduce:
+        1. Open /me/predictions
+        2. Tap the "Grupos" tab
+        3. ...
+
+        Expected: the group predictions list to appear.
+        Actual: the screen stays blank with a loader.
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device / browser
+      description: For frontend issues. Skip for backend issues.
+      placeholder: "iPhone 15 Pro · Safari 18 · iOS 18.2"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (if backend issue)
+      description: Output of `supabase functions logs <name>`, SQL query output, or anything relevant.
+      render: shell
+
+  - type: dropdown
+    id: agent-suggestion
+    attributes:
+      label: Which agent area does this touch? (best guess)
+      description: Helps a contributor / AI know which specialized agent to spin up.
+      options:
+        - "Not sure"
+        - "Frontend (UI, components, routes, hooks)"
+        - "Supabase (migrations, RLS, edge functions, cron)"
+        - "Scoring (compute-scores, scoring_config, ranking)"
+        - "Multi-domain (touches more than one)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Anything else?
+      description: Screenshots, links, related issues.
