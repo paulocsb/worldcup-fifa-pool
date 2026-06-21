@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    name: typecheck + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript check
+        run: pnpm typecheck
+
+      - name: Production build
+        env:
+          # Build-time vars are required by Vite; use placeholders for CI.
+          # No real secrets — Cloudflare provides real values at deploy time.
+          VITE_SUPABASE_URL: 'https://ci-placeholder.supabase.co'
+          VITE_SUPABASE_ANON_KEY: 'ci-placeholder-anon-key'
+        run: pnpm build

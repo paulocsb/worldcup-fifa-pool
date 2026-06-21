@@ -1,79 +1,80 @@
-# Pipeline de Pontuação & Ranking
+# Scoring & Ranking Pipeline
 
-Como pontos das predictions são computados e expostos na tela `/ranking`.
+How prediction points are computed and surfaced on the `/ranking` screen.
 
-> Doc operacional. Use pra diagnosticar problemas de ranking, debugar pontos
-> errados, ou recuperar de falhas de cron.
+> Operational doc. Use it to diagnose ranking issues, debug wrong points,
+> or recover from cron failures.
 
 ---
 
-## Arquitetura
+## Architecture
 
 ```
 sync-live (cron 1/min)
    │
-   ├─ Lê fixtures de ontem+hoje UTC (range pra cobrir partidas que cruzam
-   │  meia-noite UTC, ver supabase/functions/sync-live/index.ts)
-   ├─ Safety net interno: matches com status='live' não vistos no range
-   │  são buscados individualmente por ID
-   ├─ Update em matches (placar, status, elapsed)
+   ├─ Reads yesterday+today UTC fixtures (range covers matches crossing
+   │  UTC midnight — see supabase/functions/sync-live/index.ts)
+   ├─ Internal safety net: matches with status='live' missing from the range
+   │  are fetched individually by ID
+   ├─ Update matches (score, status, elapsed)
    │
-   └─→ Se detecta transição live → finished:
+   └─→ If a live → finished transition is detected:
         │
-        └─→ fetch interno → compute-scores
+        └─→ internal fetch → compute-scores
              │
-             ├─ Lê scoring_config
-             ├─ Pra cada match finished pós-cutoff:
-             │   ├─ Busca predictions
-             │   └─ Upsert em scores
+             ├─ Reads scoring_config
+             ├─ For each finished match past the cutoff:
+             │   ├─ Fetch predictions
+             │   └─ Upsert into scores
              │
-             └─→ view user_total_scores agrega scores por usuário
+             └─→ user_total_scores view aggregates by user
 
-Cliente:
+Client:
    useRanking() → user_total_scores
-   useRealtimeInvalidator listening on scores → invalida queries
+   useRealtimeInvalidator listening on scores → invalidates queries
 ```
 
-Existe **TAMBÉM** um cron-safety-net `fifa-compute-scores-safety-net` que
-dispara `compute-scores` toda **hora cheia**, independente do sync-live. Cobre
-o caso onde sync-live perde a transição exatamente no minuto que rolou.
+There is **also** a safety-net cron `fifa-compute-scores-safety-net` that
+fires `compute-scores` **every hour** independently of sync-live. It covers
+the case where sync-live misses the transition in the exact minute it
+happened.
 
 ---
 
-## Tabelas e views
+## Tables and views
 
-| Objeto | Tipo | Pra que serve |
+| Object | Type | Purpose |
 |---|---|---|
-| `matches` | table | Estado dos jogos (status, score, elapsed) |
-| `predictions` | table | Palpite por usuário+match (placar exato) |
-| `group_predictions` | table | Palpite de ordem do grupo |
-| `tournament_predictions` | table | Palpite de campeão/vice/3º |
-| `scores` | table | Pontos computados (`source: 'match' \| 'group' \| 'tournament'`) |
-| `user_total_scores` | view | Agregado por usuário (`sum(scores.points)`) |
-| `scoring_config` | table | Tabela de pontos + cutoffs configuráveis |
+| `matches` | table | Match state (status, score, elapsed) |
+| `predictions` | table | One prediction per user+match (exact score) |
+| `group_predictions` | table | Group-ordering prediction |
+| `tournament_predictions` | table | Champion/runner-up/3rd prediction |
+| `scores` | table | Computed points (`source: 'match' \| 'group' \| 'tournament'`) |
+| `user_total_scores` | view | Per-user aggregate (`sum(scores.points)`) |
+| `scoring_config` | table | Configurable points + cutoffs |
 
 ---
 
 ## Edge Functions
 
-| Função | Trigger | O que faz |
+| Function | Trigger | What it does |
 |---|---|---|
-| `sync-live` | pg_cron 1/min | Atualiza placar/status; dispara compute-scores em transições |
-| `compute-scores` | sync-live OU pg_cron 1/h | Upsert idempotente em scores pra matches finished |
-| `sync-fixtures` | pg_cron 1/6h | Importa/atualiza fixtures futuros |
-| `sync-match-detail` | client-triggered | Eventos/lineups/stats sob demanda |
+| `sync-live` | pg_cron 1/min | Updates score/status; fires compute-scores on transitions |
+| `compute-scores` | sync-live OR pg_cron 1/h | Idempotent upsert into scores for finished matches |
+| `sync-fixtures` | pg_cron 1/6h | Imports/updates future fixtures |
+| `sync-match-detail` | client-triggered | Events/lineups/stats on demand |
 
 ---
 
-## Cron Jobs
+## Cron jobs
 
-| Nome | Schedule | Função invocada |
+| Name | Schedule | Function invoked |
 |---|---|---|
-| `fifa-sync-live` | `* * * * *` (toda hora) | sync-live |
+| `fifa-sync-live` | `* * * * *` (every minute) | sync-live |
 | `fifa-sync-fixtures` | `5 */6 * * *` | sync-fixtures |
-| `fifa-compute-scores-safety-net` | `0 * * * *` (toda hora cheia) | compute-scores (idempotente) |
+| `fifa-compute-scores-safety-net` | `0 * * * *` (every hour) | compute-scores (idempotent) |
 
-Listar jobs ativos:
+List active jobs:
 
 ```sql
 select jobname, schedule, active from cron.job order by jobname;
@@ -81,11 +82,11 @@ select jobname, schedule, active from cron.job order by jobname;
 
 ---
 
-## Verificação: o ranking está em dia?
+## Verification: is the ranking up to date?
 
-### 1. Detectar matches `finished` SEM `scores` correspondentes
+### 1. Detect `finished` matches WITHOUT corresponding `scores`
 
-⭐ **Query principal** — use quando o ranking parecer travado.
+⭐ **Primary query** — use when the ranking appears stuck.
 
 ```sql
 select
@@ -95,35 +96,35 @@ select
   m.away_score,
   m.last_synced_at,
   count(distinct p.user_id) as palpites,
-  count(distinct s.user_id) as scores_gravados
+  count(distinct s.user_id) as scores_recorded
 from matches m
 left join predictions p on p.match_id = m.id
 left join scores s
   on s.match_id = m.id and s.source = 'match'
 where m.status = 'finished'
-  and (m.stage <> 'group' or coalesce(m.matchday, 1) >= 2)  -- respeita cutoff
+  and (m.stage <> 'group' or coalesce(m.matchday, 1) >= 2)  -- respect cutoff
 group by m.id, m.matchday, m.home_score, m.away_score, m.last_synced_at
 having count(distinct p.user_id) > 0
 order by m.last_synced_at desc
 limit 20;
 ```
 
-Interpretação:
-- `palpites = scores_gravados` → todo mundo pontuado ✅
-- `palpites > scores_gravados` → algum usuário sem score (parcial)
-- `scores_gravados = 0, palpites > 0` → compute-scores nunca rodou pra esse match ❌
+Interpretation:
+- `palpites = scores_recorded` → everyone scored ✅
+- `palpites > scores_recorded` → some user missing a score (partial)
+- `scores_recorded = 0, palpites > 0` → compute-scores never ran for this match ❌
 
-### 2. Forçar recálculo global (idempotente)
+### 2. Force global recompute (idempotent)
 
-Fix universal — roda quando a verificação (1) mostra inconsistência.
+Universal fix — run when verification (1) shows inconsistency.
 
 ```sql
 select public.invoke_edge_function('compute-scores');
 ```
 
-Sem body = processa TODOS os matches finished. Idempotente — pode rodar quantas vezes quiser.
+No body = processes ALL finished matches. Idempotent — safe to run any number of times.
 
-Ver o report:
+Check the report:
 
 ```sql
 select status_code, content::text
@@ -133,9 +134,9 @@ order by created desc
 limit 3;
 ```
 
-Esperado: `200` + JSON `{ matches_evaluated, predictions_scored, total_points_awarded, errors: [] }`.
+Expected: `200` + JSON `{ matches_evaluated, predictions_scored, total_points_awarded, errors: [] }`.
 
-### 3. Sanity check do ranking atual
+### 3. Current ranking sanity check
 
 ```sql
 select
@@ -149,7 +150,7 @@ order by uts.total_points desc
 limit 10;
 ```
 
-### 4. Últimas computações de score
+### 4. Latest score computations
 
 ```sql
 select user_id, match_id, points, computed_at, breakdown
@@ -159,9 +160,10 @@ order by computed_at desc
 limit 20;
 ```
 
-`computed_at` antigo em matches finished recentes = sinal de que compute-scores não foi invocado ainda — verificação (1) detecta isso explicitamente.
+A stale `computed_at` in recently finished matches = compute-scores hasn't been
+invoked yet — verification (1) detects this explicitly.
 
-### 5. Recomputar pontos de UM match específico
+### 5. Recompute points for ONE specific match
 
 ```sql
 select public.invoke_edge_function(
@@ -170,9 +172,9 @@ select public.invoke_edge_function(
 );
 ```
 
-Útil quando: scoring_config mudou, ou suspeita de bug em uma partida específica.
+Useful when: scoring_config changed, or a specific match looks buggy.
 
-### 6. Histórico de execuções de cron
+### 6. Cron execution history
 
 ```sql
 select
@@ -189,51 +191,52 @@ order by rd.start_time desc
 limit 30;
 ```
 
-`status = 'succeeded'` consecutivamente = saudável. `failed` recorrente = vault desconfigurado ou edge function quebrada.
+Consecutive `status = 'succeeded'` = healthy. Recurring `failed` = vault misconfigured or edge function broken.
 
 ---
 
-## Como resgatar situações comuns
+## Recovery playbook (common situations)
 
-| Sintoma | Causa provável | Fix |
+| Symptom | Likely cause | Fix |
 |---|---|---|
-| Match `finished` mas sem `scores` | sync-live perdeu a transição OU fetch pra compute-scores falhou | Verificação (2) — recálculo global |
-| Score errado pra um usuário | Predictions foram editadas após scoring rodar OU `scoring_config` mudou | Verificação (5) com `match_id` específico |
-| Ranking atualizado no DB mas não no cliente | Realtime SSE caiu OU `staleTime` do TanStack Query | Hard refresh no PWA (Settings → Clear site data) |
-| Cron `failed` recorrente | `vault.fifa.edge_url` aponta pra URL errada (ex: `host.docker.internal`) | Atualizar vault: `select vault.update_secret(id, '<URL_REAL>', name);` |
-| Partida ao vivo travada (não atualiza) | sync-live com bug de date range OU API-Football down | Ver `docs/PLAN.md` debug section + invocar manual: `select public.invoke_edge_function('sync-live');` |
+| `finished` match without `scores` | sync-live missed the transition OR fetch to compute-scores failed | Verification (2) — global recompute |
+| Wrong score for a user | Predictions were edited after scoring ran OR `scoring_config` changed | Verification (5) with the specific `match_id` |
+| Ranking updated in DB but not on the client | Realtime SSE dropped OR TanStack Query `staleTime` | Hard refresh the PWA (Settings → Clear site data) |
+| Recurring `failed` cron | `vault.fifa.edge_url` points to a wrong URL (e.g., `host.docker.internal`) | Update vault: `select vault.update_secret(id, '<REAL_URL>', name);` |
+| Live match stuck (not updating) | sync-live date-range bug OR API-Football down | See `docs/PLAN.md` debug section + manual invoke: `select public.invoke_edge_function('sync-live');` |
 
 ---
 
-## Configuração de pontos
+## Points configuration
 
-Editável em runtime via `scoring_config` (sem deploy):
+Editable at runtime via `scoring_config` (no deploy):
 
 ```sql
 select key, value from scoring_config order by key;
 ```
 
-Após edição, **rodar recálculo global** (verificação 2) pra aplicar nas predictions já pontuadas.
+After editing, **run global recompute** (verification 2) to apply the changes
+to already-scored predictions.
 
 ---
 
-## Arquivos-chave do repo
+## Key files
 
-| Path | Responsabilidade |
+| Path | Responsibility |
 |---|---|
-| `supabase/functions/sync-live/index.ts` | Atualiza matches; dispara compute-scores em transições |
-| `supabase/functions/compute-scores/index.ts` | Upsert idempotente em scores |
-| `supabase/functions/_shared/scoring.ts` | Lógica de pontuação (server) |
-| `src/lib/scoring.ts` | Lógica de pontuação (client, espelho do server) |
+| `supabase/functions/sync-live/index.ts` | Updates matches; fires compute-scores on transitions |
+| `supabase/functions/compute-scores/index.ts` | Idempotent upsert into scores |
+| `supabase/functions/_shared/scoring.ts` | Scoring logic (server) |
+| `src/lib/scoring.ts` | Scoring logic (client, mirror of the server) |
 | `supabase/migrations/20260616000004_scheduling.sql` | Cron jobs sync-live + sync-fixtures + vault |
-| `supabase/migrations/20260618000001_compute_scores_safety_net.sql` | Cron safety-net horária |
-| `src/hooks/useRanking.ts` | Hook que lê `user_total_scores` no cliente |
+| `supabase/migrations/20260618000001_compute_scores_safety_net.sql` | Hourly safety-net cron |
+| `src/hooks/useRanking.ts` | Client hook reading `user_total_scores` |
 
 ---
 
-## Princípios
+## Principles
 
-1. **`compute-scores` é idempotente** — upsert por `(user_id, source, match_id, group_letter)`. Rodar 100x = mesmo resultado.
-2. **`scores` é a verdade do servidor** — `src/lib/scoring.ts` no cliente é só preview. Em conflito, server vence.
-3. **Cutoff é por matchday** — `scoring_config.group_matchday_start = 2` significa "MD1 não pontua".
-4. **3 cron jobs trabalham juntos**: sync-live (ingest), compute-scores (cálculo on-finish), safety-net (rede de proteção horária).
+1. **`compute-scores` is idempotent** — upserts on `(user_id, source, match_id, group_letter)`. Running it 100× = same result.
+2. **`scores` is server truth** — `src/lib/scoring.ts` on the client is a preview. On conflict, the server wins.
+3. **Cutoff is per matchday** — `scoring_config.group_matchday_start = 2` means "MD1 doesn't score".
+4. **3 cron jobs work together**: sync-live (ingest), compute-scores (on-finish calc), safety-net (hourly protection).
