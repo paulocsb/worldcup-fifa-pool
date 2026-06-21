@@ -4,12 +4,18 @@ Selected stack:
 
 | Layer | Service | Cost |
 |---|---|---|
-| Frontend | **Cloudflare Pages** | free |
+| Frontend | **Cloudflare Workers** (with `assets:` binding for the SPA) | free |
 | Backend/DB | **Supabase managed** (us-east-1) | free (free tier) |
 | Email (magic link) | **Resend** | free (10k emails/month) |
 | DNS + SSL | **Cloudflare** | free |
 | Live data | **API-Football Pro** | $19/month |
-| CI | **Cloudflare Pages auto-deploy** | free |
+| CI | **Cloudflare Workers Builds** (auto-deploy on git push) | free |
+
+> **Workers vs Pages**: Cloudflare unified its frontend hosting under Workers as
+> of 2025. Pages still exists but new projects (and several existing ones, like
+> this one) live as Workers. Functionally for a static SPA the difference is
+> minimal — `assets:` in `wrangler.jsonc` serves the Vite build. See
+> [`wrangler.jsonc`](../wrangler.jsonc) for the deployment config.
 
 **Total monthly cost: $19** (API-Football only).
 
@@ -217,46 +223,67 @@ Suggested template in pt-BR (the user-facing language):
 
 ---
 
-## Phase 4 · Cloudflare Pages
+## Phase 4 · Cloudflare Workers
+
+The repo ships a `wrangler.jsonc` at the root. Cloudflare uses it to
+configure the Worker; nothing dynamic.
 
 ### 4.1 Connect GitHub
 
-1. Cloudflare dashboard → **Workers & Pages → Create application → Pages**
-2. **Connect to Git** → authorize → choose your `fifa-bolao` repo
-3. **Production branch**: `main`
+1. Cloudflare dashboard → **Workers & Pages → Create application**
+2. Pick **Connect to Git** → authorize → choose your `fifa-bolao` repo
+3. Cloudflare detects this as a Vite framework Worker
+4. **Production branch**: `main`
 
 ### 4.2 Build settings
 
+Most fields are auto-detected from `wrangler.jsonc` and `package.json`. Override only what's listed:
+
 | Field | Value |
 |---|---|
-| Framework preset | Vite |
 | Build command | `pnpm install --frozen-lockfile && pnpm build` |
-| Build output directory | `dist` |
+| Deploy command | `pnpm wrangler deploy` (default — `assets:` in `wrangler.jsonc` uploads `dist/`) |
 | Root directory | `/` |
 | Node version | `22` (Environment variables → `NODE_VERSION=22`) |
 
 ### 4.3 Environment variables (Production)
 
-Under **Settings → Environment variables → Production**:
+Under **Settings → Variables and Secrets → Production**:
 
-| Variable | Value |
-|---|---|
-| `VITE_SUPABASE_URL` | `https://xxx.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | (anon key from the Supabase dashboard) |
-| `NODE_VERSION` | `22` |
+| Variable | Value | Type |
+|---|---|---|
+| `VITE_SUPABASE_URL` | `https://xxx.supabase.co` | Plain text |
+| `VITE_SUPABASE_ANON_KEY` | (anon key from the Supabase dashboard) | Plain text (it's public) |
+| `NODE_VERSION` | `22` | Plain text |
+
+> These are exposed to the browser by Vite at build time — they're not Worker
+> runtime secrets. Don't put `SUPABASE_SERVICE_ROLE_KEY` or `API_FOOTBALL_KEY`
+> here; those live in Supabase Edge Functions only.
 
 ### 4.4 First deploy
 
-**Save and deploy**. Wait for the build (~2–3 min). Generates a `xxx.pages.dev` URL.
+**Save and deploy**. Wait for the build (~2–3 min). Generates a `xxx.workers.dev` URL.
 
 Open the URL — the app should load (you'll see "Bolão privado" because there's no invite in the URL yet).
 
 ### 4.5 Custom domain (subdomain)
 
-1. In the Pages project → **Custom domains → Set up a custom domain**
+1. In the Worker project → **Settings → Domains & Routes → Add**
 2. Type `bolao.yourdomain.com` (or whatever subdomain you choose)
 3. Cloudflare **automatically creates** the CNAME in DNS (because the domain is already at Cloudflare)
 4. SSL provisioned in ~1 min
+
+### 4.6 Local deploy (optional)
+
+You can also deploy from your machine without pushing to git:
+
+```bash
+pnpm run deploy
+# Equivalent to: pnpm build && wrangler deploy
+```
+
+Wrangler will use the `wrangler.jsonc` at the repo root. First time you'll be
+prompted to `wrangler login`.
 
 ---
 
@@ -343,7 +370,7 @@ Each friend:
 | Supabase auth users | 50k MAU | ~20 friends |
 | Supabase edge functions | 500k invocations/month | ~50k/month (sync every 1min × 30 days) |
 | Supabase egress | 5 GB/month | ~1 GB comfortably |
-| Cloudflare Pages | unlimited bandwidth | n/a |
+| Cloudflare Workers | 100k requests/day (free), unlimited bandwidth | well under for a friend group |
 | Resend | 10k emails/month | ~50/month |
 | API-Football | 7,500 reqs/day (Pro) | ~1k/day |
 
@@ -366,7 +393,7 @@ Plenty of headroom. The free tier handles it easily.
 
 | Scenario | Mitigation |
 |---|---|
-| **Pages build fails** | Pages has a "Deployments" tab — 1-click rollback to the previous build |
+| **Worker build fails** | Workers has a "Deployments" tab — 1-click rollback to the previous version. Locally you can also `pnpm wrangler rollback`. |
 | **Bad migration in prod** | Always test locally first. In prod use `supabase db push --dry-run` first |
 | **Cron doesn't run** | Re-apply migration `20260616000004_scheduling.sql` + verify vault secrets are updated |
 | **DB full (500MB)** | Upgrade to Pro tier ($25/month) or clean old data |
@@ -384,4 +411,4 @@ git commit -m "docs: production deploy plan"
 git push origin main
 ```
 
-Each subsequent change in prod → commit + push → Pages auto-redeploys.
+Each subsequent change in prod → commit + push → Workers auto-redeploys via Workers Builds.

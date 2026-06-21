@@ -39,7 +39,7 @@ help. Conversations with the user mirror the user's language (default pt-BR).
 | Avatars | DiceBear (URL generated from seed) |
 | Dates / i18n | `date-fns` with `pt-BR` locale |
 | Package manager | pnpm |
-| Hosting (prod) | Cloudflare Pages (frontend) + Supabase managed (backend) |
+| Hosting (prod) | Cloudflare Workers (frontend, `wrangler.jsonc`) + Supabase managed (backend) |
 
 **Code conventions**:
 - Strict TypeScript (`strict: true`, no implicit `any`). Types generated via `supabase gen types typescript`.

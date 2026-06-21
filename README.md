@@ -20,7 +20,7 @@ without deep familiarity can produce production-quality changes through their AI
 | Backend | Supabase (Postgres, Auth, Edge Functions, pg_cron, Vault) |
 | Auth | Magic link (email) with invite-based gating |
 | Live data | API-Football (api-sports.io) |
-| Hosting (prod) | Cloudflare Pages + Supabase managed + Resend (SMTP) |
+| Hosting (prod) | Cloudflare Workers + Supabase managed + Resend (SMTP) |
 | PWA | vite-plugin-pwa (offline-friendly, installable) |
 
 ## Features
@@ -213,7 +213,7 @@ Logic lives in **`src/lib/scoring.ts`** (client preview) mirrored in **`supabase
 
 See [`docs/DEPLOY.md`](docs/DEPLOY.md) — step-by-step playbook, ~1h45 from zero to running.
 
-Selected stack: **Cloudflare Pages + Supabase managed + Resend SMTP + Cloudflare DNS**.
+Selected stack: **Cloudflare Workers + Supabase managed + Resend SMTP + Cloudflare DNS**.
 
 Recurring cost: ~$19/month (API-Football Pro only — all other services on free tiers for this scale).
 

@@ -1,0 +1,39 @@
+{
+  // Cloudflare Workers configuration for serving the Vite-built SPA.
+  // The build outputs to `dist/`, which Wrangler uploads as static assets.
+  //
+  // Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+  // SPA assets: https://developers.cloudflare.com/workers/static-assets/
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Name of the Worker (matches the *.workers.dev subdomain).
+  // Rename if forking — must be unique within your Cloudflare account.
+  "name": "bolao-fifa",
+
+  // Pin runtime APIs to this date. Bump when you want newer Worker features;
+  // changing it doesn't break existing builds.
+  "compatibility_date": "2026-06-21",
+
+  // Built-in observability (logs + metrics in the Cloudflare dashboard).
+  "observability": {
+    "enabled": true
+  },
+
+  // Static assets bundle. `directory` matches Vite's default build output.
+  // SPA fallback: any unmatched route returns index.html so React Router
+  // handles client-side navigation (deep links, refresh, etc).
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+
+  // NOTE: `compatibility_flags: ["nodejs_compat"]` is intentionally omitted.
+  // This is a pure client-side Vite bundle — no Node.js APIs at runtime —
+  // and enabling the flag inflates the Worker without benefit.
+  //
+  // NOTE: env-specific vars (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) are
+  // injected at build time by Cloudflare Workers (Settings → Variables and
+  // Secrets in the dashboard), not declared here. Don't put public anon keys
+  // in this file even though they're "public" — keep that surface auditable
+  // in the dashboard.
+}
