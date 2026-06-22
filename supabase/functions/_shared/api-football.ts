@@ -145,7 +145,12 @@ export class ApiFootballClient {
 // Mapeamento status / stage
 // ---------------------------------------------------------------------------
 
-export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'cancelled'
+export type MatchStatus =
+  | 'scheduled'
+  | 'live'
+  | 'finished'
+  | 'postponed'
+  | 'cancelled'
 
 export function mapStatus(apiShort: string): MatchStatus {
   // https://www.api-football.com/documentation-v3#tag/Fixtures
@@ -153,7 +158,11 @@ export function mapStatus(apiShort: string): MatchStatus {
   if (['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE', 'INT'].includes(apiShort))
     return 'live'
   if (['FT', 'AET', 'PEN'].includes(apiShort)) return 'finished'
-  return 'cancelled' // PST, CANC, ABD, AWD, WO, SUSP
+  // Reschedulable: PST = postponed pre-kickoff, SUSP = suspended mid-match.
+  // Both flip back to NS / 1H / 2H once the match resumes / is rescheduled.
+  if (['PST', 'SUSP'].includes(apiShort)) return 'postponed'
+  // Terminal cancellations: CANC, ABD, AWD, WO, and anything unrecognized.
+  return 'cancelled'
 }
 
 export type MatchStage =

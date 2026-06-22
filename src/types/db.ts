@@ -619,7 +619,12 @@ export type Database = {
         | "semi_final"
         | "third_place"
         | "final"
-      match_status: "scheduled" | "live" | "finished" | "cancelled"
+      match_status:
+        | "scheduled"
+        | "live"
+        | "finished"
+        | "postponed"
+        | "cancelled"
       score_source: "match" | "group" | "tournament"
     }
     CompositeTypes: {
@@ -760,7 +765,13 @@ export const Constants = {
         "third_place",
         "final",
       ],
-      match_status: ["scheduled", "live", "finished", "cancelled"],
+      match_status: [
+        "scheduled",
+        "live",
+        "finished",
+        "postponed",
+        "cancelled",
+      ],
       score_source: ["match", "group", "tournament"],
     },
   },

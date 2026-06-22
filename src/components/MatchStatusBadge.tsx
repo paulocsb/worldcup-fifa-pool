@@ -45,6 +45,17 @@ export function MatchStatusBadge({
       </span>
     )
   }
+  if (match.status === 'postponed') {
+    // Mid-match suspension (SUSP) vs pre-kickoff postponement (PST):
+    // both map to 'postponed' on the server. If we have a live_status_short
+    // of SUSP, surface "Suspenso" — slightly different from generic "Adiado".
+    const label = match.live_status_short === 'SUSP' ? 'Suspenso' : 'Adiado'
+    return (
+      <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-amber-500">
+        {label}
+      </span>
+    )
+  }
   if (match.status === 'cancelled') {
     return (
       <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">

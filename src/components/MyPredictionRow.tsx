@@ -36,6 +36,7 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
 
   const isFinished = match.status === 'finished'
   const isLive = match.status === 'live'
+  const isPostponed = match.status === 'postponed'
   const showRealScore = isFinished || isLive
   const points = score?.points ?? null
   const isExact =
@@ -74,6 +75,8 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
           earned={earned}
           isExact={isExact}
           isLive={isLive}
+          isPostponed={isPostponed}
+          postponedShort={match.live_status_short}
           isFinishedNotScoring={isFinishedNotScoring}
         />
       </div>
@@ -108,10 +111,10 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
         </div>
       </div>
 
-      {/* Sub-linha abaixo do palpite (mesmo espaço, 2 cenários):
-            1. Partida ainda não rolou → "Início [data/hora]"
-            2. Live ou finalizada → "Parcial/Resultado X-Y" (sempre, mesmo
-               quando cravou — pra manter consistência visual) */}
+      {/* Sub-linha abaixo do palpite (mesmo espaço, 3 cenários):
+            1. Live ou finalizada → "Parcial/Resultado X-Y"
+            2. Postponed → "Aguardando nova data" ou "Suspenso no minuto N"
+            3. Scheduled → "Início [data/hora]" */}
       {showRealScore ? (
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           <span className="uppercase tracking-wider">
@@ -130,6 +133,12 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
             {match.home_score ?? '-'}–{match.away_score ?? '-'}
           </span>
         </p>
+      ) : isPostponed ? (
+        <p className="mt-2 text-center text-[11px] text-amber-500">
+          {match.live_status_short === 'SUSP'
+            ? 'Suspenso · aguardando retomada'
+            : 'Adiada · aguardando nova data'}
+        </p>
       ) : (
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           <span className="uppercase tracking-wider">Início</span>{' '}
@@ -147,15 +156,19 @@ function StatusIndicator({
   earned,
   isExact,
   isLive,
+  isPostponed,
+  postponedShort,
   isFinishedNotScoring,
 }: {
   points: number | null
   earned: boolean
   isExact: boolean
   isLive: boolean
+  isPostponed: boolean
+  postponedShort: string | null
   isFinishedNotScoring: boolean
 }) {
-  // Ordem de prioridade: ao vivo > pontos > não pontua > aguardando
+  // Ordem de prioridade: ao vivo > adiado/suspenso > pontos > não pontua > aguardando
   if (isLive) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-destructive px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
@@ -164,6 +177,14 @@ function StatusIndicator({
           <span className="relative inline-flex size-1.5 rounded-full bg-white" />
         </span>
         Ao vivo
+      </span>
+    )
+  }
+  if (isPostponed) {
+    const label = postponedShort === 'SUSP' ? 'Suspenso' : 'Adiado'
+    return (
+      <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-500">
+        {label}
       </span>
     )
   }

@@ -1,0 +1,28 @@
+-- ============================================================================
+-- Add 'postponed' to the match_status enum.
+--
+-- Why: API-Football returns distinct short codes for matches that are merely
+-- delayed (PST = postponed before kickoff) or paused during play (SUSP =
+-- suspended). Before this change, both collapsed to 'cancelled' — same bucket
+-- as truly cancelled (CANC) or walk-over (AWD/WO) matches — which made the UI
+-- show "Cancelado" for a match that's actually just waiting to be rescheduled.
+--
+-- After this migration, sync-live will map:
+--   PST  → 'postponed'   (will be rescheduled)
+--   SUSP → 'postponed'   (paused; will resume)
+--   CANC → 'cancelled'   (off the calendar)
+--   AWD  → 'cancelled'   (still — see follow-up about walk-over scoring)
+--   WO   → 'cancelled'
+--   ABD  → 'cancelled'
+--
+-- Notes:
+--  * `ALTER TYPE ... ADD VALUE` is forward-compatible. Existing rows are
+--    unaffected; new rows can use 'postponed'.
+--  * RLS policies that check `status = 'scheduled'` continue to block writes
+--    on postponed matches — predictions can't be edited until the match is
+--    rescheduled and the API flips back to NS. That's intentional.
+--  * `compute-scores` filters `status = 'finished'`, so postponed matches
+--    naturally don't score.
+-- ============================================================================
+
+alter type public.match_status add value if not exists 'postponed';

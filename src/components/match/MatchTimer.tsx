@@ -45,5 +45,15 @@ export function MatchTimer({
     )
   }
 
+  if (match.status === 'postponed') {
+    // Mid-match suspension shows "Suspenso"; pre-kickoff postponement shows "Adiado".
+    const label = match.live_status_short === 'SUSP' ? 'Suspenso' : 'Adiado'
+    return (
+      <span className="font-display inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-[0.12em] text-amber-500">
+        {label}
+      </span>
+    )
+  }
+
   return null
 }
