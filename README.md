@@ -5,8 +5,8 @@
 [![Built with AI](https://img.shields.io/badge/built%20with-AI%20agents-purple)](AGENTS.md)
 [![PWA](https://img.shields.io/badge/PWA-installable-orange)](https://web.dev/progressive-web-apps/)
 
-> A mobile-first PWA for a friends' World Cup pool, **built mid-tournament** by
-> orchestrating specialized AI agents through every phase of development —
+> A mobile-first PWA for a friends' World Cup pool — built and evolved by
+> orchestrating specialized AI agents through every phase of development:
 > from spec to ship.
 
 📖 **[Read the full story on Medium →](https://medium.com/@paulocsb/bolao-fifa-2026)** *(article coming soon)*
@@ -31,7 +31,7 @@ checkpoint. Three weeks later, ~20 friends are using it on their phones.
 - 🎯 **Score predictions** per match, locked 5 minutes before kickoff
 - 🏆 **Group + tournament predictions** (final order, champion, runner-up, 3rd)
 - 📊 **Live ranking** that updates without refresh as matches end
-- ⚡ **Quick predict** Tinder-style mode for batch prediction
+- ⚡ **Quick predict** mode for fast batch prediction across many matches
 - 🔐 **Invite-only** access with magic-link auth
 - 📱 **PWA**: installable, offline-friendly for reads
 - 🌗 **Dark mode** by default, with toggle
@@ -62,21 +62,42 @@ ship a real feature in their first session — without first reading 50 files.
 
 Recurring cost: ~$19/month (just API-Football Pro). Everything else fits free tiers.
 
-## Try it locally
+## Make it yours
 
-```bash
-git clone git@github.com:paulocsb/bolao-fifa.git
-cd bolao-fifa
-pnpm install
-supabase start
-pnpm dev
+The stack ships with Cloudflare Workers + Supabase + API-Football, but
+nothing is locked in. Ask the AI agent in plain language:
+
+- *"Switch hosting to Vercel"* — the `frontend` agent updates Vite config, deploy script, and `docs/DEPLOY.md`.
+- *"Replace API-Football with TheSportsDB"* — the `supabase` agent rewrites `_shared/api-football.ts` and runs `/scoring-verify` to confirm nothing broke.
+- *"Migrate the DB to Neon + Drizzle"* — bigger surface, so the agent writes a `/spec` first, then a phased `/feature` plan to walk you through.
+- *"Brand the app for Euro 2028"* — the `frontend` agent rewrites color tokens, swaps logos, updates the PWA manifest.
+
+Each adaptation is a guided `/feature` flow with checkpoints, not a config flag.
+
+## Try it with your AI agent
+
+The intended way to work in this repo is to let your AI agent drive the
+flow. Clone it, open it with Claude Code, Cursor, Aider, Cline, or Continue,
+and run:
+
+```text
+/setup     # bootstraps the local environment (deps, Supabase, env, fixtures)
+/dev       # starts the dev stack and prints the URLs you need
 ```
 
-Detailed walkthrough (env files, API-Football key, fixture sync):
-[`docs/SETUP.md`](docs/SETUP.md).
+To work on something:
 
-If you're using Claude Code or another AI tool, just run `/setup` in your
-agent — it walks the whole flow for you.
+```text
+/feature "add a tiebreaker by exact-score count to the ranking"
+/bug      "live score didn't update for GHA × PAN"
+/ship                                       # final quality gate before PR
+```
+
+Every slash command lives in [`.claude/skills/`](.claude/skills/) and is
+self-documenting. New session? Run `/start` for a state briefing.
+
+Prefer to run things manually, without an AI in the loop?
+See [`docs/SETUP.md`](docs/SETUP.md) — the same flow as commands.
 
 ## Documentation
 
