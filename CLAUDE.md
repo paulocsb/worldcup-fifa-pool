@@ -186,25 +186,62 @@ their scope.
 
 ## 10. Project slash commands
 
-Local skills in `.claude/skills/`:
+Local skills in `.claude/skills/`, organized by role in the development cycle.
 
-### Utility (routine)
+### Lifecycle (the development loop)
 | Command | Use |
 |---|---|
-| `/db-status` | Database health check before schema changes (cron, RLS policies, stuck matches, ranking sanity) |
-| `/scoring-verify` | Validate scoring in production (finished matches without scores, recompute) |
-| `/deploy-fn <name>` | Deploy + smoke-test an edge function |
+| `/setup` | First-time bootstrap of the local environment (deps, Supabase, env files, fixtures sync). Idempotent. |
+| `/dev` | Daily startup of the dev stack (Supabase + Vite + URLs printed). |
+| `/start` | Quick state briefing at session start (git, build, open PRs/issues, suggested next action). |
+| `/feature <description>` | End-to-end pipeline to add a new feature: Spec → Impact → Plan → Implement → Verify → PR body. |
+| `/bug <description>` | Investigation playbook: reproduce → isolate → root cause → fix → validate. |
+| `/ship` | Pre-PR quality gate: typecheck + build + tests + audits + review + secrets + verdict. |
 
-### Senior (decision / risk)
+### Quality (refinement before review)
 | Command | Use |
 |---|---|
-| `/mobile-audit` | Mobile/PWA checklist before declaring UI work done (10 criteria) |
-| `/impact` | Blast-radius map of a proposed but not-yet-implemented change |
-| `/security-sweep` | Periodic RLS / secrets / auth audit (pre-release, before mass onboarding) |
-| `/release-notes` | Friendly pt-BR changelog for the friends group (WhatsApp) |
+| `/spec <feature>` | Spec-driven development: structured spec saved to `docs/specs/`. |
+| `/review` | 4-lens self-critique (correctness / security / performance / maintainability) on the current diff. |
+| `/verify` | Fast subset of `/ship`: typecheck + build + test + conditional audits. |
+| `/refactor <area>` | Behavior-preserving refactor with step-by-step verification. |
+| `/explain <topic>` | One-pager explaining a codebase area for a contributor. |
 
-**Usage rule**:
+### Utility (operational, point-in-time)
+| Command | Use |
+|---|---|
+| `/db-status` | Database health check (cron, RLS, stuck matches, ranking sanity). |
+| `/scoring-verify` | Validate scoring pipeline in production. |
+| `/deploy-fn <name>` | Deploy + smoke-test a specific edge function. |
+| `/mobile-audit` | Mobile/PWA checklist before declaring UI work done. |
+| `/impact` | Blast-radius map of a not-yet-implemented change. |
+| `/security-sweep` | Periodic RLS / secrets / auth audit. |
+| `/release-notes` | pt-BR changelog for the friends group (WhatsApp). |
+
+### Typical session shape
+
+```
+/setup        ← once per machine
+/dev          ← start of session
+/start        ← optional briefing
+/feature X    ← drive the work
+…
+/ship         ← right before opening the PR
+```
+
+Or for bugs:
+
+```
+/dev
+/start
+/bug "describe symptom"
+/ship
+```
+
+### Usage rules
+
 - Before schema/scoring change → `/impact`
 - Before declaring UI done → `/mobile-audit`
 - Pre-release or after RLS change → `/security-sweep`
 - Before announcing to friends → `/release-notes`
+- Before opening a PR → `/ship`

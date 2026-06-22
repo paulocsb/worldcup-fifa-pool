@@ -148,6 +148,47 @@ In the `public` schema:
 
 Use these in RLS policies and `compute-scores`. Do not inline the same logic.
 
+## Development cycle commands (slash commands)
+
+Claude Code users invoke these as `/<name>`. For other tools, reference the
+corresponding `.claude/skills/<name>.md` as context when relevant.
+
+### Lifecycle (the development loop)
+
+| Command | Use |
+|---|---|
+| `/setup` | First-time environment bootstrap. Idempotent. |
+| `/dev` | Daily startup of the dev stack. |
+| `/start` | State briefing + suggested next action. |
+| `/feature <desc>` | End-to-end pipeline (Spec → Impact → Plan → Implement → Verify → PR). |
+| `/bug <desc>` | Investigation playbook (reproduce → isolate → root cause → fix → validate). |
+| `/ship` | Pre-PR quality gate with verdict + PR body draft. |
+
+### Quality (refinement)
+
+| Command | Use |
+|---|---|
+| `/spec <feature>` | Write structured spec in `docs/specs/` before implementing. |
+| `/review` | 4-lens self-critique on the diff. |
+| `/verify` | Fast subset of `/ship`. |
+| `/refactor <area>` | Behavior-preserving refactor with step verification. |
+| `/explain <topic>` | One-pager explaining a codebase area. |
+
+### Utility
+
+| Command | Use |
+|---|---|
+| `/db-status`, `/scoring-verify`, `/deploy-fn`, `/mobile-audit`, `/impact`, `/security-sweep`, `/release-notes` | Point-in-time operational checks. |
+
+### Typical session
+
+```
+/setup       (once per machine)
+/dev         (start of session)
+/feature X   (drive the work)
+/ship        (before opening PR)
+```
+
 ## When you're stuck
 
 - Search the docs (`docs/`) first.
