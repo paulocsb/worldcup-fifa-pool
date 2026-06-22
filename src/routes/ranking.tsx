@@ -65,6 +65,23 @@ export function RankingPage() {
             const isMe = row.user_id === myId
             const ceremonial: CeremonialPosition | null =
               positionFromRank(position)
+            // Tiebreaker indicator: only when this user shares total_points
+            // with an adjacent ranked user (above or below).
+            const prev = ranking.data?.[idx - 1]
+            const next = ranking.data?.[idx + 1]
+            const tiedByPoints =
+              (prev && prev.total_points === row.total_points) ||
+              (next && next.total_points === row.total_points)
+            // If exact_count also matches, expose the next tiebreaker
+            // (scored_count) so the user can see what's separating them.
+            const tiedByExactToo =
+              tiedByPoints &&
+              ((prev &&
+                prev.total_points === row.total_points &&
+                prev.exact_count === row.exact_count) ||
+                (next &&
+                  next.total_points === row.total_points &&
+                  next.exact_count === row.exact_count))
             const podiumToken = ceremonial
               ? positionColorToken(ceremonial)
               : null
@@ -131,6 +148,24 @@ export function RankingPage() {
                         </span>
                       )}
                     </div>
+                    {tiedByPoints && (
+                      <div className="mt-0.5 truncate text-[10px] text-muted-foreground">
+                        Desempate:{' '}
+                        <span className="font-display tabular-nums text-foreground/70">
+                          {row.exact_count}
+                        </span>{' '}
+                        cravado{row.exact_count === 1 ? '' : 's'}
+                        {tiedByExactToo && (
+                          <>
+                            {' · '}
+                            <span className="font-display tabular-nums text-foreground/70">
+                              {row.scored_count}
+                            </span>{' '}
+                            jogo{row.scored_count === 1 ? '' : 's'}
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="text-right">
                     <div
