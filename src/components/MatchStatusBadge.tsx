@@ -1,19 +1,26 @@
+import { useTranslation } from 'react-i18next'
 import type { Match } from '@/types/db'
 import { cn } from '@/lib/utils'
 import { kickoffLabel } from '@/lib/format'
 
-function liveLabel(
+function useLiveLabel(): (
   short: string | null,
   elapsed: number | null,
   extra: number | null,
-): string {
-  if (short === 'HT' || short === 'INT' || short === 'BT') return 'Intervalo'
-  if (short === 'P') return 'Pênaltis'
-  if (short === 'SUSP') return 'Suspenso'
-  if (elapsed != null) {
-    return extra != null && extra > 0 ? `${elapsed}+${extra}'` : `${elapsed}'`
+) => string {
+  const { t } = useTranslation('matches')
+  return (short, elapsed, extra) => {
+    if (short === 'HT' || short === 'INT' || short === 'BT')
+      return t('status.halftime')
+    if (short === 'P') return t('status.penalties')
+    if (short === 'SUSP') return t('status.suspended')
+    if (elapsed != null) {
+      return extra != null && extra > 0
+        ? `${elapsed}+${extra}'`
+        : `${elapsed}'`
+    }
+    return t('status.live')
   }
-  return 'Ao vivo'
 }
 
 export function MatchStatusBadge({
@@ -30,6 +37,9 @@ export function MatchStatusBadge({
     | 'live_status_short'
   >
 }) {
+  const { t } = useTranslation('matches')
+  const liveLabel = useLiveLabel()
+
   if (match.status === 'live') {
     const label = liveLabel(
       match.live_status_short,
@@ -52,15 +62,15 @@ export function MatchStatusBadge({
   if (match.status === 'finished') {
     return (
       <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        Encerrado
+        {t('status.finished')}
       </span>
     )
   }
   if (match.status === 'postponed') {
-    // Mid-match suspension (SUSP) vs pre-kickoff postponement (PST):
-    // both map to 'postponed' on the server. If we have a live_status_short
-    // of SUSP, surface "Suspenso" — slightly different from generic "Adiado".
-    const label = match.live_status_short === 'SUSP' ? 'Suspenso' : 'Adiado'
+    const label =
+      match.live_status_short === 'SUSP'
+        ? t('status.suspended')
+        : t('status.postponed')
     return (
       <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-amber-500">
         {label}
@@ -70,7 +80,7 @@ export function MatchStatusBadge({
   if (match.status === 'cancelled') {
     return (
       <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        Cancelado
+        {t('status.cancelled')}
       </span>
     )
   }

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Lock, Pencil, Trophy } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { MatchWithTeams } from '@/hooks/useMatches'
 import type { Prediction, Team } from '@/types/db'
 import { isPredictionOpen } from '@/lib/matchLock'
@@ -71,6 +72,7 @@ function TeamRow({
 }
 
 export function MatchCard({ match, prediction, onPredict }: MatchCardProps) {
+  const { t } = useTranslation('matches')
   const open = isPredictionOpen(match)
   const showScore = match.status === 'finished' || match.status === 'live'
   const isLive = match.status === 'live'
@@ -148,14 +150,16 @@ export function MatchCard({ match, prediction, onPredict }: MatchCardProps) {
         {prediction ? (
           <span className="flex items-center gap-1.5 text-xs">
             <Trophy className="size-3 text-gold" />
-            <span className="text-muted-foreground">Palpite:</span>
+            <span className="text-muted-foreground">
+              {t('prediction.label')}:
+            </span>
             <span className="font-display font-semibold tabular-nums">
               {prediction.home_score}–{prediction.away_score}
             </span>
           </span>
         ) : (
           <span className="text-xs text-muted-foreground">
-            {open ? 'Sem palpite' : 'Sem palpite registrado'}
+            {open ? t('prediction.none') : t('prediction.noneLocked')}
           </span>
         )}
         <button
@@ -172,12 +176,12 @@ export function MatchCard({ match, prediction, onPredict }: MatchCardProps) {
           {open ? (
             <>
               <Pencil className="size-3" />
-              {prediction ? 'Editar' : 'Palpitar'}
+              {prediction ? t('prediction.edit') : t('prediction.predict')}
             </>
           ) : (
             <>
               <Lock className="size-3" />
-              Encerrado
+              {t('prediction.closed')}
             </>
           )}
         </button>

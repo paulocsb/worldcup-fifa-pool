@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { Loader2, RotateCw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/Avatar'
 import { Button } from '@/components/ui/button'
 import { FifaLogo } from '@/components/FifaLogo'
@@ -27,6 +28,7 @@ export function OnboardingPage() {
   const auth = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { t } = useTranslation('onboarding')
 
   const [displayName, setDisplayName] = useState(
     auth.session?.user.email?.split('@')[0] ?? '',
@@ -75,10 +77,10 @@ export function OnboardingPage() {
       <header className="flex flex-col items-center gap-3 text-center">
         <FifaLogo size={80} alt="FIFA World Cup 2026" />
         <h1 className="font-display text-3xl font-black uppercase leading-tight tracking-tight md:text-4xl">
-          Bem-vindo ao bolão
+          {t('title')}
         </h1>
         <p className="text-balance text-muted-foreground">
-          Escolha como vai aparecer no ranking.
+          {t('subtitle')}
         </p>
       </header>
 
@@ -89,13 +91,13 @@ export function OnboardingPage() {
       <form onSubmit={handleSubmit} className="mx-auto max-w-sm space-y-5">
         <div className="space-y-2">
           <label htmlFor="display_name" className="text-sm font-medium">
-            Como devemos te chamar?
+            {t('displayNameLabel')}
           </label>
           <Input
             id="display_name"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Seu apelido"
+            placeholder={t('displayNamePlaceholder')}
             maxLength={40}
             autoFocus
           />
@@ -103,7 +105,7 @@ export function OnboardingPage() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Escolha um avatar</span>
+            <span className="text-sm font-medium">{t('avatarLabel')}</span>
             <button
               type="button"
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
@@ -114,7 +116,7 @@ export function OnboardingPage() {
               }}
             >
               <RotateCw className="size-3" />
-              Mais opções
+              {t('moreOptions')}
             </button>
           </div>
           <ul className="grid grid-cols-3 gap-3">
@@ -155,10 +157,10 @@ export function OnboardingPage() {
         >
           {mutation.isPending ? (
             <>
-              <Loader2 className="animate-spin" /> Salvando…
+              <Loader2 className="animate-spin" /> {t('submitting')}
             </>
           ) : (
-            'Entrar no bolão'
+            t('submit')
           )}
         </Button>
       </form>

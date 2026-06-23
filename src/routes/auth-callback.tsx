@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { markAsReturningUser } from '@/lib/inviteStorage'
 
@@ -17,6 +18,8 @@ type State =
 export function AuthCallback() {
   const [params] = useSearchParams()
   const [state, setState] = useState<State>({ kind: 'waiting' })
+  const { t } = useTranslation('auth')
+  const { t: tCommon } = useTranslation('common')
 
   useEffect(() => {
     // Erro vindo na URL (link expirado, código inválido, etc.)
@@ -51,8 +54,7 @@ export function AuthCallback() {
         s.kind === 'waiting'
           ? {
               kind: 'error',
-              message:
-                'Não consegui completar o login. O link pode ter expirado ou já ter sido usado.',
+              message: t('linkExpired'),
             }
           : s,
       )
@@ -68,7 +70,7 @@ export function AuthCallback() {
     return (
       <main className="container flex min-h-svh flex-col items-center justify-center gap-3">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Entrando…</p>
+        <p className="text-sm text-muted-foreground">{t('signingIn')}</p>
       </main>
     )
   }
@@ -80,7 +82,7 @@ export function AuthCallback() {
   return (
     <main className="container flex min-h-svh flex-col items-center justify-center gap-4 py-12">
       <div className="space-y-2 text-center">
-        <h1 className="text-xl font-bold">Não consegui te entrar</h1>
+        <h1 className="text-xl font-bold">{t('signInFailed')}</h1>
         <p className="max-w-sm text-sm text-muted-foreground">
           {state.message}
         </p>
@@ -89,7 +91,7 @@ export function AuthCallback() {
         to="/login"
         className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
       >
-        Tentar de novo
+        {tCommon('retry')}
       </Link>
     </main>
   )

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { FifaLogo } from '@/components/FifaLogo'
 import { TeamFlag } from '@/components/TeamFlag'
 import { AnimatedScore } from '@/components/AnimatedScore'
@@ -41,16 +42,17 @@ function ScoreboardTeam({ team }: { team: Team | null }) {
 
 type Tab = 'events' | 'lineups' | 'stats'
 
-const TAB_LABELS: Record<Tab, string> = {
-  events: 'Eventos',
-  lineups: 'Escalações',
-  stats: 'Estatísticas',
+const TAB_I18N_KEYS: Record<Tab, string> = {
+  events: 'detail.tabs.events',
+  lineups: 'detail.tabs.lineups',
+  stats: 'detail.tabs.stats',
 }
 
 export function MatchDetailPage() {
   const params = useParams<{ id: string }>()
   const matchId = params.id ? Number(params.id) : null
   const [tab, setTab] = useState<Tab>('events')
+  const { t } = useTranslation('matches')
 
   const detail = useMatchDetail(matchId)
   useTriggerMatchDetailSync(matchId)
@@ -128,8 +130,8 @@ export function MatchDetailPage() {
           <FifaLogo size={28} variant="horizontal" />
           <span>
             {m.stage === 'final'
-              ? 'Grande Final'
-              : 'Disputa de 3º lugar'}
+              ? t('detail.finalRibbon')
+              : t('detail.thirdPlaceRibbon')}
           </span>
         </div>
       )}
@@ -163,22 +165,22 @@ export function MatchDetailPage() {
         role="tablist"
         className="-mx-4 flex gap-1 overflow-x-auto border-b border-border px-4"
       >
-        {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
+        {(Object.keys(TAB_I18N_KEYS) as Tab[]).map((tabKey) => (
           <button
-            key={t}
+            key={tabKey}
             type="button"
             role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
+            aria-selected={tab === tabKey}
+            onClick={() => setTab(tabKey)}
             className={cn(
               'relative whitespace-nowrap px-4 pb-2.5 pt-1.5 text-sm font-medium transition-colors',
-              tab === t
+              tab === tabKey
                 ? 'text-foreground'
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            {TAB_LABELS[t]}
-            {tab === t && (
+            {t(TAB_I18N_KEYS[tabKey])}
+            {tab === tabKey && (
               <span
                 aria-hidden
                 className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-primary animate-float-in"

@@ -9,6 +9,7 @@ import {
   Trophy,
   Zap,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useOpenPendingMatchesCount } from '@/routes/quick-predict'
 import { Avatar } from '@/components/Avatar'
 import { FifaLogo } from '@/components/FifaLogo'
@@ -46,6 +47,8 @@ export function HomePage() {
   const groupLocks = useGroupLocks()
   const pendingCount = useOpenPendingMatchesCount()
   const [active, setActive] = useState<MatchWithTeams | null>(null)
+  const { t } = useTranslation('home')
+  const { t: tRanking } = useTranslation('ranking')
 
   useRealtimeInvalidator({
     tables: ['matches', 'scores'],
@@ -109,7 +112,7 @@ export function HomePage() {
           )}
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Olá
+              {t('hello')}
             </p>
             <h1 className="font-display truncate text-3xl font-black uppercase tracking-tight">
               {profile.data?.display_name ?? '—'}
@@ -129,13 +132,13 @@ export function HomePage() {
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Sua posição
+              {t('yourPosition')}
             </p>
             <p className="font-display text-lg font-bold">
               {myPosition ? `${myPosition}º` : '—'}
               {myRow && (
                 <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
-                  {myRow.total_points} pts
+                  {myRow.total_points} {tRanking('pts')}
                 </span>
               )}
             </p>
@@ -159,11 +162,10 @@ export function HomePage() {
             </div>
             <div className="min-w-0">
               <p className="text-xs uppercase tracking-wider text-primary">
-                Modo rápido
+                {t('quickPredict')}
               </p>
               <p className="font-display text-lg font-black uppercase tracking-tight">
-                {pendingCount} palpite{pendingCount === 1 ? '' : 's'} pendente
-                {pendingCount === 1 ? '' : 's'}
+                {t('pendingCount', { count: pendingCount })}
               </p>
             </div>
           </div>
@@ -181,7 +183,7 @@ export function HomePage() {
           </div>
           <div className="min-w-0">
             <p className="text-xs uppercase text-muted-foreground">
-              Palpite do torneio
+              {t('tournamentPrediction')}
             </p>
             {championTeam ? (
               <div className="flex items-center gap-2">
@@ -196,8 +198,8 @@ export function HomePage() {
             ) : (
               <p className="text-sm font-semibold">
                 {tournamentLock.data?.open
-                  ? 'Aposte seu campeão'
-                  : 'Encerrado'}
+                  ? t('betChampion')
+                  : t('closed')}
               </p>
             )}
           </div>
@@ -215,13 +217,14 @@ export function HomePage() {
           </div>
           <div className="min-w-0">
             <p className="text-xs uppercase text-muted-foreground">
-              Palpites por grupo
+              {t('groupPredictions')}
             </p>
             <p className="text-sm font-semibold">
-              {groupSummary.saved}/{groupSummary.total} salvos
-              <span className="ml-2 text-xs font-normal text-muted-foreground">
-                · {groupSummary.open} abertos
-              </span>
+              {t('groupSummary', {
+                saved: groupSummary.saved,
+                total: groupSummary.total,
+                open: groupSummary.open,
+              })}
             </p>
           </div>
         </div>
@@ -231,7 +234,7 @@ export function HomePage() {
       {live.length > 0 && (
         <div className="space-y-3">
           <SectionHeader
-            title="Ao vivo agora"
+            title={t('liveNow')}
             tone="destructive"
             icon={<Radio className="size-4" />}
           />
@@ -251,10 +254,10 @@ export function HomePage() {
 
       <div className="space-y-3">
         <SectionHeader
-          title="Próximos jogos"
+          title={t('nextMatches')}
           trailing={
             <Link to="/matches" className="text-primary hover:underline">
-              Ver todos
+              {t('viewAll')}
             </Link>
           }
         />
@@ -264,7 +267,7 @@ export function HomePage() {
           </div>
         ) : upcoming.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            Sem jogos agendados.
+            {t('noNextMatches')}
           </p>
         ) : (
           <ul className="space-y-3">

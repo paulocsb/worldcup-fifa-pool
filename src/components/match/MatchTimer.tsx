@@ -1,25 +1,13 @@
+import { useTranslation } from 'react-i18next'
 import type { Match } from '@/types/db'
 import { cn } from '@/lib/utils'
-
-function liveLabel(
-  short: string | null,
-  elapsed: number | null,
-  extra: number | null,
-): string {
-  if (short === 'HT' || short === 'INT' || short === 'BT') return 'Intervalo'
-  if (short === 'P') return 'Pênaltis'
-  if (short === 'SUSP') return 'Suspenso'
-  if (elapsed != null) {
-    return extra != null && extra > 0 ? `${elapsed}+${extra}'` : `${elapsed}'`
-  }
-  return 'Ao vivo'
-}
 
 /**
  * Indicador central do tempo de jogo no scoreboard da match-detail.
  *
  *  - LIVE: pílula vermelha pulsante com tempo (67'), intervalo, pênaltis, etc.
  *  - FINISHED: "FINAL" em destaque, indica encerramento.
+ *  - POSTPONED/SUSPENDED: pílula âmbar.
  *  - SCHEDULED/CANCELLED: não renderiza nada (info já está no PageHeader).
  */
 export function MatchTimer({
@@ -33,12 +21,24 @@ export function MatchTimer({
     | 'live_status_short'
   >
 }) {
+  const { t } = useTranslation('matches')
+
   if (match.status === 'live') {
-    const label = liveLabel(
-      match.live_status_short,
-      match.elapsed_minutes,
-      match.elapsed_extra_minutes,
-    )
+    const short = match.live_status_short
+    const elapsed = match.elapsed_minutes
+    const extra = match.elapsed_extra_minutes
+    const label =
+      short === 'HT' || short === 'INT' || short === 'BT'
+        ? t('status.halftime')
+        : short === 'P'
+          ? t('status.penalties')
+          : short === 'SUSP'
+            ? t('status.suspended')
+            : elapsed != null
+              ? extra != null && extra > 0
+                ? `${elapsed}+${extra}'`
+                : `${elapsed}'`
+              : t('status.live')
     const isMinute = /^\d+(\+\d+)?'$/.test(label)
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
@@ -56,14 +56,16 @@ export function MatchTimer({
   if (match.status === 'finished') {
     return (
       <span className="font-display inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground">
-        Final
+        {t('status.final')}
       </span>
     )
   }
 
   if (match.status === 'postponed') {
-    // Mid-match suspension shows "Suspenso"; pre-kickoff postponement shows "Adiado".
-    const label = match.live_status_short === 'SUSP' ? 'Suspenso' : 'Adiado'
+    const label =
+      match.live_status_short === 'SUSP'
+        ? t('status.suspended')
+        : t('status.postponed')
     return (
       <span className="font-display inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-[0.12em] text-amber-500">
         {label}

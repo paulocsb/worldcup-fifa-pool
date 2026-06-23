@@ -45,5 +45,42 @@
   "partial": "Parcial",
   "startsAt": "Início",
   "postponedWaitingDate": "Adiada · aguardando nova data",
-  "suspendedWaiting": "Suspenso · aguardando retomada"
+  "suspendedWaiting": "Suspenso · aguardando retomada",
+  "myPrediction": {
+    "label": "Meu palpite",
+    "earnedPoints_one": "+{{count}} pt",
+    "earnedPoints_other": "+{{count}} pts",
+    "zeroPoints_one": "{{count}} pt",
+    "zeroPoints_other": "{{count}} pts",
+    "noScoring": "Não pontua",
+    "waiting": "Aguardando",
+    "live": "Ao vivo"
+  },
+  "mePage": {
+    "title": "Meus palpites",
+    "subtitle": "Histórico de palpites e pontos ganhos",
+    "publicSubtitle": "Visíveis quando o palpite da partida estiver encerrado",
+    "summaryPoints": "pontos",
+    "summaryPredictions": "palpites",
+    "summaryExacts": "cravados",
+    "tabs": {
+      "matches": "Partidas",
+      "groups": "Grupos",
+      "tournament": "Torneio"
+    },
+    "noMatchPalpites": "Você ainda não fez nenhum palpite de partida.",
+    "noMatchPalpitesPublic": "Nenhum palpite visível ainda — só aparece quando a janela de palpitar daquela partida fecha.",
+    "noGroupPalpites": "Você ainda não palpitou nenhum grupo.",
+    "noGroupPalpitesPublic": "Nenhum palpite de grupo visível — só aparece quando aquele grupo trava.",
+    "noTournamentPalpite": "Você ainda não palpitou campeão, vice e 3º lugar.",
+    "noTournamentPalpitePublic": "Sem palpite de torneio.",
+    "tournamentLockedSubtitle": "Visível depois que a fase de grupos terminar.",
+    "live": "Ao vivo",
+    "finished": "Finalizados",
+    "waitingSection": "Aguardando",
+    "champion": "Campeão",
+    "runnerUp": "Vice-campeão",
+    "thirdPlace": "3º lugar",
+    "tournamentTotal": "Total do palpite de torneio"
+  }
 }

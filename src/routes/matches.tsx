@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Radio } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { MatchCard } from '@/components/MatchCard'
 import { MatchCardSkeleton } from '@/components/MatchCardSkeleton'
 import { PageHeader } from '@/components/PageHeader'
@@ -15,13 +16,6 @@ import type { Prediction } from '@/types/db'
 
 type Filter = 'upcoming' | 'today' | 'finished' | 'all'
 
-const filterLabels: Record<Filter, string> = {
-  upcoming: 'Próximos',
-  today: 'Hoje',
-  finished: 'Encerrados',
-  all: 'Todos',
-}
-
 function isSameDay(a: Date, b: Date) {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -31,6 +25,13 @@ function isSameDay(a: Date, b: Date) {
 }
 
 export function MatchesPage() {
+  const { t } = useTranslation('matches')
+  const filterLabels: Record<Filter, string> = {
+    upcoming: t('filters.upcoming'),
+    today: t('filters.today'),
+    finished: t('filters.finished'),
+    all: t('filters.all'),
+  }
   const auth = useAuth()
   const matches = useMatches()
   const predictions = useMyPredictions(auth.session?.user.id)
@@ -89,7 +90,7 @@ export function MatchesPage() {
 
   return (
     <section className="container space-y-4 py-4">
-      <PageHeader title="Jogos" />
+      <PageHeader title={t('pageTitle')} />
 
       <nav role="tablist" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           {(Object.keys(filterLabels) as Filter[]).map((f) => (
@@ -121,18 +122,18 @@ export function MatchesPage() {
         </ul>
       ) : matches.isError ? (
         <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
-          Erro ao carregar jogos: {(matches.error as Error).message}
+          {t('loadError', { message: (matches.error as Error).message })}
         </p>
       ) : filtered.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
-          Nenhum jogo neste filtro.
+          {t('noneMatching')}
         </p>
       ) : (
         <div className="space-y-6">
           {live.length > 0 && (
             <section className="space-y-3">
               <SectionHeader
-                title="Ao vivo agora"
+                title={t('liveNow')}
                 tone="destructive"
                 icon={<Radio className="size-4" />}
               />
@@ -154,7 +155,7 @@ export function MatchesPage() {
             <section key={key} className="space-y-3">
               <SectionHeader
                 title={label}
-                trailing={`${dayMatches.length} jogo${dayMatches.length === 1 ? '' : 's'}`}
+                trailing={t('matchesCount', { count: dayMatches.length })}
                 sticky
               />
               <ul className="space-y-3">

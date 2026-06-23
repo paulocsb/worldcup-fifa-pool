@@ -1,14 +1,17 @@
 {
+  "hello": "Hi",
   "yourPosition": "Your position",
   "noScoreYet": "No points yet",
-  "points_one": "{{count}} point",
-  "points_other": "{{count}} points",
   "nextMatches": "Upcoming matches",
-  "noNextMatches": "No upcoming matches.",
+  "noNextMatches": "No scheduled matches.",
   "viewAll": "View all",
   "groupPredictions": "Group predictions",
+  "groupSummary": "{{saved}}/{{total}} saved · {{open}} open",
   "tournamentPrediction": "Tournament prediction",
-  "tournamentPredictionHint": "Who wins, runs up and finishes 3rd?",
+  "betChampion": "Pick your champion",
+  "closed": "Closed",
   "quickPredict": "Quick predict",
-  "quickPredictHint": "Predict many matches in a row"
+  "pendingCount_one": "{{count}} pending prediction",
+  "pendingCount_other": "{{count}} pending predictions",
+  "liveNow": "Live now"
 }

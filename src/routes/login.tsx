@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { Loader2, Lock, Mail } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { FifaLogo } from '@/components/FifaLogo'
 import { Input } from '@/components/ui/input'
@@ -12,8 +13,6 @@ import {
   readStoredInvite,
   storeInvite,
 } from '@/lib/inviteStorage'
-
-const emailSchema = z.string().email('Digite um email válido')
 
 type State =
   | { kind: 'idle' }
@@ -33,6 +32,8 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<State>({ kind: 'idle' })
   const [invite, setInvite] = useState<InviteState>({ kind: 'checking' })
+  const { t } = useTranslation('auth')
+  const emailSchema = z.string().email(t('invalidEmail'))
 
   const urlInvite = params.get('invite')?.trim() ?? ''
 
@@ -113,11 +114,11 @@ export function LoginPage() {
         <FifaLogo size={140} alt="FIFA World Cup 2026" />
         <div className="space-y-2">
           <h1 className="font-display text-3xl font-black uppercase tracking-tight">
-            Bolão
+            {t('title')}
           </h1>
           {invite.kind === 'valid' && (
             <p className="max-w-sm text-balance text-muted-foreground">
-              Entre com seu email — enviamos um link mágico, sem senha.
+              {t('subtitle')}
             </p>
           )}
         </div>
@@ -136,16 +137,20 @@ export function LoginPage() {
           {state.kind === 'sent' ? (
             <div className="glass w-full max-w-sm space-y-3 rounded-2xl p-6 text-center shadow-sm animate-float-in">
               <Mail className="mx-auto size-8 text-primary" />
-              <h2 className="font-semibold">Link enviado</h2>
-              <p className="text-sm text-muted-foreground">
-                Abra o link em <strong>{state.email}</strong> para entrar.
-              </p>
+              <h2 className="font-semibold">{t('linkSent')}</h2>
+              <p
+                className="text-sm text-muted-foreground"
+                /* dangerouslySetInnerHTML to preserve <strong> from translation */
+                dangerouslySetInnerHTML={{
+                  __html: t('openLinkAt', { email: state.email }),
+                }}
+              />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setState({ kind: 'idle' })}
               >
-                Usar outro email
+                {t('useOtherEmail')}
               </Button>
             </div>
           ) : (
@@ -158,7 +163,7 @@ export function LoginPage() {
                 type="email"
                 inputMode="email"
                 autoComplete="email"
-                placeholder="seu@email.com"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={state.kind === 'sending'}
@@ -173,10 +178,10 @@ export function LoginPage() {
               >
                 {state.kind === 'sending' ? (
                   <>
-                    <Loader2 className="animate-spin" /> Enviando…
+                    <Loader2 className="animate-spin" /> {t('sending')}
                   </>
                 ) : (
-                  'Enviar link mágico'
+                  t('sendMagicLink')
                 )}
               </Button>
               {state.kind === 'error' && (
@@ -202,6 +207,7 @@ function PrivateBolaoMessage({
   variant: 'missing' | 'invalid'
   code: string
 }) {
+  const { t } = useTranslation('auth')
   return (
     <div className="glass w-full max-w-sm space-y-4 rounded-2xl p-6 text-center shadow-sm animate-float-in">
       <div className="mx-auto grid size-12 place-items-center rounded-full bg-muted text-muted-foreground">
@@ -209,12 +215,12 @@ function PrivateBolaoMessage({
       </div>
       <div className="space-y-2">
         <h2 className="font-display text-xl font-black uppercase tracking-tight">
-          Bolão privado
+          {t('privateLobbyTitle')}
         </h2>
         <p className="text-sm text-muted-foreground">
           {variant === 'missing'
-            ? 'O acesso é somente por link de convite. Peça o link ao admin do bolão.'
-            : `O convite "${code}" não é válido ou já foi esgotado. Peça um novo ao admin.`}
+            ? t('privateLobbyMissing')
+            : t('privateLobbyInvalid', { code })}
         </p>
       </div>
     </div>

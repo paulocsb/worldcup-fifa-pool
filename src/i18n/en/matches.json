@@ -45,5 +45,42 @@
   "partial": "Partial",
   "startsAt": "Kickoff",
   "postponedWaitingDate": "Postponed · awaiting new date",
-  "suspendedWaiting": "Suspended · awaiting resumption"
+  "suspendedWaiting": "Suspended · awaiting resumption",
+  "myPrediction": {
+    "label": "My prediction",
+    "earnedPoints_one": "+{{count}} pt",
+    "earnedPoints_other": "+{{count}} pts",
+    "zeroPoints_one": "{{count}} pt",
+    "zeroPoints_other": "{{count}} pts",
+    "noScoring": "Doesn't score",
+    "waiting": "Waiting",
+    "live": "Live"
+  },
+  "mePage": {
+    "title": "My predictions",
+    "subtitle": "History of predictions and points",
+    "publicSubtitle": "Visible once the match's prediction window has closed",
+    "summaryPoints": "points",
+    "summaryPredictions": "predictions",
+    "summaryExacts": "exact",
+    "tabs": {
+      "matches": "Matches",
+      "groups": "Groups",
+      "tournament": "Tournament"
+    },
+    "noMatchPalpites": "You haven't made any match prediction yet.",
+    "noMatchPalpitesPublic": "No prediction visible yet — appears once the match's window closes.",
+    "noGroupPalpites": "You haven't predicted any group yet.",
+    "noGroupPalpitesPublic": "No group prediction visible — appears once that group locks.",
+    "noTournamentPalpite": "You haven't predicted champion, runner-up, and 3rd yet.",
+    "noTournamentPalpitePublic": "No tournament prediction.",
+    "tournamentLockedSubtitle": "Visible once the group stage ends.",
+    "live": "Live",
+    "finished": "Finished",
+    "waitingSection": "Waiting",
+    "champion": "Champion",
+    "runnerUp": "Runner-up",
+    "thirdPlace": "Third place",
+    "tournamentTotal": "Tournament prediction total"
+  }
 }

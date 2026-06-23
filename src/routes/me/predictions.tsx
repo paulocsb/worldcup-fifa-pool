@@ -30,6 +30,7 @@ import { useTeams } from '@/hooks/useTeams'
 import { useMyScores } from '@/hooks/useMyScores'
 import { useUserStats } from '@/hooks/useUserStats'
 import { useProfile } from '@/hooks/useProfile'
+import { useTranslation } from 'react-i18next'
 import { groupColorToken, PHASE_LABEL_PT } from '@/lib/groupColors'
 import { isPredictionOpen } from '@/lib/matchLock'
 import { AVATAR_STYLE, type AvatarStyle } from '@/lib/dicebear'
@@ -37,12 +38,6 @@ import type { MatchStage, Team } from '@/types/db'
 import { cn } from '@/lib/utils'
 
 type SourceTab = 'match' | 'group' | 'tournament'
-
-const TABS: ReadonlyArray<{ slug: SourceTab; label: string }> = [
-  { slug: 'match', label: 'Partidas' },
-  { slug: 'group', label: 'Grupos' },
-  { slug: 'tournament', label: 'Torneio' },
-] as const
 
 function isSourceTab(value: string | null): value is SourceTab {
   return value === 'match' || value === 'group' || value === 'tournament'
@@ -87,11 +82,18 @@ function UserPredictionsView({
   const stats = useUserStats(userId)
   const scores = useMyScores(userId)
   const matches = useMatches()
+  const { t } = useTranslation('matches')
 
   const [params, setParams] = useSearchParams()
   const tab: SourceTab = isSourceTab(params.get('source'))
     ? (params.get('source') as SourceTab)
     : 'match'
+
+  const TABS_LOCAL: ReadonlyArray<{ slug: SourceTab; label: string }> = [
+    { slug: 'match', label: t('mePage.tabs.matches') },
+    { slug: 'group', label: t('mePage.tabs.groups') },
+    { slug: 'tournament', label: t('mePage.tabs.tournament') },
+  ]
 
   function changeTab(slug: SourceTab) {
     const next = new URLSearchParams(params)
@@ -110,11 +112,11 @@ function UserPredictionsView({
   )
 
   const headerTitle = isPublicView
-    ? profile.data?.display_name ?? 'Palpites'
-    : 'Meus palpites'
+    ? (profile.data?.display_name ?? t('mePage.title'))
+    : t('mePage.title')
   const headerSubtitle = isPublicView
-    ? 'Visíveis quando o palpite da partida estiver encerrado'
-    : 'Histórico de palpites e pontos ganhos'
+    ? t('mePage.publicSubtitle')
+    : t('mePage.subtitle')
 
   return (
     <section className="container space-y-4 py-4">
@@ -139,16 +141,22 @@ function UserPredictionsView({
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-border/60 bg-card/60 px-3 py-2 text-xs">
         <Summary
-          label="pontos"
+          label={t('mePage.summaryPoints')}
           value={stats.data?.total_points ?? scores.data?.total ?? 0}
         />
         <Separator />
-        <Summary label="palpites" value={stats.data?.total_predictions ?? 0} />
+        <Summary
+          label={t('mePage.summaryPredictions')}
+          value={stats.data?.total_predictions ?? 0}
+        />
         <Separator />
-        <Summary label="cravados" value={stats.data?.exact_scores ?? 0} />
+        <Summary
+          label={t('mePage.summaryExacts')}
+          value={stats.data?.exact_scores ?? 0}
+        />
       </div>
 
-      <SubTabs tabs={TABS} active={tab} onChange={changeTab} />
+      <SubTabs tabs={TABS_LOCAL} active={tab} onChange={changeTab} />
 
       {tab === 'match' && (
         <MatchPalpites userId={userId} isPublicView={isPublicView} />
@@ -193,6 +201,7 @@ function MatchPalpites({
   userId: string | undefined
   isPublicView: boolean
 }) {
+  const { t } = useTranslation('matches')
   const matches = useMatches()
   const predictions = useMyPredictions(userId)
   const scores = useMyScores(userId)
@@ -287,8 +296,8 @@ function MatchPalpites({
     return (
       <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
         {isPublicView
-          ? 'Nenhum palpite visível ainda — só aparece quando a janela de palpitar daquela partida fecha.'
-          : 'Você ainda não fez nenhum palpite de partida.'}
+          ? t('mePage.noMatchPalpitesPublic')
+          : t('mePage.noMatchPalpites')}
       </p>
     )
   }
@@ -298,10 +307,10 @@ function MatchPalpites({
       {live.length > 0 && (
         <section className="space-y-2">
           <SectionHeader
-            title="Ao vivo agora"
+            title={t('liveNow')}
             tone="destructive"
             icon={<Radio className="size-4" />}
-            trailing={`${live.length} jogo${live.length === 1 ? '' : 's'}`}
+            trailing={t('matchesCount', { count: live.length })}
           />
           <ul className="space-y-2">
             {live.map((r) => (
@@ -320,10 +329,10 @@ function MatchPalpites({
       {finishedGroups.length > 0 && (
         <section className="space-y-3">
           <SectionHeader
-            title="Finalizados"
+            title={t('mePage.finished')}
             tone="primary"
             icon={<CheckCircle2 className="size-4" />}
-            trailing={`${finishedCount} jogo${finishedCount === 1 ? '' : 's'}`}
+            trailing={t('matchesCount', { count: finishedCount })}
           />
           <div className="space-y-4">
             {finishedGroups.map((g) => (
@@ -351,10 +360,10 @@ function MatchPalpites({
       {scheduledGroups.length > 0 && (
         <section className="space-y-3">
           <SectionHeader
-            title="Aguardando"
+            title={t('mePage.waitingSection')}
             tone="muted"
             icon={<Clock className="size-4" />}
-            trailing={`${scheduledCount} jogo${scheduledCount === 1 ? '' : 's'}`}
+            trailing={t('matchesCount', { count: scheduledCount })}
           />
           <div className="space-y-4">
             {scheduledGroups.map((g) => (
@@ -393,6 +402,7 @@ function GroupPalpites({
   const teams = useTeams()
   const scores = useMyScores(userId)
   const locks = useGroupLocks()
+  const { t } = useTranslation('matches')
 
   if (groupPreds.isPending || teams.isPending) {
     return (
@@ -419,8 +429,8 @@ function GroupPalpites({
     return (
       <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
         {isPublicView
-          ? 'Nenhum palpite de grupo visível — só aparece quando aquele grupo trava.'
-          : 'Você ainda não palpitou nenhum grupo.'}
+          ? t('mePage.noGroupPalpitesPublic')
+          : t('mePage.noGroupPalpites')}
       </p>
     )
   }
@@ -497,6 +507,7 @@ function TournamentPalpite({
   const pred = useTournamentPrediction(userId)
   const teams = useTeams()
   const scores = useMyScores(userId)
+  const { t } = useTranslation('matches')
 
   if (pred.isPending || teams.isPending) {
     return (
@@ -510,7 +521,7 @@ function TournamentPalpite({
   if (isPublicView && tournamentOpen) {
     return (
       <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
-        Visível depois que a fase de grupos terminar.
+        {t('mePage.tournamentLockedSubtitle')}
       </p>
     )
   }
@@ -519,8 +530,8 @@ function TournamentPalpite({
     return (
       <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
         {isPublicView
-          ? 'Sem palpite de torneio.'
-          : 'Você ainda não palpitou campeão, vice e 3º lugar.'}
+          ? t('mePage.noTournamentPalpitePublic')
+          : t('mePage.noTournamentPalpite')}
       </p>
     )
   }
@@ -531,21 +542,21 @@ function TournamentPalpite({
 
   const picks = [
     {
-      title: 'Campeão',
+      title: t('mePage.champion'),
       teamId: pred.data.champion_team_id,
       icon: <Crown className="size-4 text-gold" />,
       tone: 'gold' as const,
       points: breakdown.champion ?? null,
     },
     {
-      title: 'Vice-campeão',
+      title: t('mePage.runnerUp'),
       teamId: pred.data.runner_up_team_id,
       icon: <Award className="size-4 text-muted-foreground" />,
       tone: 'muted' as const,
       points: breakdown.runner_up ?? null,
     },
     {
-      title: '3º lugar',
+      title: t('mePage.thirdPlace'),
       teamId: pred.data.third_place_team_id,
       icon: <Medal className="size-4 text-amber-700" />,
       tone: 'muted' as const,
@@ -589,7 +600,7 @@ function TournamentPalpite({
 
       {score && (
         <li className="flex items-center justify-between rounded-xl border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
-          <span className="font-semibold">Total do palpite de torneio</span>
+          <span className="font-semibold">{t('mePage.tournamentTotal')}</span>
           <span className="font-display text-base font-bold tabular-nums text-primary">
             +{score.points} pts
           </span>
@@ -600,9 +611,12 @@ function TournamentPalpite({
 }
 
 function PointsBadge({ points }: { points: number | null }) {
+  const { t } = useTranslation('matches')
   if (points === null) {
     return (
-      <span className="text-[11px] text-muted-foreground">aguardando</span>
+      <span className="text-[11px] text-muted-foreground">
+        {t('myPrediction.waiting').toLowerCase()}
+      </span>
     )
   }
   const earned = points > 0

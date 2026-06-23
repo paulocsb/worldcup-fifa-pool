@@ -1,14 +1,17 @@
 {
+  "hello": "Olá",
   "yourPosition": "Sua posição",
   "noScoreYet": "Ainda sem pontos",
-  "points_one": "{{count}} ponto",
-  "points_other": "{{count}} pontos",
   "nextMatches": "Próximos jogos",
-  "noNextMatches": "Sem jogos próximos.",
+  "noNextMatches": "Sem jogos agendados.",
   "viewAll": "Ver todos",
   "groupPredictions": "Palpites por grupo",
+  "groupSummary": "{{saved}}/{{total}} salvos · {{open}} abertos",
   "tournamentPrediction": "Palpite do torneio",
-  "tournamentPredictionHint": "Quem é campeão, vice e 3º?",
+  "betChampion": "Aposte seu campeão",
+  "closed": "Encerrado",
   "quickPredict": "Modo rápido",
-  "quickPredictHint": "Palpitar muitos jogos em sequência"
+  "pendingCount_one": "{{count}} palpite pendente",
+  "pendingCount_other": "{{count}} palpites pendentes",
+  "liveNow": "Ao vivo agora"
 }

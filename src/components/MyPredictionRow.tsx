@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Crown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { MatchWithTeams } from '@/hooks/useMatches'
 import type { Prediction, Score } from '@/types/db'
 import { useScoringConfig } from '@/hooks/useScoringConfig'
@@ -33,6 +34,7 @@ interface Props {
 export function MyPredictionRow({ match, prediction, score }: Props) {
   const scoring = useScoringConfig()
   const cutoffMatchday = scoring.data?.group_matchday_start ?? 2
+  const { t } = useTranslation('matches')
 
   const isFinished = match.status === 'finished'
   const isLive = match.status === 'live'
@@ -118,7 +120,7 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
       {showRealScore ? (
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           <span className="uppercase tracking-wider">
-            {isLive ? 'Parcial' : 'Resultado'}
+            {isLive ? t('partial') : t('result')}
           </span>{' '}
           <span
             className={cn(
@@ -136,12 +138,12 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
       ) : isPostponed ? (
         <p className="mt-2 text-center text-[11px] text-amber-500">
           {match.live_status_short === 'SUSP'
-            ? 'Suspenso · aguardando retomada'
-            : 'Adiada · aguardando nova data'}
+            ? t('suspendedWaiting')
+            : t('postponedWaitingDate')}
         </p>
       ) : (
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
-          <span className="uppercase tracking-wider">Início</span>{' '}
+          <span className="uppercase tracking-wider">{t('startsAt')}</span>{' '}
           <span className="font-medium text-foreground/70">
             {kickoffLabel(match.kickoff_at)}
           </span>
@@ -168,6 +170,7 @@ function StatusIndicator({
   postponedShort: string | null
   isFinishedNotScoring: boolean
 }) {
+  const { t } = useTranslation('matches')
   // Ordem de prioridade: ao vivo > adiado/suspenso > pontos > não pontua > aguardando
   if (isLive) {
     return (
@@ -176,12 +179,15 @@ function StatusIndicator({
           <span className="absolute inset-0 animate-ping rounded-full bg-white/80" />
           <span className="relative inline-flex size-1.5 rounded-full bg-white" />
         </span>
-        Ao vivo
+        {t('myPrediction.live')}
       </span>
     )
   }
   if (isPostponed) {
-    const label = postponedShort === 'SUSP' ? 'Suspenso' : 'Adiado'
+    const label =
+      postponedShort === 'SUSP'
+        ? t('status.suspended')
+        : t('status.postponed')
     return (
       <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-500">
         {label}
@@ -199,21 +205,22 @@ function StatusIndicator({
         )}
       >
         {isExact && <Crown className="size-3.5" />}
-        {earned ? '+' : ''}
-        {points} pt{points === 1 ? '' : 's'}
+        {earned
+          ? t('myPrediction.earnedPoints', { count: points })
+          : t('myPrediction.zeroPoints', { count: points })}
       </span>
     )
   }
   if (isFinishedNotScoring) {
     return (
       <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        Não pontua
+        {t('myPrediction.noScoring')}
       </span>
     )
   }
   return (
     <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-      Aguardando
+      {t('myPrediction.waiting')}
     </span>
   )
 }
