@@ -24,6 +24,7 @@ import {
 } from '@/hooks/usePredictions'
 import { isPredictionOpen } from '@/lib/matchLock'
 import { kickoffLabel } from '@/lib/format'
+import { useTeamName } from '@/lib/teamI18n'
 import { venueLabel } from '@/lib/venueCountry'
 import { cn } from '@/lib/utils'
 
@@ -79,6 +80,7 @@ function TeamColumn({
   team: MatchWithTeams['home_team']
   align: 'left' | 'right'
 }) {
+  const name = useTeamName(team)
   return (
     <div
       className={cn(
@@ -91,9 +93,9 @@ function TeamColumn({
         <div className="font-display text-xl font-black uppercase leading-none tracking-tight">
           {team?.code ?? '—'}
         </div>
-        {team?.name && (
+        {team && (
           <div className="mt-1 truncate text-[11px] text-muted-foreground">
-            {team.name}
+            {name}
           </div>
         )}
       </div>

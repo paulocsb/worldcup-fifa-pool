@@ -5,6 +5,7 @@ import type { MatchWithTeams } from '@/hooks/useMatches'
 import type { Prediction, Team } from '@/types/db'
 import { isPredictionOpen } from '@/lib/matchLock'
 import { groupColorToken, phaseColorToken } from '@/lib/groupColors'
+import { useTeamName } from '@/lib/teamI18n'
 import { venueLabel } from '@/lib/venueCountry'
 import { cn } from '@/lib/utils'
 import { TeamFlag } from './TeamFlag'
@@ -30,6 +31,7 @@ function TeamRow({
   showScore: boolean
   isWinner: boolean
 }) {
+  const teamName = useTeamName(team)
   return (
     <div
       className={cn(
@@ -47,9 +49,9 @@ function TeamRow({
         >
           {team?.code ?? '—'}
         </div>
-        {team?.name && (
+        {team && (
           <div className="truncate text-[11px] leading-tight text-muted-foreground">
-            {team.name}
+            {teamName}
           </div>
         )}
       </div>

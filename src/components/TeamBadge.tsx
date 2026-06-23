@@ -1,5 +1,6 @@
 import type { Team } from '@/types/db'
 import { cn } from '@/lib/utils'
+import { useTeamName } from '@/lib/teamI18n'
 import { TeamFlag } from './TeamFlag'
 
 interface TeamBadgeProps {
@@ -19,6 +20,7 @@ export function TeamBadge({
 }: TeamBadgeProps) {
   const flagSize = size === 'sm' ? 28 : 36
   const textSize = size === 'sm' ? 'text-xs' : 'text-sm'
+  const name = useTeamName(team)
   return (
     <div
       className={cn(
@@ -29,7 +31,7 @@ export function TeamBadge({
     >
       <TeamFlag team={team} size={flagSize} />
       <div className={cn('min-w-0 leading-tight', textSize)}>
-        <div className="truncate font-semibold">{team?.name ?? '—'}</div>
+        <div className="truncate font-semibold">{name}</div>
         {showCode && team?.code && (
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
             {team.code}

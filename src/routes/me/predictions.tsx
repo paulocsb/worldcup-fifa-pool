@@ -33,6 +33,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { useTranslation } from 'react-i18next'
 import { groupColorToken, PHASE_LABEL_PT } from '@/lib/groupColors'
 import { isPredictionOpen } from '@/lib/matchLock'
+import { useTeamName } from '@/lib/teamI18n'
 import { AVATAR_STYLE, type AvatarStyle } from '@/lib/dicebear'
 import type { MatchStage, Team } from '@/types/db'
 import { cn } from '@/lib/utils'
@@ -471,20 +472,12 @@ function GroupPalpites({
                 <PointsBadge points={score?.points ?? null} />
               </div>
               <ol className="space-y-1">
-                {order.map((t, idx) => (
-                  <li
-                    key={t.id}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <span className="font-display w-4 text-center text-xs font-bold tabular-nums text-muted-foreground">
-                      {idx + 1}
-                    </span>
-                    <TeamFlag team={t} size={20} />
-                    <span className="font-semibold">{t.code}</span>
-                    <span className="ml-1 truncate text-xs text-muted-foreground">
-                      {t.name}
-                    </span>
-                  </li>
+                {order.map((team, idx) => (
+                  <OrderedTeamRow
+                    key={team.id}
+                    team={team}
+                    position={idx + 1}
+                  />
                 ))}
               </ol>
             </article>
@@ -566,37 +559,16 @@ function TournamentPalpite({
 
   return (
     <ul className="space-y-2">
-      {picks.map((p) => {
-        const team = teamById.get(p.teamId) ?? null
-        return (
-          <li
-            key={p.title}
-            className={cn(
-              'flex items-center gap-3 rounded-xl border bg-card/80 p-3',
-              p.tone === 'gold'
-                ? 'border-gold/60 bg-gold/[0.06]'
-                : 'border-border/60',
-            )}
-          >
-            {p.icon}
-            <div className="min-w-0 flex-1">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                {p.title}
-              </div>
-              <div className="mt-0.5 flex items-center gap-2">
-                <TeamFlag team={team} size={22} />
-                <span className="font-display text-base font-bold uppercase tracking-tight">
-                  {team?.code ?? '—'}
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {team?.name}
-                </span>
-              </div>
-            </div>
-            <PointsBadge points={p.points} />
-          </li>
-        )
-      })}
+      {picks.map((p) => (
+        <TournamentPickRow
+          key={p.title}
+          title={p.title}
+          icon={p.icon}
+          team={teamById.get(p.teamId) ?? null}
+          tone={p.tone}
+          points={p.points}
+        />
+      ))}
 
       {score && (
         <li className="flex items-center justify-between rounded-xl border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
@@ -607,6 +579,69 @@ function TournamentPalpite({
         </li>
       )}
     </ul>
+  )
+}
+
+function TournamentPickRow({
+  title,
+  icon,
+  team,
+  tone,
+  points,
+}: {
+  title: string
+  icon: React.ReactNode
+  team: Team | null
+  tone: 'gold' | 'muted'
+  points: number | null
+}) {
+  const name = useTeamName(team)
+  return (
+    <li
+      className={cn(
+        'flex items-center gap-3 rounded-xl border bg-card/80 p-3',
+        tone === 'gold' ? 'border-gold/60 bg-gold/[0.06]' : 'border-border/60',
+      )}
+    >
+      {icon}
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+          {title}
+        </div>
+        <div className="mt-0.5 flex items-center gap-2">
+          <TeamFlag team={team} size={22} />
+          <span className="font-display text-base font-bold uppercase tracking-tight">
+            {team?.code ?? '—'}
+          </span>
+          <span className="truncate text-xs text-muted-foreground">
+            {name}
+          </span>
+        </div>
+      </div>
+      <PointsBadge points={points} />
+    </li>
+  )
+}
+
+function OrderedTeamRow({
+  team,
+  position,
+}: {
+  team: Team
+  position: number
+}) {
+  const name = useTeamName(team)
+  return (
+    <li className="flex items-center gap-2 text-sm">
+      <span className="font-display w-4 text-center text-xs font-bold tabular-nums text-muted-foreground">
+        {position}
+      </span>
+      <TeamFlag team={team} size={20} />
+      <span className="font-semibold">{team.code}</span>
+      <span className="ml-1 truncate text-xs text-muted-foreground">
+        {name}
+      </span>
+    </li>
   )
 }
 

@@ -20,9 +20,11 @@ import { PHASE_LABEL_PT } from '@/lib/groupColors'
 import { cn } from '@/lib/utils'
 import { kickoffLabel } from '@/lib/format'
 import { venueLabel } from '@/lib/venueCountry'
+import { useTeamName } from '@/lib/teamI18n'
 import type { Team } from '@/types/db'
 
 function ScoreboardTeam({ team }: { team: Team | null }) {
+  const name = useTeamName(team)
   return (
     <div className="flex flex-col items-center gap-2 text-center">
       <TeamFlag team={team} size={64} />
@@ -30,9 +32,9 @@ function ScoreboardTeam({ team }: { team: Team | null }) {
         <div className="font-display truncate text-2xl font-black uppercase leading-none tracking-tight">
           {team?.code ?? '—'}
         </div>
-        {team?.name && (
+        {team && (
           <div className="mt-1 truncate text-[11px] text-muted-foreground">
-            {team.name}
+            {name}
           </div>
         )}
       </div>

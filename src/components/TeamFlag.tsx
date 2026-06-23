@@ -1,4 +1,5 @@
 import type { Team } from '@/types/db'
+import { useTeamName } from '@/lib/teamI18n'
 import { cn } from '@/lib/utils'
 
 interface TeamFlagProps {
@@ -33,6 +34,7 @@ function flagcdnPngUrl(svgUrl: string, target: number): string {
  * o que ultrapassar — é o comportamento que queremos para o círculo.
  */
 export function TeamFlag({ team, size = 32, className }: TeamFlagProps) {
+  const name = useTeamName(team)
   const baseClass =
     'shrink-0 rounded-full ring-1 ring-border/60 shadow-sm bg-muted'
   const style: React.CSSProperties = {
@@ -61,7 +63,7 @@ export function TeamFlag({ team, size = 32, className }: TeamFlagProps) {
   return (
     <div
       role="img"
-      aria-label={team.name}
+      aria-label={name}
       style={{
         ...style,
         backgroundImage: `url("${src}")`,

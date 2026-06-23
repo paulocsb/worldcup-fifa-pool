@@ -30,6 +30,7 @@ import {
   useMyGroupPredictions,
 } from '@/hooks/useGroupPredictions'
 import type { AvatarStyle } from '@/lib/dicebear'
+import { useTeamName } from '@/lib/teamI18n'
 import { useRealtimeInvalidator } from '@/hooks/useRealtimeInvalidator'
 import type { Prediction } from '@/types/db'
 
@@ -58,10 +59,11 @@ export function HomePage() {
   const championTeam = useMemo(
     () =>
       teams.data?.find(
-        (t) => t.id === tournamentPrediction.data?.champion_team_id,
+        (team) => team.id === tournamentPrediction.data?.champion_team_id,
       ) ?? null,
     [teams.data, tournamentPrediction.data],
   )
+  const championName = useTeamName(championTeam)
 
   const groupSummary = useMemo(() => {
     const savedSet = new Set(
@@ -192,7 +194,7 @@ export function HomePage() {
                   {championTeam.code}
                 </span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {championTeam.name}
+                  {championName}
                 </span>
               </div>
             ) : (

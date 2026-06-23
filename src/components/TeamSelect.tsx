@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { Team } from '@/types/db'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
+import { teamNameFor, useTeamName } from '@/lib/teamI18n'
 import { TeamBadge } from './TeamBadge'
 import { TeamFlag } from './TeamFlag'
 
@@ -12,6 +13,7 @@ import { TeamFlag } from './TeamFlag'
  * Mostra flag + sigla em font-display + nome em subtítulo. Estilo "FIFA".
  */
 function SelectedTeamLabel({ team }: { team: Team }) {
+  const name = useTeamName(team)
   return (
     <div className="flex min-w-0 items-center gap-2.5">
       <TeamFlag team={team} size={28} />
@@ -19,7 +21,7 @@ function SelectedTeamLabel({ team }: { team: Team }) {
         {team.code}
       </span>
       <span className="truncate text-xs text-muted-foreground">
-        {team.name}
+        {name}
       </span>
     </div>
   )
@@ -58,17 +60,20 @@ export function TeamSelect({
     [teams, value],
   )
 
+  const groupLabel = t('group').toLowerCase()
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return teams.filter((t) => {
+    return teams.filter((team) => {
       if (!q) return true
+      const enName = teamNameFor(team, 'en').toLowerCase()
       return (
-        t.name.toLowerCase().includes(q) ||
-        t.code.toLowerCase().includes(q) ||
-        `grupo ${t.group_letter.toLowerCase()}`.includes(q)
+        team.name.toLowerCase().includes(q) ||
+        enName.includes(q) ||
+        team.code.toLowerCase().includes(q) ||
+        `${groupLabel} ${team.group_letter.toLowerCase()}`.includes(q)
       )
     })
-  }, [teams, query])
+  }, [teams, query, groupLabel])
 
   return (
     <>
