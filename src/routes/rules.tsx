@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Trophy,
 } from 'lucide-react'
+import { useTranslation, Trans } from 'react-i18next'
 import { FifaLogo } from '@/components/FifaLogo'
 import { PageHeader } from '@/components/PageHeader'
 import { PositionBadge } from '@/components/PositionBadge'
@@ -34,6 +35,7 @@ function RuleRow({
   points: number
   highlight?: 'gold' | 'silver' | 'bronze' | 'primary'
 }) {
+  const { t } = useTranslation('rules')
   const ptsClass =
     highlight === 'gold'
       ? 'text-gold'
@@ -60,7 +62,7 @@ function RuleRow({
           {points > 0 ? `+${points}` : points}
         </span>
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-          pts
+          {t('pts')}
         </div>
       </div>
     </li>
@@ -77,6 +79,7 @@ function RulesCard({ children }: { children: React.ReactNode }) {
 
 export function RulesPage() {
   const cfg = useScoringConfig()
+  const { t } = useTranslation('rules')
 
   if (cfg.isPending) {
     return (
@@ -89,91 +92,92 @@ export function RulesPage() {
     return (
       <main className="container py-8 text-center">
         <p className="text-sm text-destructive">
-          Erro ao carregar regras: {(cfg.error as Error)?.message ?? '—'}
+          {t('loadError', {
+            message: (cfg.error as Error)?.message ?? '—',
+          })}
         </p>
       </main>
     )
   }
 
   const c = cfg.data
-  const matchdayOrdinal =
-    c.group_matchday_start === 2
-      ? '2ª'
-      : c.group_matchday_start === 3
-        ? '3ª'
-        : `${c.group_matchday_start}ª`
+  // 2ª / 3ª for pt-BR; ordinal English fallback ("2nd"/"3rd")
+  const matchdayOrdinal = (() => {
+    const n = c.group_matchday_start
+    return n === 2 ? '2ª' : n === 3 ? '3ª' : `${n}ª`
+  })()
 
   return (
     <section className="container space-y-6 py-4">
       <PageHeader
-        title="Regras"
-        subtitle="Como ganhar pontos no bolão"
+        title={t('pageTitle')}
+        subtitle={t('pageSubtitle')}
         backTo="/profile"
         trailing={<FifaLogo size={32} variant="horizontal" />}
       />
 
       <section className="space-y-3">
         <SectionHeader
-          title="Palpite de partida"
+          title={t('match.section')}
           tone="primary"
           icon={<Target className="size-4" />}
         />
         <RulesCard>
           <RuleRow
             icon={<Target className="size-5 text-primary" />}
-            title="Placar exato"
-            description="Acertou home × away na mosca"
+            title={t('match.exact')}
+            description={t('match.exactDesc')}
             points={c.match.exact_score}
           />
           <RuleRow
             icon={<Trophy className="size-5 text-muted-foreground" />}
-            title="Resultado correto"
-            description="Vitória do time certo ou empate"
+            title={t('match.result')}
+            description={t('match.resultDesc')}
             points={c.match.correct_result}
           />
           <RuleRow
             icon={<TrendingUp className="size-5 text-muted-foreground" />}
-            title="Saldo de gols correto"
-            description="Diferença de gols igual ao real"
+            title={t('match.goalDiff')}
+            description={t('match.goalDiffDesc')}
             points={c.match.correct_goal_diff_bonus}
           />
         </RulesCard>
         <p className="px-3 text-[11px] text-muted-foreground">
-          Placar exato substitui resultado + saldo. As outras pontuações somam.
+          {t('match.footnote')}
         </p>
       </section>
 
       <section className="space-y-3">
         <SectionHeader
-          title="Classificação dos grupos"
+          title={t('group.section')}
           tone="primary"
           icon={<Star className="size-4" />}
         />
         <RulesCard>
           <RuleRow
             icon={<span className="font-display text-lg font-black">1º</span>}
-            title="1º colocado correto"
+            title={t('group.first')}
             points={c.group.first}
           />
           <RuleRow
             icon={<span className="font-display text-lg font-black">2º</span>}
-            title="2º colocado correto"
+            title={t('group.second')}
             points={c.group.second}
           />
           <RuleRow
             icon={<span className="font-display text-lg font-black">3º</span>}
-            title="3º colocado correto"
+            title={t('group.third')}
             points={c.group.third}
           />
           <RuleRow
             icon={<span className="font-display text-lg font-black">4º</span>}
-            title="4º colocado correto"
+            title={t('group.fourth')}
             points={c.group.fourth}
           />
           <RuleRow
             icon={<Star className="size-5 text-primary" />}
-            title="Bônus 32-avos"
-            description="Por cada time correto entre os 32 classificados"
+            title={t('group.qualifierBonus')}
+            description={t('group.qualifierBonusDesc')}
             points={c.group.qualifier_bonus_per_team}
           />
         </RulesCard>
@@ -181,26 +185,26 @@ export function RulesPage() {
 
       <section className="space-y-3">
         <SectionHeader
-          title="Palpite do torneio"
+          title={t('tournament.section')}
           tone="gold"
           icon={<Crown className="size-4" />}
         />
         <RulesCard>
           <RuleRow
             icon={<PositionBadge position="gold" variant="icon-only" />}
-            title="Campeão"
+            title={t('tournament.champion')}
             points={c.tournament.champion}
             highlight="gold"
           />
           <RuleRow
             icon={<PositionBadge position="silver" variant="icon-only" />}
-            title="Vice-campeão"
+            title={t('tournament.runnerUp')}
             points={c.tournament.runner_up}
             highlight="silver"
           />
           <RuleRow
             icon={<PositionBadge position="bronze" variant="icon-only" />}
-            title="Terceiro lugar"
+            title={t('tournament.thirdPlace')}
             points={c.tournament.third_place}
             highlight="bronze"
           />
@@ -209,7 +213,7 @@ export function RulesPage() {
 
       <section className="space-y-3">
         <SectionHeader
-          title="Como funciona"
+          title={t('how.section')}
           tone="muted"
           icon={<Info className="size-4" />}
         />
@@ -217,41 +221,54 @@ export function RulesPage() {
           <div className="flex items-start gap-2">
             <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <p>
-              <strong>Palpites travam {c.lock_minutes} minutos</strong> antes do
-              apito inicial. Você pode editar até esse momento.
+              <Trans
+                ns="rules"
+                i18nKey="how.lockMatch"
+                values={{ minutes: c.lock_minutes }}
+                components={{ 0: <strong /> }}
+              />
             </p>
           </div>
           <div className="flex items-start gap-2">
             <Medal className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <p>
-              <strong>Palpite do torneio</strong> pode ser feito ou alterado{' '}
-              <strong>até o fim da fase de grupos</strong> (último jogo do
-              grupo).
+              <Trans
+                ns="rules"
+                i18nKey="how.lockTournament"
+                components={{ 0: <strong /> }}
+              />
             </p>
           </div>
           <div className="flex items-start gap-2">
             <Award className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <p>
-              <strong>Palpite por grupo</strong> trava{' '}
-              {c.lock_minutes} minutos antes do primeiro jogo da{' '}
-              <strong>última rodada</strong> daquele grupo (os 2 jogos da MD3
-              acontecem ao mesmo tempo, então o lock pega ambos).
+              <Trans
+                ns="rules"
+                i18nKey="how.lockGroup"
+                values={{ minutes: c.lock_minutes }}
+                components={{ 0: <strong /> }}
+              />
             </p>
           </div>
           <div className="flex items-start gap-2">
             <Calendar className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <p>
-              <strong>Pontuação começa na {matchdayOrdinal} rodada</strong> da
-              fase de grupos. Os jogos da 1ª rodada acontecem antes do bolão
-              valer pra todos (regra de equidade — o app entrou no ar com a
-              Copa em andamento).
+              <Trans
+                ns="rules"
+                i18nKey="how.scoringStart"
+                values={{ matchday: matchdayOrdinal }}
+                components={{ 0: <strong /> }}
+              />
             </p>
           </div>
           <div className="flex items-start gap-2">
             <TrendingUp className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <p>
-              <strong>Ranking</strong> atualiza automaticamente assim que cada
-              partida termina.
+              <Trans
+                ns="rules"
+                i18nKey="how.ranking"
+                components={{ 0: <strong /> }}
+              />
             </p>
           </div>
         </div>

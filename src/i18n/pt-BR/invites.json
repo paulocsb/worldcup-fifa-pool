@@ -1,0 +1,44 @@
+{
+  "pageTitle": "Convites",
+  "pageSubtitle": "Gerencie quem pode entrar no bolão",
+  "adminBadge": "Admin",
+  "create": {
+    "section": "Criar convite",
+    "codeLabel": "Código",
+    "codePlaceholder": "ex: amigos2026",
+    "randomAria": "Gerar código aleatório",
+    "urlPreview": "Aparece na URL:",
+    "descLabel": "Descrição (opcional)",
+    "descPlaceholder": "Ex: Grupo WhatsApp · João",
+    "maxUsesLabel": "Usos máximos",
+    "expiresLabel": "Expira",
+    "expiresNever": "Nunca",
+    "expires7d": "7d",
+    "expires30d": "30d",
+    "expires90d": "90d",
+    "codeTooShort": "Código deve ter ao menos 4 caracteres",
+    "submit": "Criar convite",
+    "submitting": "Criando…"
+  },
+  "list": {
+    "section": "Convites existentes",
+    "totalCount": "{{count}} total",
+    "empty": "Nenhum convite criado. Crie o primeiro acima.",
+    "usesLabel_one": "{{count}} uso",
+    "usesLabel_other": "{{count}} usos",
+    "usesOfMax": "{{used}} / {{max}} usos",
+    "unlimited": "∞",
+    "expiresAt": "expira {{date}}",
+    "copyLink": "Link",
+    "copied": "Copiado",
+    "copyAria": "Copiar link {{code}}",
+    "deleteAria": "Apagar convite {{code}}",
+    "deleteConfirm": "Apagar convite \"{{code}}\"? Usuários já criados continuam, mas o link deixa de funcionar."
+  },
+  "status": {
+    "active": "Ativo",
+    "inUse": "Em uso",
+    "expired": "Expirado",
+    "exhausted": "Esgotado"
+  }
+}

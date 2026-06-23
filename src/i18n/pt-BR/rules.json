@@ -1,0 +1,39 @@
+{
+  "pageTitle": "Regras",
+  "pageSubtitle": "Como ganhar pontos no bolão",
+  "loadError": "Erro ao carregar regras: {{message}}",
+  "pts": "pts",
+  "match": {
+    "section": "Palpite de partida",
+    "exact": "Placar exato",
+    "exactDesc": "Acertou home × away na mosca",
+    "result": "Resultado correto",
+    "resultDesc": "Vitória do time certo ou empate",
+    "goalDiff": "Saldo de gols correto",
+    "goalDiffDesc": "Diferença de gols igual ao real",
+    "footnote": "Placar exato substitui resultado + saldo. As outras pontuações somam."
+  },
+  "group": {
+    "section": "Classificação dos grupos",
+    "first": "1º colocado correto",
+    "second": "2º colocado correto",
+    "third": "3º colocado correto",
+    "fourth": "4º colocado correto",
+    "qualifierBonus": "Bônus 32-avos",
+    "qualifierBonusDesc": "Por cada time correto entre os 32 classificados"
+  },
+  "tournament": {
+    "section": "Palpite do torneio",
+    "champion": "Campeão",
+    "runnerUp": "Vice-campeão",
+    "thirdPlace": "Terceiro lugar"
+  },
+  "how": {
+    "section": "Como funciona",
+    "lockMatch": "<0>Palpites travam {{minutes}} minutos</0> antes do apito inicial. Você pode editar até esse momento.",
+    "lockTournament": "<0>Palpite do torneio</0> pode ser feito ou alterado <0>até o fim da fase de grupos</0> (último jogo do grupo).",
+    "lockGroup": "<0>Palpite por grupo</0> trava {{minutes}} minutos antes do primeiro jogo da <0>última rodada</0> daquele grupo (os 2 jogos da MD3 acontecem ao mesmo tempo, então o lock pega ambos).",
+    "scoringStart": "<0>Pontuação começa na {{matchday}} rodada</0> da fase de grupos. Os jogos da 1ª rodada acontecem antes do bolão valer pra todos (regra de equidade — o app entrou no ar com a Copa em andamento).",
+    "ranking": "<0>Ranking</0> atualiza automaticamente assim que cada partida termina."
+  }
+}

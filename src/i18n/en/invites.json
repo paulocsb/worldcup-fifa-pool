@@ -1,0 +1,44 @@
+{
+  "pageTitle": "Invites",
+  "pageSubtitle": "Manage who can join the pool",
+  "adminBadge": "Admin",
+  "create": {
+    "section": "Create invite",
+    "codeLabel": "Code",
+    "codePlaceholder": "e.g. friends2026",
+    "randomAria": "Generate random code",
+    "urlPreview": "Appears in the URL:",
+    "descLabel": "Description (optional)",
+    "descPlaceholder": "E.g. WhatsApp group · João",
+    "maxUsesLabel": "Max uses",
+    "expiresLabel": "Expires",
+    "expiresNever": "Never",
+    "expires7d": "7d",
+    "expires30d": "30d",
+    "expires90d": "90d",
+    "codeTooShort": "Code must be at least 4 characters",
+    "submit": "Create invite",
+    "submitting": "Creating…"
+  },
+  "list": {
+    "section": "Existing invites",
+    "totalCount": "{{count}} total",
+    "empty": "No invites yet. Create the first one above.",
+    "usesLabel_one": "{{count}} use",
+    "usesLabel_other": "{{count}} uses",
+    "usesOfMax": "{{used}} / {{max}} uses",
+    "unlimited": "∞",
+    "expiresAt": "expires {{date}}",
+    "copyLink": "Link",
+    "copied": "Copied",
+    "copyAria": "Copy link for {{code}}",
+    "deleteAria": "Delete invite {{code}}",
+    "deleteConfirm": "Delete invite \"{{code}}\"? Existing users keep working, but the link stops accepting new signups."
+  },
+  "status": {
+    "active": "Active",
+    "inUse": "In use",
+    "expired": "Expired",
+    "exhausted": "Exhausted"
+  }
+}

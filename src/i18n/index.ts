@@ -30,6 +30,10 @@ import ptBRPredictions from './pt-BR/predictions.json'
 import enPredictions from './en/predictions.json'
 import ptBRStandings from './pt-BR/standings.json'
 import enStandings from './en/standings.json'
+import ptBRRules from './pt-BR/rules.json'
+import enRules from './en/rules.json'
+import ptBRInvites from './pt-BR/invites.json'
+import enInvites from './en/invites.json'
 
 export const SUPPORTED_LANGUAGES = ['pt-BR', 'en'] as const
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
@@ -47,6 +51,8 @@ const resources = {
     ranking: ptBRRanking,
     predictions: ptBRPredictions,
     standings: ptBRStandings,
+    rules: ptBRRules,
+    invites: ptBRInvites,
   },
   en: {
     common: enCommon,
@@ -58,6 +64,8 @@ const resources = {
     ranking: enRanking,
     predictions: enPredictions,
     standings: enStandings,
+    rules: enRules,
+    invites: enInvites,
   },
 }
 

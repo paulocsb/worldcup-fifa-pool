@@ -1,0 +1,39 @@
+{
+  "pageTitle": "Rules",
+  "pageSubtitle": "How to earn points in the pool",
+  "loadError": "Failed to load rules: {{message}}",
+  "pts": "pts",
+  "match": {
+    "section": "Match prediction",
+    "exact": "Exact score",
+    "exactDesc": "Got home × away spot on",
+    "result": "Correct result",
+    "resultDesc": "Right team wins or correct draw",
+    "goalDiff": "Correct goal difference",
+    "goalDiffDesc": "Goal differential matches the real",
+    "footnote": "Exact score replaces result + goal-diff. Other points stack."
+  },
+  "group": {
+    "section": "Group standings",
+    "first": "Correct 1st place",
+    "second": "Correct 2nd place",
+    "third": "Correct 3rd place",
+    "fourth": "Correct 4th place",
+    "qualifierBonus": "Round-of-32 bonus",
+    "qualifierBonusDesc": "For each team correctly among the 32 qualifiers"
+  },
+  "tournament": {
+    "section": "Tournament prediction",
+    "champion": "Champion",
+    "runnerUp": "Runner-up",
+    "thirdPlace": "Third place"
+  },
+  "how": {
+    "section": "How it works",
+    "lockMatch": "<0>Predictions lock {{minutes}} minutes</0> before kickoff. You can edit until that moment.",
+    "lockTournament": "<0>Tournament prediction</0> can be made or changed <0>until the end of the group stage</0> (last group match).",
+    "lockGroup": "<0>Group prediction</0> locks {{minutes}} minutes before the first match of that group's <0>last round</0> (both MD3 matches kick off simultaneously, so the lock catches both).",
+    "scoringStart": "<0>Scoring starts on matchday {{matchday}}</0> of the group stage. The 1st round happens before the pool counts for everyone (equity rule — the app launched mid-Cup).",
+    "ranking": "<0>Ranking</0> updates automatically as each match ends."
+  }
+}

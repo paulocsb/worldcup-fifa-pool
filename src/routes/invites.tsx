@@ -10,6 +10,7 @@ import {
   Ticket,
   Trash2,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/PageHeader'
@@ -23,28 +24,31 @@ import {
 import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { enUS, ptBR } from 'date-fns/locale'
 import type { Invite } from '@/types/db'
 
 type MaxUsesOption = 1 | 5 | 10 | 25 | null
 type ExpiresOption = 'never' | '7' | '30' | '90'
 
+type StatusTone = 'primary' | 'destructive' | 'muted' | 'gold'
+type StatusKey = 'active' | 'inUse' | 'expired' | 'exhausted'
+
 interface InviteStatus {
-  label: string
-  tone: 'primary' | 'destructive' | 'muted' | 'gold'
+  key: StatusKey
+  tone: StatusTone
 }
 
 function statusOf(invite: Invite): InviteStatus {
   if (invite.expires_at && new Date(invite.expires_at) <= new Date()) {
-    return { label: 'Expirado', tone: 'destructive' }
+    return { key: 'expired', tone: 'destructive' }
   }
   if (invite.max_uses != null && invite.uses_count >= invite.max_uses) {
-    return { label: 'Esgotado', tone: 'muted' }
+    return { key: 'exhausted', tone: 'muted' }
   }
   if (invite.uses_count > 0) {
-    return { label: 'Em uso', tone: 'gold' }
+    return { key: 'inUse', tone: 'gold' }
   }
-  return { label: 'Ativo', tone: 'primary' }
+  return { key: 'active', tone: 'primary' }
 }
 
 function inviteUrl(code: string): string {
@@ -56,6 +60,7 @@ export function InvitesPage() {
   const invites = useInvites()
   const create = useCreateInvite()
   const remove = useDeleteInvite()
+  const { t } = useTranslation('invites')
 
   const [code, setCode] = useState(() => randomInviteCode())
   const [description, setDescription] = useState('')
@@ -88,7 +93,7 @@ export function InvitesPage() {
     setCreateError(null)
     const trimmedCode = code.trim().toLowerCase()
     if (trimmedCode.length < 4) {
-      setCreateError('Código deve ter ao menos 4 caracteres')
+      setCreateError(t('create.codeTooShort'))
       return
     }
     try {
@@ -119,9 +124,7 @@ export function InvitesPage() {
   }
 
   async function handleDelete(c: string) {
-    const ok = window.confirm(
-      `Apagar convite "${c}"? Usuários já criados continuam, mas o link deixa de funcionar.`,
-    )
+    const ok = window.confirm(t('list.deleteConfirm', { code: c }))
     if (!ok) return
     await remove.mutateAsync(c)
   }
@@ -129,27 +132,31 @@ export function InvitesPage() {
   return (
     <section className="container space-y-6 py-4">
       <PageHeader
-        title="Convites"
-        subtitle="Gerencie quem pode entrar no bolão"
+        title={t('pageTitle')}
+        subtitle={t('pageSubtitle')}
         backTo="/profile"
         trailing={
           <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary">
             <Shield className="size-3" />
-            Admin
+            {t('adminBadge')}
           </span>
         }
       />
 
       {/* Formulário de criação */}
       <section className="space-y-3">
-        <SectionHeader title="Criar convite" tone="primary" icon={<Plus className="size-4" />} />
+        <SectionHeader
+          title={t('create.section')}
+          tone="primary"
+          icon={<Plus className="size-4" />}
+        />
         <form
           onSubmit={handleCreate}
           className="space-y-4 rounded-2xl border border-border bg-card/80 p-4 backdrop-blur-sm"
         >
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Código
+              {t('create.codeLabel')}
             </label>
             <div className="flex gap-2">
               <Input
@@ -157,7 +164,7 @@ export function InvitesPage() {
                 onChange={(e) =>
                   setCode(e.target.value.toLowerCase().replace(/\s+/g, ''))
                 }
-                placeholder="ex: amigos2026"
+                placeholder={t('create.codePlaceholder')}
                 maxLength={40}
                 className="font-mono"
                 autoCapitalize="none"
@@ -167,24 +174,25 @@ export function InvitesPage() {
                 variant="outline"
                 size="default"
                 onClick={() => setCode(randomInviteCode())}
-                aria-label="Gerar código aleatório"
+                aria-label={t('create.randomAria')}
               >
                 <RefreshCw className="size-4" />
               </Button>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Aparece na URL: <code className="font-mono">/login?invite={code}</code>
+              {t('create.urlPreview')}{' '}
+              <code className="font-mono">/login?invite={code}</code>
             </p>
           </div>
 
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Descrição (opcional)
+              {t('create.descLabel')}
             </label>
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ex: Grupo WhatsApp · João"
+              placeholder={t('create.descPlaceholder')}
               maxLength={100}
             />
           </div>
@@ -192,7 +200,7 @@ export function InvitesPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Usos máximos
+                {t('create.maxUsesLabel')}
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {([1, 5, 10, 25, null] as MaxUsesOption[]).map((opt) => (
@@ -207,22 +215,22 @@ export function InvitesPage() {
                         : 'border-border bg-card text-muted-foreground hover:text-foreground',
                     )}
                   >
-                    {opt === null ? '∞' : opt}
+                    {opt === null ? t('list.unlimited') : opt}
                   </button>
                 ))}
               </div>
             </div>
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Expira
+                {t('create.expiresLabel')}
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {(
                   [
-                    ['never', 'Nunca'],
-                    ['7', '7d'],
-                    ['30', '30d'],
-                    ['90', '90d'],
+                    ['never', t('create.expiresNever')],
+                    ['7', t('create.expires7d')],
+                    ['30', t('create.expires30d')],
+                    ['90', t('create.expires90d')],
                   ] as Array<[ExpiresOption, string]>
                 ).map(([val, label]) => (
                   <button
@@ -252,11 +260,11 @@ export function InvitesPage() {
           <Button type="submit" size="lg" className="w-full" disabled={create.isPending}>
             {create.isPending ? (
               <>
-                <Loader2 className="animate-spin" /> Criando…
+                <Loader2 className="animate-spin" /> {t('create.submitting')}
               </>
             ) : (
               <>
-                <Plus className="size-4" /> Criar convite
+                <Plus className="size-4" /> {t('create.submit')}
               </>
             )}
           </Button>
@@ -266,11 +274,13 @@ export function InvitesPage() {
       {/* Lista */}
       <section className="space-y-3">
         <SectionHeader
-          title="Convites existentes"
+          title={t('list.section')}
           tone="muted"
           icon={<Ticket className="size-4" />}
           trailing={
-            invites.data ? `${invites.data.length} total` : undefined
+            invites.data
+              ? t('list.totalCount', { count: invites.data.length })
+              : undefined
           }
         />
         {invites.isPending ? (
@@ -279,7 +289,7 @@ export function InvitesPage() {
           </div>
         ) : invites.data?.length === 0 ? (
           <p className="rounded-2xl border border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
-            Nenhum convite criado. Crie o primeiro acima.
+            {t('list.empty')}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -309,11 +319,13 @@ interface InviteRowProps {
 }
 
 function InviteRow({ invite, copied, onCopy, onDelete, deleting }: InviteRowProps) {
+  const { t, i18n } = useTranslation('invites')
   const status = statusOf(invite)
+  const locale = i18n.language?.startsWith('en') ? enUS : ptBR
   const expiresLabel = useMemo(() => {
     if (!invite.expires_at) return null
-    return format(new Date(invite.expires_at), "dd/MM/yy", { locale: ptBR })
-  }, [invite.expires_at])
+    return format(new Date(invite.expires_at), 'dd/MM/yy', { locale })
+  }, [invite.expires_at, locale])
 
   return (
     <li className="relative overflow-hidden rounded-2xl border border-border bg-card/80 p-3 backdrop-blur-sm">
@@ -330,16 +342,15 @@ function InviteRow({ invite, copied, onCopy, onDelete, deleting }: InviteRowProp
           )}
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
             <span>
-              <span className="font-display font-bold tabular-nums text-foreground">
-                {invite.uses_count}
-              </span>
-              {' / '}
-              {invite.max_uses ?? '∞'} usos
+              {t('list.usesOfMax', {
+                used: invite.uses_count,
+                max: invite.max_uses ?? t('list.unlimited'),
+              })}
             </span>
             {expiresLabel && (
               <>
                 <span aria-hidden>·</span>
-                <span>expira {expiresLabel}</span>
+                <span>{t('list.expiresAt', { date: expiresLabel })}</span>
               </>
             )}
           </div>
@@ -348,7 +359,7 @@ function InviteRow({ invite, copied, onCopy, onDelete, deleting }: InviteRowProp
           <button
             type="button"
             onClick={onCopy}
-            aria-label={`Copiar link ${invite.code}`}
+            aria-label={t('list.copyAria', { code: invite.code })}
             className={cn(
               'inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors',
               copied
@@ -358,11 +369,11 @@ function InviteRow({ invite, copied, onCopy, onDelete, deleting }: InviteRowProp
           >
             {copied ? (
               <>
-                <CheckCircle2 className="size-3" /> Copiado
+                <CheckCircle2 className="size-3" /> {t('list.copied')}
               </>
             ) : (
               <>
-                <Copy className="size-3" /> Link
+                <Copy className="size-3" /> {t('list.copyLink')}
               </>
             )}
           </button>
@@ -370,7 +381,7 @@ function InviteRow({ invite, copied, onCopy, onDelete, deleting }: InviteRowProp
             type="button"
             onClick={onDelete}
             disabled={deleting}
-            aria-label={`Apagar convite ${invite.code}`}
+            aria-label={t('list.deleteAria', { code: invite.code })}
             className="grid size-8 place-items-center rounded-lg border border-border bg-card text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
           >
             <Trash2 className="size-3.5" />
@@ -382,6 +393,7 @@ function InviteRow({ invite, copied, onCopy, onDelete, deleting }: InviteRowProp
 }
 
 function StatusPill({ status }: { status: InviteStatus }) {
+  const { t } = useTranslation('invites')
   const cls =
     status.tone === 'primary'
       ? 'bg-primary/10 text-primary'
@@ -397,7 +409,7 @@ function StatusPill({ status }: { status: InviteStatus }) {
         cls,
       )}
     >
-      {status.label}
+      {t(`status.${status.key}`)}
     </span>
   )
 }
