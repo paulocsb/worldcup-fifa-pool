@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import {
   BookOpen,
   ChevronRight,
+  Globe,
   LogOut,
   Monitor,
   Moon,
@@ -11,6 +12,7 @@ import {
   TrendingUp,
   Trophy,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/Avatar'
 import { Button } from '@/components/ui/button'
 import { SectionHeader } from '@/components/SectionHeader'
@@ -19,13 +21,15 @@ import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { useProfile } from '@/hooks/useProfile'
 import { useTheme } from '@/hooks/useTheme'
 import { useUserStats } from '@/hooks/useUserStats'
+import { useUpdateLanguage } from '@/hooks/useLanguage'
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n'
 import type { AvatarStyle } from '@/lib/dicebear'
 import { cn } from '@/lib/utils'
 
 const themeOptions = [
-  { value: 'system' as const, icon: Monitor, label: 'Sistema' },
-  { value: 'light' as const, icon: Sun, label: 'Claro' },
-  { value: 'dark' as const, icon: Moon, label: 'Escuro' },
+  { value: 'system' as const, icon: Monitor, i18nKey: 'theme.system' },
+  { value: 'light' as const, icon: Sun, i18nKey: 'theme.light' },
+  { value: 'dark' as const, icon: Moon, i18nKey: 'theme.dark' },
 ]
 
 function StatCard({
@@ -84,6 +88,8 @@ export function ProfilePage() {
   const stats = useUserStats(auth.session?.user.id)
   const [theme, setTheme] = useTheme()
   const isAdmin = useIsAdmin()
+  const { t, i18n } = useTranslation('profile')
+  const updateLanguage = useUpdateLanguage(auth.session?.user.id)
 
   const accuracy =
     stats.data && stats.data.scored_predictions > 0
@@ -118,38 +124,40 @@ export function ProfilePage() {
       </header>
 
       <section className="space-y-3">
-        <SectionHeader title="Minhas estatísticas" tone="primary" />
+        <SectionHeader title={t('myStats')} tone="primary" />
         <div className="grid grid-cols-2 gap-2">
           <StatCard
             icon={<Trophy className="size-3.5" />}
-            label="Pontos"
+            label={t('stat.points')}
             value={stats.data?.total_points ?? 0}
-            hint={`${stats.data?.scored_predictions ?? 0} palpites contados`}
+            hint={t('stat.pointsHint', {
+              count: stats.data?.scored_predictions ?? 0,
+            })}
           />
           <StatCard
             icon={<Target className="size-3.5" />}
-            label="Placar exato"
+            label={t('stat.exactScores')}
             value={stats.data?.exact_scores ?? 0}
-            hint="palpites cravados"
+            hint={t('stat.exactHint')}
           />
           <StatCard
             icon={<TrendingUp className="size-3.5" />}
-            label="Melhor"
-            value={`${stats.data?.best_score ?? 0} pts`}
-            hint="em uma partida"
+            label={t('stat.best')}
+            value={`${stats.data?.best_score ?? 0} ${t('pts', { ns: 'ranking' })}`}
+            hint={t('stat.bestHint')}
           />
           <StatCard
             icon={<Trophy className="size-3.5" />}
-            label="Total palpites"
+            label={t('stat.totalPredictions')}
             value={stats.data?.total_predictions ?? 0}
-            hint={`${accuracy}% aproveitamento`}
+            hint={t('stat.predictionsHint', { accuracy })}
             to="/me/predictions"
           />
         </div>
       </section>
 
       <section className="space-y-3">
-        <SectionHeader title="Aparência" tone="muted" />
+        <SectionHeader title={t('appearance')} tone="muted" />
         <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border bg-card p-1.5">
           {themeOptions.map((opt) => {
             const Icon = opt.icon
@@ -168,7 +176,36 @@ export function ProfilePage() {
                 aria-pressed={active}
               >
                 <Icon className="size-4" />
-                {opt.label}
+                {t(opt.i18nKey)}
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <SectionHeader title={t('language.label')} tone="muted" />
+        <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-card p-1.5">
+          {SUPPORTED_LANGUAGES.map((lang) => {
+            const active = i18n.language === lang
+            return (
+              <button
+                key={lang}
+                type="button"
+                onClick={() =>
+                  updateLanguage.mutate(lang as SupportedLanguage)
+                }
+                disabled={updateLanguage.isPending}
+                className={cn(
+                  'flex items-center justify-center gap-1.5 rounded-xl px-2 py-3 text-xs font-medium transition-colors',
+                  active
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                )}
+                aria-pressed={active}
+              >
+                <Globe className="size-4" />
+                {t(`language.${lang === 'pt-BR' ? 'ptBR' : 'en'}`)}
               </button>
             )
           })}
@@ -185,9 +222,8 @@ export function ProfilePage() {
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Regras
+              {t('rules')}
             </p>
-            <p className="text-sm font-semibold">Como ganhar pontos</p>
           </div>
         </div>
         <ChevronRight className="size-5 text-muted-foreground" />
@@ -204,9 +240,9 @@ export function ProfilePage() {
             </div>
             <div>
               <p className="text-xs uppercase tracking-wider text-gold">
-                Admin
+                {t('admin')}
               </p>
-              <p className="text-sm font-semibold">Gerenciar convites</p>
+              <p className="text-sm font-semibold">{t('manageInvites')}</p>
             </div>
           </div>
           <ChevronRight className="size-5 text-gold" />
@@ -215,7 +251,7 @@ export function ProfilePage() {
 
       <Button variant="outline" size="lg" className="w-full" onClick={signOut}>
         <LogOut className="size-4" />
-        Sair
+        {t('signOut')}
       </Button>
     </section>
   )

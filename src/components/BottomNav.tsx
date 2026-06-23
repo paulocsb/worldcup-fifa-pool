@@ -1,27 +1,29 @@
 import { NavLink } from 'react-router-dom'
 import { BarChart3, Calendar, Home, Trophy, User } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 type NavItem = {
   to: string
-  label: string
+  labelKey: string
   icon: typeof Home
   end?: boolean
 }
 
 const items: NavItem[] = [
-  { to: '/', label: 'Home', icon: Home, end: true },
-  { to: '/matches', label: 'Jogos', icon: Calendar },
-  { to: '/standings', label: 'Tabelas', icon: BarChart3 },
-  { to: '/ranking', label: 'Ranking', icon: Trophy },
-  { to: '/profile', label: 'Perfil', icon: User },
+  { to: '/', labelKey: 'nav.home', icon: Home, end: true },
+  { to: '/matches', labelKey: 'nav.matches', icon: Calendar },
+  { to: '/standings', labelKey: 'nav.standings', icon: BarChart3 },
+  { to: '/ranking', labelKey: 'nav.ranking', icon: Trophy },
+  { to: '/profile', labelKey: 'nav.profile', icon: User },
 ]
 
 export function BottomNav() {
+  const { t } = useTranslation()
   return (
     <nav className="safe-bottom shrink-0 border-t border-border/60 bg-card/90 backdrop-blur-2xl">
       <ul className="container grid grid-cols-5 gap-0.5 px-1 py-1.5">
-        {items.map(({ to, label, icon: Icon, end }) => (
+        {items.map(({ to, labelKey, icon: Icon, end }) => (
           <li key={to}>
             <NavLink
               to={to}
@@ -50,7 +52,7 @@ export function BottomNav() {
                       isActive && 'scale-110',
                     )}
                   />
-                  <span>{label}</span>
+                  <span>{t(labelKey)}</span>
                 </>
               )}
             </NavLink>

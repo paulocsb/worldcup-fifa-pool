@@ -1,0 +1,12 @@
+{
+  "welcomeTitle": "Welcome to the pool!",
+  "welcomeSubtitle": "Let's set up your profile in a few seconds.",
+  "displayNameLabel": "What should we call you?",
+  "displayNamePlaceholder": "Your name or nickname",
+  "avatarLabel": "Pick your avatar",
+  "avatarShuffle": "Shuffle",
+  "themeLabel": "Theme",
+  "submit": "Enter the pool",
+  "submitting": "Setting up…",
+  "equityNotice": "Heads-up: matches before the next round don't score for anyone — everyone starts together."
+}

@@ -1,0 +1,11 @@
+{
+  "pageTitle": "Ranking",
+  "subtitle": "Pontuação atualizada quando partidas encerram",
+  "empty": "Ninguém no bolão ainda.",
+  "pts": "pts",
+  "tiebreaker": "Desempate:",
+  "exactUnit_one": "cravado",
+  "exactUnit_other": "cravados",
+  "scoredUnit_one": "jogo",
+  "scoredUnit_other": "jogos"
+}

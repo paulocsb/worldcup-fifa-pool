@@ -1,0 +1,31 @@
+{
+  "back": "Back",
+  "save": "Save",
+  "saving": "Saving…",
+  "saved": "Saved",
+  "cancel": "Cancel",
+  "edit": "Edit",
+  "delete": "Delete",
+  "close": "Close",
+  "search": "Search",
+  "loading": "Loading…",
+  "retry": "Try again",
+  "noResults": "Nothing found.",
+  "you": "(you)",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "yesterday": "Yesterday",
+  "yes": "Yes",
+  "no": "No",
+  "nav": {
+    "home": "Home",
+    "matches": "Matches",
+    "standings": "Standings",
+    "ranking": "Ranking",
+    "profile": "Profile"
+  },
+  "errors": {
+    "generic": "Something went wrong.",
+    "load": "Failed to load."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "pageTitle": "Ranking",
+  "subtitle": "Updates as matches finish",
+  "empty": "No one in the pool yet.",
+  "pts": "pts",
+  "tiebreaker": "Tiebreaker:",
+  "exactUnit_one": "exact",
+  "exactUnit_other": "exact",
+  "scoredUnit_one": "match",
+  "scoredUnit_other": "matches"
+}

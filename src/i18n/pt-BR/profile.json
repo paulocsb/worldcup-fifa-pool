@@ -1,0 +1,30 @@
+{
+  "pageTitle": "Perfil",
+  "myStats": "Minhas estatísticas",
+  "stat": {
+    "points": "Pontos",
+    "exactScores": "Placar exato",
+    "best": "Melhor",
+    "totalPredictions": "Total palpites",
+    "pointsHint_one": "{{count}} palpite contado",
+    "pointsHint_other": "{{count}} palpites contados",
+    "exactHint": "palpites cravados",
+    "bestHint": "em uma partida",
+    "predictionsHint": "{{accuracy}}% aproveitamento"
+  },
+  "appearance": "Aparência",
+  "theme": {
+    "system": "Sistema",
+    "light": "Claro",
+    "dark": "Escuro"
+  },
+  "language": {
+    "label": "Idioma",
+    "ptBR": "Português (Brasil)",
+    "en": "English"
+  },
+  "rules": "Regras do bolão",
+  "admin": "Admin",
+  "manageInvites": "Gerenciar convites",
+  "signOut": "Sair"
+}

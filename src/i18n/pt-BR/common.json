@@ -1,0 +1,31 @@
+{
+  "back": "Voltar",
+  "save": "Salvar",
+  "saving": "Salvando…",
+  "saved": "Salvo",
+  "cancel": "Cancelar",
+  "edit": "Editar",
+  "delete": "Excluir",
+  "close": "Fechar",
+  "search": "Buscar",
+  "loading": "Carregando…",
+  "retry": "Tentar de novo",
+  "noResults": "Nada encontrado.",
+  "you": "(você)",
+  "today": "Hoje",
+  "tomorrow": "Amanhã",
+  "yesterday": "Ontem",
+  "yes": "Sim",
+  "no": "Não",
+  "nav": {
+    "home": "Home",
+    "matches": "Jogos",
+    "standings": "Tabelas",
+    "ranking": "Ranking",
+    "profile": "Perfil"
+  },
+  "errors": {
+    "generic": "Algo deu errado.",
+    "load": "Erro ao carregar."
+  }
+}

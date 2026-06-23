@@ -1,0 +1,49 @@
+{
+  "pageTitle": "Matches",
+  "filters": {
+    "upcoming": "Upcoming",
+    "today": "Today",
+    "finished": "Finished",
+    "all": "All"
+  },
+  "liveNow": "Live now",
+  "noneMatching": "No matches in this filter.",
+  "loadError": "Failed to load matches: {{message}}",
+  "matchesCount_one": "{{count}} match",
+  "matchesCount_other": "{{count}} matches",
+  "status": {
+    "live": "Live",
+    "halftime": "Half-time",
+    "penalties": "Penalties",
+    "suspended": "Suspended",
+    "finished": "Finished",
+    "cancelled": "Cancelled",
+    "postponed": "Postponed",
+    "final": "Final"
+  },
+  "prediction": {
+    "label": "Prediction",
+    "none": "No prediction",
+    "noneLocked": "No prediction recorded",
+    "predict": "Predict",
+    "edit": "Edit",
+    "closed": "Closed"
+  },
+  "detail": {
+    "tabs": {
+      "events": "Events",
+      "lineups": "Lineups",
+      "stats": "Statistics"
+    },
+    "noEvents": "No events recorded.",
+    "noLineups": "Lineups not available yet.",
+    "noStats": "Statistics not available yet.",
+    "finalRibbon": "Grand Final",
+    "thirdPlaceRibbon": "Third-place play-off"
+  },
+  "result": "Result",
+  "partial": "Partial",
+  "startsAt": "Kickoff",
+  "postponedWaitingDate": "Postponed · awaiting new date",
+  "suspendedWaiting": "Suspended · awaiting resumption"
+}

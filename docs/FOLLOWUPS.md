@@ -6,11 +6,7 @@ Parked items to revisit. Reorder/check off as you tackle them.
 
 ## 🟡 Pending decisions
 
-- [ ] **Universal group-prediction lock** — replace the "5min before each group's MD3" rule with a single timestamp (e.g., 2026-06-19 23:59 or 2026-06-23 23:59). Awaiting confirmation from the friends group on WhatsApp. Implementation: see plan saved in the 2026-06-18 conversation (1 new migration + adjustment in `useGroupLocks` + text in `rules.tsx`).
-
 - [ ] **Customize magic-link HTML template in Supabase** — branded HTML already drafted in the 2026-06-17 conversation (FIFA 2026, navy + gold, pt-BR). Apply at **Authentication → Email Templates → Magic Link** in the dashboard.
-
-- [ ] **App i18n (pt-BR + en)** — UI is currently 100% pt-BR. Make it bilingual using `react-i18next`. Effort estimate: ~6–7h (lib setup + string extraction across ~30 routes/components + verification). Good candidate for the first community PR.
 
 ---
 

@@ -1,0 +1,30 @@
+{
+  "pageTitle": "Profile",
+  "myStats": "My stats",
+  "stat": {
+    "points": "Points",
+    "exactScores": "Exact scores",
+    "best": "Best",
+    "totalPredictions": "Total predictions",
+    "pointsHint_one": "{{count}} prediction counted",
+    "pointsHint_other": "{{count}} predictions counted",
+    "exactHint": "exact predictions",
+    "bestHint": "in a single match",
+    "predictionsHint": "{{accuracy}}% accuracy"
+  },
+  "appearance": "Appearance",
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "language": {
+    "label": "Language",
+    "ptBR": "Português (Brasil)",
+    "en": "English"
+  },
+  "rules": "Pool rules",
+  "admin": "Admin",
+  "manageInvites": "Manage invites",
+  "signOut": "Sign out"
+}

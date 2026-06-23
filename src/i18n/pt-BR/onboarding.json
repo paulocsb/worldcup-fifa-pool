@@ -1,0 +1,12 @@
+{
+  "welcomeTitle": "Bem-vindo ao bolão!",
+  "welcomeSubtitle": "Vamos configurar seu perfil em alguns segundos.",
+  "displayNameLabel": "Como quer ser chamado?",
+  "displayNamePlaceholder": "Seu nome ou apelido",
+  "avatarLabel": "Escolha seu avatar",
+  "avatarShuffle": "Embaralhar",
+  "themeLabel": "Tema",
+  "submit": "Entrar no bolão",
+  "submitting": "Configurando…",
+  "equityNotice": "Heads-up: jogos antes da próxima rodada não contam pontos pra ninguém — entrou todo mundo junto."
+}

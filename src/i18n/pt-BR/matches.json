@@ -1,0 +1,49 @@
+{
+  "pageTitle": "Jogos",
+  "filters": {
+    "upcoming": "Próximos",
+    "today": "Hoje",
+    "finished": "Encerrados",
+    "all": "Todos"
+  },
+  "liveNow": "Ao vivo agora",
+  "noneMatching": "Nenhum jogo neste filtro.",
+  "loadError": "Erro ao carregar jogos: {{message}}",
+  "matchesCount_one": "{{count}} jogo",
+  "matchesCount_other": "{{count}} jogos",
+  "status": {
+    "live": "Ao vivo",
+    "halftime": "Intervalo",
+    "penalties": "Pênaltis",
+    "suspended": "Suspenso",
+    "finished": "Encerrado",
+    "cancelled": "Cancelado",
+    "postponed": "Adiado",
+    "final": "Final"
+  },
+  "prediction": {
+    "label": "Palpite",
+    "none": "Sem palpite",
+    "noneLocked": "Sem palpite registrado",
+    "predict": "Palpitar",
+    "edit": "Editar",
+    "closed": "Encerrado"
+  },
+  "detail": {
+    "tabs": {
+      "events": "Eventos",
+      "lineups": "Escalações",
+      "stats": "Estatísticas"
+    },
+    "noEvents": "Sem eventos registrados.",
+    "noLineups": "Escalações ainda não disponíveis.",
+    "noStats": "Estatísticas ainda não disponíveis.",
+    "finalRibbon": "Grande Final",
+    "thirdPlaceRibbon": "Disputa de 3º lugar"
+  },
+  "result": "Resultado",
+  "partial": "Parcial",
+  "startsAt": "Início",
+  "postponedWaitingDate": "Adiada · aguardando nova data",
+  "suspendedWaiting": "Suspenso · aguardando retomada"
+}

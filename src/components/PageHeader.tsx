@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 interface PageHeaderProps {
@@ -40,6 +41,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation()
 
   function handleBack() {
     // `location.key === 'default'` quando é a primeira navegação da SPA
@@ -67,7 +69,7 @@ export function PageHeader({
           <button
             type="button"
             onClick={handleBack}
-            aria-label="Voltar"
+            aria-label={t('back')}
             className="mt-1 grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95"
           >
             <ArrowLeft className="size-5" />

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ChevronRight, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/Avatar'
 import { PageHeader } from '@/components/PageHeader'
 import { PositionBadge } from '@/components/PositionBadge'
@@ -31,6 +32,8 @@ export function RankingPage() {
   const auth = useAuth()
   const ranking = useRanking()
   const myId = auth.session?.user.id
+  const { t } = useTranslation('ranking')
+  const { t: tCommon } = useTranslation('common')
 
   useRealtimeInvalidator({
     tables: ['scores'],
@@ -41,8 +44,8 @@ export function RankingPage() {
   return (
     <section className="container space-y-4 py-4">
       <PageHeader
-        title="Ranking"
-        subtitle="Pontuação atualizada quando partidas encerram"
+        title={t('pageTitle')}
+        subtitle={t('subtitle')}
         accent="gold"
       />
 
@@ -52,11 +55,11 @@ export function RankingPage() {
         </div>
       ) : ranking.isError ? (
         <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
-          Erro: {(ranking.error as Error).message}
+          {tCommon('errors.generic')}: {(ranking.error as Error).message}
         </p>
       ) : ranking.data?.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
-          Ninguém no bolão ainda.
+          {t('empty')}
         </p>
       ) : (
         <ol className="space-y-2">
@@ -144,24 +147,24 @@ export function RankingPage() {
                       {row.display_name ?? '—'}
                       {isMe && (
                         <span className="ml-2 text-xs text-primary">
-                          (você)
+                          {tCommon('you')}
                         </span>
                       )}
                     </div>
                     {tiedByPoints && (
                       <div className="mt-0.5 truncate text-[10px] text-muted-foreground">
-                        Desempate:{' '}
+                        {t('tiebreaker')}{' '}
                         <span className="font-display tabular-nums text-foreground/70">
                           {row.exact_count}
                         </span>{' '}
-                        cravado{row.exact_count === 1 ? '' : 's'}
+                        {t('exactUnit', { count: row.exact_count })}
                         {tiedByExactToo && (
                           <>
                             {' · '}
                             <span className="font-display tabular-nums text-foreground/70">
                               {row.scored_count}
                             </span>{' '}
-                            jogo{row.scored_count === 1 ? '' : 's'}
+                            {t('scoredUnit', { count: row.scored_count })}
                           </>
                         )}
                       </div>
@@ -177,7 +180,7 @@ export function RankingPage() {
                       {row.total_points ?? 0}
                     </div>
                     <div className="text-[10px] uppercase text-muted-foreground">
-                      pts
+                      {t('pts')}
                     </div>
                   </div>
                   <ChevronRight className="size-4 shrink-0 text-muted-foreground/40" />

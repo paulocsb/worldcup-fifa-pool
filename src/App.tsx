@@ -20,8 +20,10 @@ import {
 } from '@/routes/me/predictions'
 import { ProtectedLayout } from '@/components/ProtectedLayout'
 import { PWAUpdatePrompt } from '@/components/PWAUpdatePrompt'
+import { useLanguageSync } from '@/hooks/useLanguage'
 
 export default function App() {
+  useLanguageSync()
   return (
     <>
       <PWAUpdatePrompt />

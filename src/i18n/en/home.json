@@ -1,0 +1,14 @@
+{
+  "yourPosition": "Your position",
+  "noScoreYet": "No points yet",
+  "points_one": "{{count}} point",
+  "points_other": "{{count}} points",
+  "nextMatches": "Upcoming matches",
+  "noNextMatches": "No upcoming matches.",
+  "viewAll": "View all",
+  "groupPredictions": "Group predictions",
+  "tournamentPrediction": "Tournament prediction",
+  "tournamentPredictionHint": "Who wins, runs up and finishes 3rd?",
+  "quickPredict": "Quick predict",
+  "quickPredictHint": "Predict many matches in a row"
+}
