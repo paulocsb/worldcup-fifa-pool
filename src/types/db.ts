@@ -177,6 +177,7 @@ export type Database = {
           created_at: string
           detail_synced_at: string | null
           elapsed_minutes: number | null
+          elapsed_extra_minutes: number | null
           events: Json | null
           group_letter: string | null
           home_score: number | null
@@ -202,6 +203,7 @@ export type Database = {
           created_at?: string
           detail_synced_at?: string | null
           elapsed_minutes?: number | null
+          elapsed_extra_minutes?: number | null
           events?: Json | null
           group_letter?: string | null
           home_score?: number | null
@@ -227,6 +229,7 @@ export type Database = {
           created_at?: string
           detail_synced_at?: string | null
           elapsed_minutes?: number | null
+          elapsed_extra_minutes?: number | null
           events?: Json | null
           group_letter?: string | null
           home_score?: number | null

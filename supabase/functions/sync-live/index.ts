@@ -117,7 +117,9 @@ Deno.serve(async (req) => {
     // Lê o estado atual para saber se houve transição
     const { data: current, error: currErr } = await supabase
       .from('matches')
-      .select('status, home_score, away_score, elapsed_minutes, live_status_short')
+      .select(
+        'status, home_score, away_score, elapsed_minutes, elapsed_extra_minutes, live_status_short',
+      )
       .eq('id', f.fixture.id)
       .maybeSingle()
     if (currErr) {
@@ -140,6 +142,8 @@ Deno.serve(async (req) => {
       home_score_penalties: f.score.penalty.home,
       away_score_penalties: f.score.penalty.away,
       elapsed_minutes: newStatus === 'live' ? f.fixture.status.elapsed : null,
+      elapsed_extra_minutes:
+        newStatus === 'live' ? (f.fixture.status.extra ?? null) : null,
       live_status_short: newStatus === 'live' ? f.fixture.status.short : null,
       last_synced_at: new Date().toISOString(),
     }
@@ -149,6 +153,7 @@ Deno.serve(async (req) => {
       current.home_score !== update.home_score ||
       current.away_score !== update.away_score ||
       current.elapsed_minutes !== update.elapsed_minutes ||
+      current.elapsed_extra_minutes !== update.elapsed_extra_minutes ||
       current.live_status_short !== update.live_status_short
 
     if (!changed) {

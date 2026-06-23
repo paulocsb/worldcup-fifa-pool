@@ -2,11 +2,17 @@ import type { Match } from '@/types/db'
 import { cn } from '@/lib/utils'
 import { kickoffLabel } from '@/lib/format'
 
-function liveLabel(short: string | null, elapsed: number | null): string {
+function liveLabel(
+  short: string | null,
+  elapsed: number | null,
+  extra: number | null,
+): string {
   if (short === 'HT' || short === 'INT' || short === 'BT') return 'Intervalo'
   if (short === 'P') return 'Pênaltis'
   if (short === 'SUSP') return 'Suspenso'
-  if (elapsed != null) return `${elapsed}'`
+  if (elapsed != null) {
+    return extra != null && extra > 0 ? `${elapsed}+${extra}'` : `${elapsed}'`
+  }
   return 'Ao vivo'
 }
 
@@ -20,12 +26,17 @@ export function MatchStatusBadge({
     | 'group_letter'
     | 'stage'
     | 'elapsed_minutes'
+    | 'elapsed_extra_minutes'
     | 'live_status_short'
   >
 }) {
   if (match.status === 'live') {
-    const label = liveLabel(match.live_status_short, match.elapsed_minutes)
-    const isMinute = /^\d+'$/.test(label)
+    const label = liveLabel(
+      match.live_status_short,
+      match.elapsed_minutes,
+      match.elapsed_extra_minutes,
+    )
+    const isMinute = /^\d+(\+\d+)?'$/.test(label)
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
         <span className="relative inline-flex size-2">

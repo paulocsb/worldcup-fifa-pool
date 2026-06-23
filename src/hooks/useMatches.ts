@@ -14,7 +14,7 @@ export function useMatches() {
       const { data, error } = await supabase
         .from('matches')
         .select(
-          'id, home_team_id, away_team_id, kickoff_at, stage, group_letter, status, home_score, away_score, home_score_extra, away_score_extra, home_score_penalties, away_score_penalties, venue, last_synced_at, created_at, elapsed_minutes, live_status_short, home_team:teams!matches_home_team_id_fkey(*), away_team:teams!matches_away_team_id_fkey(*)',
+          'id, home_team_id, away_team_id, kickoff_at, stage, group_letter, status, home_score, away_score, home_score_extra, away_score_extra, home_score_penalties, away_score_penalties, venue, last_synced_at, created_at, elapsed_minutes, elapsed_extra_minutes, live_status_short, home_team:teams!matches_home_team_id_fkey(*), away_team:teams!matches_away_team_id_fkey(*)',
         )
         .order('kickoff_at', { ascending: true })
       if (error) throw error
