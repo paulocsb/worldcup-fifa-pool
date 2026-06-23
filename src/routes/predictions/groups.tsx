@@ -20,6 +20,7 @@ import {
 import { useTeams } from '@/hooks/useTeams'
 import { usePageBackground } from '@/hooks/usePageBackground'
 import { groupColorToken } from '@/lib/groupColors'
+import { cn } from '@/lib/utils'
 import type { GroupPrediction, Team } from '@/types/db'
 
 export function GroupsIndexPage() {
@@ -43,6 +44,11 @@ export function GroupsIndexPage() {
       arr.push(t)
       map.set(t.group_letter, arr)
     })
+    // Within each group, sort by id — the seed migration inserts teams in
+    // Pot 1 → Pot 4 order with sequential ids (101..104 for group A, etc.),
+    // so id ASC reproduces FIFA's pot ordering. Falls back gracefully if
+    // ids are non-sequential (still a deterministic order).
+    for (const arr of map.values()) arr.sort((a, b) => a.id - b.id)
     return map
   }, [teams.data])
 
@@ -92,20 +98,26 @@ export function GroupsIndexPage() {
                     <GroupPill letter={letter} size="md" withLabel />
                     <StatusBadge status={status} />
                   </div>
-                  <ul className="divide-y divide-border/40">
-                    {grpTeams.map((t) => (
-                      <li key={t.id} className="py-1.5">
-                        <TeamBadge team={t} size="sm" />
-                      </li>
-                    ))}
-                  </ul>
+                  {myPred ? (
+                    <PredictedOrder pred={myPred} teams={grpTeams} />
+                  ) : (
+                    <ul className="divide-y divide-border/40">
+                      {grpTeams.map((t) => (
+                        <li key={t.id} className="py-1.5">
+                          <TeamBadge team={t} size="sm" />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                     <span>
                       {myPred
-                        ? 'Seu palpite salvo'
+                        ? isOpen
+                          ? 'Toque para editar'
+                          : 'Seu palpite (encerrado)'
                         : isOpen
                           ? 'Sem palpite ainda'
-                          : 'Encerrado'}
+                          : 'Encerrado sem palpite'}
                     </span>
                     <ArrowRight className="size-4" />
                   </div>
@@ -116,6 +128,56 @@ export function GroupsIndexPage() {
         </ul>
       )}
     </section>
+  )
+}
+
+/**
+ * Renders the 4 teams in the order the user predicted (1º → 4º), with
+ * positional tint: top 2 in primary (qualify direct), 3rd in amber (best
+ * 3rds zone), 4th neutral.
+ */
+function PredictedOrder({
+  pred,
+  teams,
+}: {
+  pred: GroupPrediction
+  teams: Team[]
+}) {
+  const teamById = new Map(teams.map((t) => [t.id, t]))
+  const ordered = [
+    pred.first_team_id,
+    pred.second_team_id,
+    pred.third_team_id,
+    pred.fourth_team_id,
+  ]
+  return (
+    <ol className="space-y-1">
+      {ordered.map((teamId, i) => {
+        const team = teamById.get(teamId)
+        if (!team) return null
+        const position = i + 1
+        const tone =
+          position <= 2
+            ? 'border-l-2 border-l-primary/70 bg-primary/[0.04]'
+            : position === 3
+              ? 'border-l-2 border-l-amber-500/60 bg-amber-500/[0.05]'
+              : 'border-l-2 border-l-transparent'
+        return (
+          <li
+            key={team.id}
+            className={cn(
+              'flex items-center gap-2 rounded-md px-2 py-1.5',
+              tone,
+            )}
+          >
+            <span className="font-display w-4 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">
+              {position}
+            </span>
+            <TeamBadge team={team} size="sm" />
+          </li>
+        )
+      })}
+    </ol>
   )
 }
 
