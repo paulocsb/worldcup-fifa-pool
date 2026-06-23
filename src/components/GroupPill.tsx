@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { groupColorToken, groupNeedsLightFg } from '@/lib/groupColors'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +17,7 @@ export function GroupPill({
   withLabel = true,
   className,
 }: GroupPillProps) {
+  const { t } = useTranslation()
   const token = groupColorToken(letter)
   if (!letter || !token) return null
 
@@ -39,7 +41,7 @@ export function GroupPill({
         className,
       )}
     >
-      {withLabel ? `Grupo ${upper}` : upper}
+      {withLabel ? `${t('group')} ${upper}` : upper}
     </span>
   )
 }

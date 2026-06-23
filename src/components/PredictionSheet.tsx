@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Loader2, Minus, Plus, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { MatchWithTeams } from '@/hooks/useMatches'
 import type { Prediction } from '@/types/db'
 import { useUpsertPrediction } from '@/hooks/usePredictions'
@@ -25,6 +26,7 @@ function ScoreStepper({
   onChange: (n: number) => void
   label: string
 }) {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-col items-center gap-2">
       <span className="text-xs font-medium uppercase text-muted-foreground">
@@ -35,7 +37,7 @@ function ScoreStepper({
           type="button"
           onClick={() => onChange(Math.max(0, value - 1))}
           className="grid size-12 place-items-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-accent active:scale-95"
-          aria-label={`Diminuir ${label}`}
+          aria-label={t('decrease', { label })}
         >
           <Minus className="size-5" />
         </button>
@@ -46,7 +48,7 @@ function ScoreStepper({
           type="button"
           onClick={() => onChange(Math.min(20, value + 1))}
           className="grid size-12 place-items-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-accent active:scale-95"
-          aria-label={`Aumentar ${label}`}
+          aria-label={t('increase', { label })}
         >
           <Plus className="size-5" />
         </button>
@@ -64,6 +66,9 @@ export function PredictionSheet({
   const [home, setHome] = useState(existing?.home_score ?? 0)
   const [away, setAway] = useState(existing?.away_score ?? 0)
   const mutation = useUpsertPrediction(userId)
+  const { t } = useTranslation()
+  const { t: tMatches } = useTranslation('matches')
+  const { t: tPredictions } = useTranslation('predictions')
 
   useEffect(() => {
     setHome(existing?.home_score ?? 0)
@@ -90,7 +95,7 @@ export function PredictionSheet({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Palpite"
+      aria-label={tPredictions('sheet.title')}
       className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/30 backdrop-blur-md"
       onClick={onClose}
     >
@@ -107,16 +112,18 @@ export function PredictionSheet({
         />
         <header className="mb-4 flex items-start justify-between gap-2">
           <div>
-            <h2 className="text-lg font-bold">Seu palpite</h2>
+            <h2 className="text-lg font-bold">{tPredictions('sheet.title')}</h2>
             <p className="text-xs text-muted-foreground">
               {kickoffLabel(match.kickoff_at)}
-              {match.group_letter ? ` · Grupo ${match.group_letter}` : ''}
+              {match.group_letter
+                ? ` · ${t('group')} ${match.group_letter}`
+                : ''}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fechar"
+            aria-label={t('close')}
             className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <X className="size-5" />
@@ -126,14 +133,22 @@ export function PredictionSheet({
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
           <div className="flex flex-col items-center gap-2">
             <TeamBadge team={match.home_team} className="flex-col gap-1 text-center" />
-            <ScoreStepper value={home} onChange={setHome} label="Casa" />
+            <ScoreStepper
+              value={home}
+              onChange={setHome}
+              label={tPredictions('quickPredict.homeLabel')}
+            />
           </div>
           <div className="px-1 text-xl font-semibold text-muted-foreground">
             ×
           </div>
           <div className="flex flex-col items-center gap-2">
             <TeamBadge team={match.away_team} className="flex-col gap-1 text-center" />
-            <ScoreStepper value={away} onChange={setAway} label="Visitante" />
+            <ScoreStepper
+              value={away}
+              onChange={setAway}
+              label={tPredictions('quickPredict.awayLabel')}
+            />
           </div>
         </div>
 
@@ -155,10 +170,10 @@ export function PredictionSheet({
         >
           {mutation.isPending ? (
             <>
-              <Loader2 className="animate-spin" /> Salvando…
+              <Loader2 className="animate-spin" /> {tPredictions('tournament.submitting')}
             </>
           ) : (
-            'Salvar palpite'
+            tMatches('prediction.predict')
           )}
         </Button>
       </div>

@@ -1,4 +1,7 @@
 {
+  "sheet": {
+    "title": "Your prediction"
+  },
   "groups": {
     "pageTitle": "Group predictions",
     "pageSubtitle": "Final order of the 4 teams in each group",

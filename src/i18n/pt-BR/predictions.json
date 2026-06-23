@@ -1,4 +1,7 @@
 {
+  "sheet": {
+    "title": "Seu palpite"
+  },
   "groups": {
     "pageTitle": "Palpites por grupo",
     "pageSubtitle": "Ordem final dos 4 times em cada grupo",

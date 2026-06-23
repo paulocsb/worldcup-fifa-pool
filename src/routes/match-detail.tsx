@@ -101,9 +101,10 @@ export function MatchDetailPage() {
   const m = detail.data
   const showScore = m.status === 'finished' || m.status === 'live'
 
+  const { t: tCommon } = useTranslation('common')
   const headerTitle =
     m.stage === 'group' && m.group_letter
-      ? `Grupo ${m.group_letter}`
+      ? `${tCommon('group')} ${m.group_letter}`
       : PHASE_LABEL_PT[m.stage]
   const venueText = venueLabel(m.venue, m.venue_city)
   const headerSubtitle = `${kickoffLabel(m.kickoff_at)}${

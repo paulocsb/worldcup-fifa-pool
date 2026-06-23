@@ -162,7 +162,7 @@ export function GroupDetailPage() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h1 className="font-display text-3xl font-black uppercase leading-tight tracking-tight md:text-4xl">
-                Grupo {letter}
+                {tCommon('group')} {letter}
               </h1>
               <GroupPill letter={letter} size="sm" withLabel={false} />
             </div>

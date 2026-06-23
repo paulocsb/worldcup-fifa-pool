@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Check, ChevronDown, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { Team } from '@/types/db'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -44,11 +45,13 @@ export function TeamSelect({
   value,
   onChange,
   assignedAtLabel,
-  placeholder = 'Escolher seleção',
+  placeholder,
   disabled,
 }: TeamSelectProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const resolvedPlaceholder = placeholder ?? t('chooseTeam')
 
   const selected = useMemo(
     () => teams.find((t) => t.id === value) ?? null,
@@ -80,7 +83,7 @@ export function TeamSelect({
         {selected ? (
           <SelectedTeamLabel team={selected} />
         ) : (
-          <span className="text-muted-foreground">{placeholder}</span>
+          <span className="text-muted-foreground">{resolvedPlaceholder}</span>
         )}
         <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
       </button>
@@ -101,7 +104,7 @@ export function TeamSelect({
               className="mx-auto h-1 w-10 rounded-full bg-muted-foreground/30"
             />
             <header className="flex items-center justify-between gap-2">
-              <h3 className="font-semibold">{placeholder}</h3>
+              <h3 className="font-semibold">{resolvedPlaceholder}</h3>
               <button
                 type="button"
                 aria-label="Fechar"
@@ -114,27 +117,27 @@ export function TeamSelect({
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar por nome, sigla ou grupo…"
+              placeholder={t('teamSearchPlaceholder')}
               autoFocus
             />
             <ul className="-mx-2 flex-1 overflow-y-auto">
               {filtered.length === 0 ? (
                 <li className="px-2 py-6 text-center text-sm text-muted-foreground">
-                  Nada encontrado.
+                  {t('noResults')}
                 </li>
               ) : (
-                filtered.map((t) => {
-                  const isSelected = t.id === value
+                filtered.map((team) => {
+                  const isSelected = team.id === value
                   const otherSlotLabel =
                     !isSelected && assignedAtLabel
-                      ? assignedAtLabel(t.id)
+                      ? assignedAtLabel(team.id)
                       : null
                   return (
-                    <li key={t.id}>
+                    <li key={team.id}>
                       <button
                         type="button"
                         onClick={() => {
-                          onChange(t.id)
+                          onChange(team.id)
                           setOpen(false)
                           setQuery('')
                         }}
@@ -144,15 +147,15 @@ export function TeamSelect({
                         )}
                       >
                         <div className="flex items-center gap-3">
-                          <TeamBadge team={t} size="sm" />
+                          <TeamBadge team={team} size="sm" />
                           <span className="text-xs uppercase text-muted-foreground">
-                            Grupo {t.group_letter}
+                            {t('group')} {team.group_letter}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           {otherSlotLabel && (
                             <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              em {otherSlotLabel}
+                              {t('atSlot', { slot: otherSlotLabel })}
                             </span>
                           )}
                           {isSelected && (
