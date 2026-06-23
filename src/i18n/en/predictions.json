@@ -1,0 +1,61 @@
+{
+  "groups": {
+    "pageTitle": "Group predictions",
+    "pageSubtitle": "Final order of the 4 teams in each group",
+    "statusSaved": "Saved",
+    "statusLocked": "Closed",
+    "statusPending": "Pending",
+    "footerEdit": "Tap to edit",
+    "footerSavedLocked": "Your prediction (closed)",
+    "footerOpenEmpty": "No prediction yet",
+    "footerLockedEmpty": "Closed without prediction"
+  },
+  "groupDetail": {
+    "subtitle": "Final order of the 4 teams",
+    "lockedNotice": "Prediction closed for this group.",
+    "positionLabels": [
+      "1st (group winner)",
+      "2nd (advances to Round of 32)",
+      "3rd (advances if top 8)",
+      "4th (eliminated)"
+    ],
+    "pointsIfRight": "{{count}} pts if you guess",
+    "duplicateError": "Each team can only appear once in the order.",
+    "submit": "Save prediction",
+    "submitting": "Saving…",
+    "saved": "Prediction saved.",
+    "openTeamSelect": "Pick {{label}}"
+  },
+  "tournament": {
+    "pageTitle": "Tournament prediction",
+    "pageSubtitle": "Who finishes 1st, 2nd, and 3rd",
+    "rulesLink": "Rules",
+    "lockClosed": "Predictions closed — the group stage has ended.",
+    "lockOpenHint_one": "You can edit until the end of the group stage ({{count}} match left).",
+    "lockOpenHint_other": "You can edit until the end of the group stage ({{count}} matches left).",
+    "champion": "Champion",
+    "championSubtitle": "30 pts if you guess",
+    "runnerUp": "Runner-up",
+    "runnerUpSubtitle": "15 pts if you guess",
+    "thirdPlace": "Third place",
+    "thirdPlaceSubtitle": "10 pts if you guess",
+    "submit": "Save prediction",
+    "submitting": "Saving…",
+    "saved": "Prediction saved.",
+    "chooseLowercase": "Pick {{label}}"
+  },
+  "quickPredict": {
+    "exitAria": "Exit quick predict",
+    "homeLabel": "Home",
+    "awayLabel": "Away",
+    "scoreShortcuts": "Score shortcuts",
+    "skip": "Skip",
+    "save": "Save",
+    "saving": "Saving…",
+    "allDoneTitle": "All predicted!",
+    "allDoneEmpty": "You've already predicted every open match. Come back when new matches open up.",
+    "allDoneCount_one": "You predicted {{count}} match this round. Good luck!",
+    "allDoneCount_other": "You predicted {{count}} matches this round. Good luck!",
+    "backToHome": "Back to Home"
+  }
+}

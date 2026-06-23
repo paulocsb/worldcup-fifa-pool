@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { BracketPhase } from '@/components/BracketPhase'
 import { GroupPill } from '@/components/GroupPill'
 import { PageHeader } from '@/components/PageHeader'
@@ -17,8 +18,9 @@ import {
 import { groupColorToken } from '@/lib/groupColors'
 import {
   currentPhase,
+  getTabs,
+  stagesForTab,
   subtitleForTab,
-  TABS,
   tabBySlug,
   type TabSlug,
 } from '@/lib/tournamentPhase'
@@ -37,6 +39,7 @@ import { cn } from '@/lib/utils'
 export function StandingsPage() {
   const [params, setParams] = useSearchParams()
   const matches = useMatches()
+  const { t } = useTranslation('standings')
 
   const initialPhase = useMemo(
     () => currentPhase(matches.data ?? []),
@@ -60,22 +63,23 @@ export function StandingsPage() {
     setParams(next, { replace: true })
   }
 
-  const activeTabDef = TABS.find((t) => t.slug === activeTab)!
+  const tabs = getTabs()
+  const activeTabStages = stagesForTab(activeTab)
 
   return (
     <section className="container space-y-4 py-4">
       <PageHeader
-        title="Classificação"
+        title={t('pageTitle')}
         subtitle={subtitleForTab(activeTab)}
         backTo="/"
       />
 
-      <SubTabs tabs={TABS} active={activeTab} onChange={handleChangeTab} />
+      <SubTabs tabs={tabs} active={activeTab} onChange={handleChangeTab} />
 
       {activeTab === 'group' ? (
         <GroupStandingsContent />
       ) : (
-        <BracketPhase stages={activeTabDef.stages} slug={activeTab} />
+        <BracketPhase stages={activeTabStages} slug={activeTab} />
       )}
     </section>
   )
@@ -83,6 +87,7 @@ export function StandingsPage() {
 
 function GroupStandingsContent() {
   const standings = useGroupStandings()
+  const { t: tStandings } = useTranslation('standings')
   useRealtimeInvalidator({
     tables: ['matches'],
     queryKeys: [['group-standings']],
@@ -109,7 +114,7 @@ function GroupStandingsContent() {
   if (standings.isError) {
     return (
       <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
-        Erro: {(standings.error as Error).message}
+        {tStandings('loadError', { message: (standings.error as Error).message })}
       </p>
     )
   }
@@ -134,6 +139,7 @@ function GroupTable({
   letter: GroupLetter
   rows: GroupStanding[]
 }) {
+  const { t } = useTranslation('standings')
   const token = groupColorToken(letter)
   const accentStyle = token
     ? ({ '--accent-c': `hsl(var(--${token}))` } as React.CSSProperties)
@@ -151,11 +157,11 @@ function GroupTable({
       <header className="flex items-center justify-between px-3 py-2.5">
         <GroupPill letter={letter} size="md" withLabel />
         <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          <span className="w-5 text-center">V</span>
-          <span className="w-5 text-center">E</span>
-          <span className="w-5 text-center">D</span>
-          <span className="w-7 text-center">SG</span>
-          <span className="w-7 text-center">PTS</span>
+          <span className="w-5 text-center">{t('tableHeaders.wins')}</span>
+          <span className="w-5 text-center">{t('tableHeaders.draws')}</span>
+          <span className="w-5 text-center">{t('tableHeaders.losses')}</span>
+          <span className="w-7 text-center">{t('tableHeaders.goalDiff')}</span>
+          <span className="w-7 text-center">{t('tableHeaders.points')}</span>
         </div>
       </header>
       <ol className="divide-y divide-border/40">

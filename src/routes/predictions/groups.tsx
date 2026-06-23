@@ -7,6 +7,7 @@ import {
   Loader2,
   Lock,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { TeamBadge } from '@/components/TeamBadge'
 import { GroupPill } from '@/components/GroupPill'
 import { PageHeader } from '@/components/PageHeader'
@@ -24,6 +25,7 @@ import { cn } from '@/lib/utils'
 import type { GroupPrediction, Team } from '@/types/db'
 
 export function GroupsIndexPage() {
+  const { t } = useTranslation('predictions')
   const auth = useAuth()
   const userId = auth.session?.user.id
   const teams = useTeams()
@@ -57,8 +59,8 @@ export function GroupsIndexPage() {
   return (
     <section className="container space-y-4 py-4">
       <PageHeader
-        title="Palpites por grupo"
-        subtitle="Ordem final dos 4 times em cada grupo"
+        title={t('groups.pageTitle')}
+        subtitle={t('groups.pageSubtitle')}
         backTo="/"
       />
 
@@ -113,11 +115,11 @@ export function GroupsIndexPage() {
                     <span>
                       {myPred
                         ? isOpen
-                          ? 'Toque para editar'
-                          : 'Seu palpite (encerrado)'
+                          ? t('groups.footerEdit')
+                          : t('groups.footerSavedLocked')
                         : isOpen
-                          ? 'Sem palpite ainda'
-                          : 'Encerrado sem palpite'}
+                          ? t('groups.footerOpenEmpty')
+                          : t('groups.footerLockedEmpty')}
                     </span>
                     <ArrowRight className="size-4" />
                   </div>
@@ -186,24 +188,25 @@ function StatusBadge({
 }: {
   status: 'saved' | 'pending' | 'locked'
 }) {
+  const { t } = useTranslation('predictions')
   if (status === 'saved')
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
         <CheckCircle2 className="size-3" />
-        Salvo
+        {t('groups.statusSaved')}
       </span>
     )
   if (status === 'locked')
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
         <Lock className="size-3" />
-        Encerrado
+        {t('groups.statusLocked')}
       </span>
     )
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/50 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
       <Clock3 className="size-3" />
-      Pendente
+      {t('groups.statusPending')}
     </span>
   )
 }

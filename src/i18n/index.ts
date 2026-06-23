@@ -26,6 +26,10 @@ import ptBRProfile from './pt-BR/profile.json'
 import enProfile from './en/profile.json'
 import ptBRRanking from './pt-BR/ranking.json'
 import enRanking from './en/ranking.json'
+import ptBRPredictions from './pt-BR/predictions.json'
+import enPredictions from './en/predictions.json'
+import ptBRStandings from './pt-BR/standings.json'
+import enStandings from './en/standings.json'
 
 export const SUPPORTED_LANGUAGES = ['pt-BR', 'en'] as const
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
@@ -41,6 +45,8 @@ const resources = {
     matches: ptBRMatches,
     profile: ptBRProfile,
     ranking: ptBRRanking,
+    predictions: ptBRPredictions,
+    standings: ptBRStandings,
   },
   en: {
     common: enCommon,
@@ -50,6 +56,8 @@ const resources = {
     matches: enMatches,
     profile: enProfile,
     ranking: enRanking,
+    predictions: enPredictions,
+    standings: enStandings,
   },
 }
 

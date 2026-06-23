@@ -11,6 +11,7 @@ import {
   Loader2,
   Lock,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { TeamSelect } from '@/components/TeamSelect'
 import { GroupPill } from '@/components/GroupPill'
@@ -26,7 +27,6 @@ import {
 } from '@/hooks/useGroupPredictions'
 import { useTeams } from '@/hooks/useTeams'
 
-const POSITION_LABELS = ['1º (1º colocado)', '2º (vai aos 32-avos)', '3º (vai se for top 8)', '4º (eliminado)']
 const POSITION_LABELS_SHORT = ['1º', '2º', '3º', '4º']
 const POSITION_POINTS = [5, 5, 3, 2]
 
@@ -34,6 +34,11 @@ export function GroupDetailPage() {
   const params = useParams<{ letter: string }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation('predictions')
+  const { t: tCommon } = useTranslation('common')
+  const POSITION_LABELS = t('groupDetail.positionLabels', {
+    returnObjects: true,
+  }) as string[]
   const letterParam = (params.letter ?? '').toUpperCase()
   const letter = ALL_GROUPS.includes(letterParam as GroupLetter)
     ? (letterParam as GroupLetter)
@@ -149,7 +154,7 @@ export function GroupDetailPage() {
           <button
             type="button"
             onClick={handleBack}
-            aria-label="Voltar"
+            aria-label={tCommon('back')}
             className="grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95"
           >
             <ArrowLeft className="size-5" />
@@ -162,7 +167,7 @@ export function GroupDetailPage() {
               <GroupPill letter={letter} size="sm" withLabel={false} />
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Ordem final dos 4 times
+              {t('groupDetail.subtitle')}
             </p>
           </div>
         </div>
@@ -171,7 +176,7 @@ export function GroupDetailPage() {
       {!isOpen && !loading && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
           <Lock className="size-4 shrink-0" />
-          <span>Palpite encerrado para este grupo.</span>
+          <span>{t('groupDetail.lockedNotice')}</span>
         </div>
       )}
 
@@ -189,7 +194,9 @@ export function GroupDetailPage() {
                     {POSITION_LABELS[idx]}
                   </label>
                   <span className="text-xs text-muted-foreground">
-                    {POSITION_POINTS[idx]} pts se acertar
+                    {t('groupDetail.pointsIfRight', {
+                      count: POSITION_POINTS[idx],
+                    })}
                   </span>
                 </div>
                 <TeamSelect
@@ -197,7 +204,9 @@ export function GroupDetailPage() {
                   value={value}
                   onChange={(id) => setAtPosition(idx, id)}
                   assignedAtLabel={(tid) => slotLabelOfTeam(tid, idx)}
-                  placeholder={`Escolher ${idx + 1}º`}
+                  placeholder={t('groupDetail.openTeamSelect', {
+                    label: POSITION_LABELS_SHORT[idx],
+                  })}
                   disabled={!isOpen}
                 />
               </div>
@@ -215,7 +224,7 @@ export function GroupDetailPage() {
               role="status"
             >
               <CheckCircle2 className="size-4" />
-              Palpite salvo!
+              {t('groupDetail.saved')}
             </p>
           )}
 
@@ -236,12 +245,10 @@ export function GroupDetailPage() {
           >
             {mutation.isPending ? (
               <>
-                <Loader2 className="animate-spin" /> Salvando…
+                <Loader2 className="animate-spin" /> {t('groupDetail.submitting')}
               </>
-            ) : current ? (
-              'Atualizar palpite'
             ) : (
-              'Salvar palpite'
+              t('groupDetail.submit')
             )}
           </Button>
         </form>

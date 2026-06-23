@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   ArrowLeft,
   CheckCircle2,
@@ -107,6 +108,8 @@ export function QuickPredictPage() {
   const predictions = useMyPredictions(userId)
   const upsert = useUpsertPrediction(userId)
   const navigate = useNavigate()
+  const { t } = useTranslation('predictions')
+  const { t: tCommon } = useTranslation('common')
 
   // Snapshot da lista no mount: jogos abertos sem palpite ainda
   const [queue, setQueue] = useState<MatchWithTeams[] | null>(null)
@@ -191,7 +194,7 @@ export function QuickPredictPage() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            aria-label="Sair do modo rápido"
+            aria-label={t('quickPredict.exitAria')}
             className="grid size-10 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <X className="size-5" />
@@ -237,15 +240,23 @@ export function QuickPredictPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-6">
-            <ScoreInput label="Casa" value={home} onChange={setHome} />
-            <ScoreInput label="Visitante" value={away} onChange={setAway} />
+            <ScoreInput
+              label={t('quickPredict.homeLabel')}
+              value={home}
+              onChange={setHome}
+            />
+            <ScoreInput
+              label={t('quickPredict.awayLabel')}
+              value={away}
+              onChange={setAway}
+            />
           </div>
         </div>
 
         {/* Atalhos de placar */}
         <div className="space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Atalhos de placar
+            {t('quickPredict.scoreShortcuts')}
           </p>
           <div className="flex flex-wrap gap-2">
             {QUICK_PRESETS.map(([h, a]) => {
@@ -286,7 +297,7 @@ export function QuickPredictPage() {
             size="lg"
             onClick={handleBack}
             disabled={idx === 0 || upsert.isPending}
-            aria-label="Voltar"
+            aria-label={tCommon('back')}
           >
             <ArrowLeft className="size-4" />
           </Button>
@@ -298,7 +309,7 @@ export function QuickPredictPage() {
             disabled={upsert.isPending}
           >
             <SkipForward className="size-4" />
-            Pular
+            {t('quickPredict.skip')}
           </Button>
           <Button
             type="button"
@@ -309,11 +320,11 @@ export function QuickPredictPage() {
           >
             {upsert.isPending ? (
               <>
-                <Loader2 className="animate-spin" /> Salvando…
+                <Loader2 className="animate-spin" /> {t('quickPredict.saving')}
               </>
             ) : (
               <>
-                Salvar
+                {t('quickPredict.save')}
                 <ChevronRight className="size-4" />
               </>
             )}
@@ -325,6 +336,7 @@ export function QuickPredictPage() {
 }
 
 function AllDoneScreen({ total }: { total: number }) {
+  const { t } = useTranslation('predictions')
   return (
     <section className="container flex min-h-svh flex-col items-center justify-center gap-6 py-12 text-center">
       <div className="grid size-20 place-items-center rounded-full bg-primary/10 text-primary">
@@ -332,19 +344,19 @@ function AllDoneScreen({ total }: { total: number }) {
       </div>
       <div className="space-y-2">
         <h1 className="font-display text-3xl font-black uppercase tracking-tight">
-          Tudo palpitado!
+          {t('quickPredict.allDoneTitle')}
         </h1>
         <p className="max-w-sm text-balance text-muted-foreground">
           {total === 0
-            ? 'Você já palpitou em todos os jogos abertos. Volte quando novos jogos forem liberados.'
-            : `Você palpitou ${total} jogo${total === 1 ? '' : 's'} nessa rodada. Boa sorte!`}
+            ? t('quickPredict.allDoneEmpty')
+            : t('quickPredict.allDoneCount', { count: total })}
         </p>
       </div>
       <Link
         to="/"
         className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90 active:scale-95"
       >
-        Voltar pra Home
+        {t('quickPredict.backToHome')}
       </Link>
     </section>
   )

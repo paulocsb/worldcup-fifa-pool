@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, Loader2, Lock, CheckCircle2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/PageHeader'
 import { PositionBadge } from '@/components/PositionBadge'
@@ -16,6 +17,7 @@ import {
 import type { Team } from '@/types/db'
 
 export function TournamentPredictionPage() {
+  const { t } = useTranslation('predictions')
   const auth = useAuth()
   const userId = auth.session?.user.id
   const teams = useTeams()
@@ -53,9 +55,9 @@ export function TournamentPredictionPage() {
     value: number | null
     set: (v: number | null) => void
   }> = [
-    { label: 'Campeão', value: champion, set: setChampion },
-    { label: 'Vice', value: runnerUp, set: setRunnerUp },
-    { label: '3º', value: third, set: setThird },
+    { label: t('tournament.champion'), value: champion, set: setChampion },
+    { label: t('tournament.runnerUp'), value: runnerUp, set: setRunnerUp },
+    { label: t('tournament.thirdPlace'), value: third, set: setThird },
   ]
   function slotLabelOfTeam(teamId: number, excludeIdx: number): string | null {
     const idx = slots.findIndex(
@@ -87,8 +89,8 @@ export function TournamentPredictionPage() {
   return (
     <section className="container space-y-6 py-4">
       <PageHeader
-        title="Palpite do torneio"
-        subtitle="Quem fica em 1º, 2º e 3º lugar"
+        title={t('tournament.pageTitle')}
+        subtitle={t('tournament.pageSubtitle')}
         backTo="/"
         accent="gold"
         trailing={
@@ -97,7 +99,7 @@ export function TournamentPredictionPage() {
             className="inline-flex items-center gap-1 rounded-full border border-border bg-card/80 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
           >
             <BookOpen className="size-3" />
-            Regras
+            {t('tournament.rulesLink')}
           </Link>
         }
       />
@@ -105,16 +107,15 @@ export function TournamentPredictionPage() {
       {!isOpen && !loading && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
           <Lock className="size-4 shrink-0" />
-          <span>
-            Palpite encerrado — a fase de grupos terminou.
-          </span>
+          <span>{t('tournament.lockClosed')}</span>
         </div>
       )}
 
       {isOpen && lock.data && (
         <p className="text-xs text-muted-foreground">
-          Você pode editar até o fim da fase de grupos (
-          {lock.data.remaining_group_matches} jogos restantes).
+          {t('tournament.lockOpenHint', {
+            count: lock.data.remaining_group_matches,
+          })}
         </p>
       )}
 
@@ -128,8 +129,8 @@ export function TournamentPredictionPage() {
             icon={
               <PositionBadge position="gold" variant="icon-only" size="lg" />
             }
-            label="Campeão"
-            sublabel="30 pts se acertar"
+            label={t('tournament.champion')}
+            sublabel={t('tournament.championSubtitle')}
             teams={teams.data ?? []}
             value={champion}
             onChange={(id) => setAtSlot(0, id)}
@@ -140,8 +141,8 @@ export function TournamentPredictionPage() {
             icon={
               <PositionBadge position="silver" variant="icon-only" size="lg" />
             }
-            label="Vice-campeão"
-            sublabel="15 pts se acertar"
+            label={t('tournament.runnerUp')}
+            sublabel={t('tournament.runnerUpSubtitle')}
             teams={teams.data ?? []}
             value={runnerUp}
             onChange={(id) => setAtSlot(1, id)}
@@ -152,8 +153,8 @@ export function TournamentPredictionPage() {
             icon={
               <PositionBadge position="bronze" variant="icon-only" size="lg" />
             }
-            label="Terceiro lugar"
-            sublabel="10 pts se acertar"
+            label={t('tournament.thirdPlace')}
+            sublabel={t('tournament.thirdPlaceSubtitle')}
             teams={teams.data ?? []}
             value={third}
             onChange={(id) => setAtSlot(2, id)}
@@ -173,7 +174,7 @@ export function TournamentPredictionPage() {
               role="status"
             >
               <CheckCircle2 className="size-4" />
-              Palpite salvo!
+              {t('tournament.saved')}
             </p>
           )}
 
@@ -188,12 +189,10 @@ export function TournamentPredictionPage() {
           >
             {mutation.isPending ? (
               <>
-                <Loader2 className="animate-spin" /> Salvando…
+                <Loader2 className="animate-spin" /> {t('tournament.submitting')}
               </>
-            ) : current.data ? (
-              'Atualizar palpite'
             ) : (
-              'Salvar palpite'
+              t('tournament.submit')
             )}
           </Button>
         </form>
@@ -223,6 +222,7 @@ function Slot({
   assignedAtLabel,
   disabled,
 }: SlotProps) {
+  const { t } = useTranslation('predictions')
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -237,7 +237,9 @@ function Slot({
         value={value}
         onChange={onChange}
         assignedAtLabel={assignedAtLabel}
-        placeholder={`Escolher ${label.toLowerCase()}`}
+        placeholder={t('tournament.chooseLowercase', {
+          label: label.toLowerCase(),
+        })}
         disabled={disabled}
       />
     </div>

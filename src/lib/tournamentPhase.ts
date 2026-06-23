@@ -1,5 +1,6 @@
 import type { MatchStage } from '@/types/db'
 import type { MatchWithTeams } from '@/hooks/useMatches'
+import i18n from '@/i18n'
 
 /**
  * Slugs das tabs da página /standings. Cada slug agrupa 1+ stages do banco.
@@ -7,18 +8,39 @@ import type { MatchWithTeams } from '@/hooks/useMatches'
  */
 export type TabSlug = 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final'
 
-export const TABS: ReadonlyArray<{
+const TAB_STAGES: Record<TabSlug, ReadonlyArray<MatchStage>> = {
+  group: ['group'],
+  r32: ['round_of_32'],
+  r16: ['round_of_16'],
+  qf: ['quarter_final'],
+  sf: ['semi_final'],
+  final: ['third_place', 'final'],
+}
+
+const TAB_ORDER: ReadonlyArray<TabSlug> = [
+  'group',
+  'r32',
+  'r16',
+  'qf',
+  'sf',
+  'final',
+]
+
+/**
+ * Returns the tabs array localized via i18n. Call inside React render or
+ * after i18n is initialized.
+ */
+export function getTabs(): ReadonlyArray<{
   slug: TabSlug
   label: string
   stages: ReadonlyArray<MatchStage>
-}> = [
-  { slug: 'group', label: 'Fase de Grupos', stages: ['group'] },
-  { slug: 'r32', label: '32-avos', stages: ['round_of_32'] },
-  { slug: 'r16', label: 'Oitavas', stages: ['round_of_16'] },
-  { slug: 'qf', label: 'Quartas', stages: ['quarter_final'] },
-  { slug: 'sf', label: 'Semi', stages: ['semi_final'] },
-  { slug: 'final', label: 'Final', stages: ['third_place', 'final'] },
-] as const
+}> {
+  return TAB_ORDER.map((slug) => ({
+    slug,
+    label: i18n.t(`tabs.${slug}`, { ns: 'standings' }),
+    stages: TAB_STAGES[slug],
+  }))
+}
 
 const STAGE_TO_SLUG: Record<MatchStage, TabSlug> = {
   group: 'group',
@@ -35,7 +57,11 @@ export function tabForStage(stage: MatchStage): TabSlug {
 }
 
 export function tabBySlug(slug: string): TabSlug | null {
-  return TABS.some((t) => t.slug === slug) ? (slug as TabSlug) : null
+  return TAB_ORDER.includes(slug as TabSlug) ? (slug as TabSlug) : null
+}
+
+export function stagesForTab(slug: TabSlug): ReadonlyArray<MatchStage> {
+  return TAB_STAGES[slug]
 }
 
 /**
@@ -45,50 +71,33 @@ export function tabBySlug(slug: string): TabSlug | null {
  */
 export function currentPhase(matches: MatchWithTeams[]): TabSlug {
   let lastWithMatches: TabSlug | null = null
-  for (const tab of TABS) {
-    const list = matches.filter((m) => tab.stages.includes(m.stage))
-    if (list.length > 0) lastWithMatches = tab.slug
-    if (list.some((m) => m.status !== 'finished')) return tab.slug
+  for (const slug of TAB_ORDER) {
+    const stages = TAB_STAGES[slug]
+    const list = matches.filter((m) => stages.includes(m.stage))
+    if (list.length > 0) lastWithMatches = slug
+    if (list.some((m) => m.status !== 'finished')) return slug
   }
   return lastWithMatches ?? 'group'
 }
 
 /**
- * Texto descritivo abaixo do PageHeader, por aba.
+ * Texto descritivo abaixo do PageHeader, por aba. Locale-aware via i18n.
  */
 export function subtitleForTab(slug: TabSlug): string {
-  switch (slug) {
-    case 'group':
-      return 'Top 2 de cada grupo + 8 melhores 3ºs vão pros 32-avos'
-    case 'r32':
-      return '16 jogos · eliminação simples'
-    case 'r16':
-      return '8 jogos · eliminação simples'
-    case 'qf':
-      return '4 jogos · eliminação simples'
-    case 'sf':
-      return '2 jogos · vencedores vão pra final'
-    case 'final':
-      return 'Disputa de 3º lugar + final do torneio'
-  }
+  return i18n.t(`subtitles.${slug}`, { ns: 'standings' })
 }
 
 /**
  * Mensagem do empty state quando a fase ainda não tem jogos sincronizados.
  */
 export function emptyStateForTab(slug: TabSlug): string {
-  switch (slug) {
-    case 'r32':
-      return 'Chaveamento será preenchido após a fase de grupos (a partir de 27/06).'
-    case 'r16':
-      return 'Aguardando definição dos 32-avos.'
-    case 'qf':
-      return 'Aguardando definição das oitavas.'
-    case 'sf':
-      return 'Aguardando definição das quartas.'
-    case 'final':
-      return 'Aguardando definição das semifinais.'
-    case 'group':
-      return 'Nenhum jogo da fase de grupos encontrado.'
+  const keyMap: Record<TabSlug, string> = {
+    group: 'bracket.emptyGroup',
+    r32: 'bracket.emptyR32',
+    r16: 'bracket.emptyR16',
+    qf: 'bracket.emptyQF',
+    sf: 'bracket.emptySF',
+    final: 'bracket.emptyFinal',
   }
+  return i18n.t(keyMap[slug], { ns: 'standings' })
 }

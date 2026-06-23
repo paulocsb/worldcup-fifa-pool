@@ -1,0 +1,36 @@
+{
+  "pageTitle": "Classificação",
+  "subtitles": {
+    "group": "Top 2 de cada grupo + 8 melhores 3ºs vão pros 32-avos",
+    "r32": "16 jogos · eliminação simples",
+    "r16": "8 jogos · eliminação simples",
+    "qf": "4 jogos · eliminação simples",
+    "sf": "2 jogos · vencedores vão pra final",
+    "final": "Disputa de 3º lugar + final do torneio"
+  },
+  "tabs": {
+    "group": "Fase de Grupos",
+    "r32": "32-avos",
+    "r16": "Oitavas",
+    "qf": "Quartas",
+    "sf": "Semi",
+    "final": "Final"
+  },
+  "tableHeaders": {
+    "wins": "V",
+    "draws": "E",
+    "losses": "D",
+    "goalDiff": "SG",
+    "points": "PTS"
+  },
+  "loadError": "Erro: {{message}}",
+  "bracket": {
+    "tba": "A definir",
+    "emptyR32": "Chaveamento será preenchido após a fase de grupos (a partir de 27/06).",
+    "emptyR16": "Aguardando definição dos 32-avos.",
+    "emptyQF": "Aguardando definição das oitavas.",
+    "emptySF": "Aguardando definição das quartas.",
+    "emptyFinal": "Aguardando definição das semifinais.",
+    "emptyGroup": "Nenhum jogo da fase de grupos encontrado."
+  }
+}

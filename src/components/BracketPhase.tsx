@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { MatchStage, Prediction } from '@/types/db'
 import { MatchCard } from './MatchCard'
 import { MatchCardSkeleton } from './MatchCardSkeleton'
@@ -146,12 +147,14 @@ export function BracketPhase({ stages, slug }: BracketPhaseProps) {
  * Ex: 32-avos antes da fase de grupos terminar.
  */
 function PlaceholderCard({ match }: { match: MatchWithTeams }) {
+  const { t, i18n } = useTranslation('standings')
+  const locale = i18n.language?.startsWith('en') ? 'en-US' : 'pt-BR'
   const date = new Date(match.kickoff_at)
-  const dateLabel = date.toLocaleDateString('pt-BR', {
+  const dateLabel = date.toLocaleDateString(locale, {
     day: '2-digit',
     month: 'short',
   })
-  const timeLabel = date.toLocaleTimeString('pt-BR', {
+  const timeLabel = date.toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',
   })
@@ -173,11 +176,11 @@ function PlaceholderCard({ match }: { match: MatchWithTeams }) {
 
       <div className="flex items-center justify-center gap-3 py-3 text-sm text-muted-foreground">
         <span className="font-display text-base font-bold uppercase tracking-wider">
-          A definir
+          {t('bracket.tba')}
         </span>
         <span className="text-muted-foreground/40">×</span>
         <span className="font-display text-base font-bold uppercase tracking-wider">
-          A definir
+          {t('bracket.tba')}
         </span>
       </div>
     </article>

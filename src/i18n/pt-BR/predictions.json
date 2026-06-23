@@ -1,0 +1,61 @@
+{
+  "groups": {
+    "pageTitle": "Palpites por grupo",
+    "pageSubtitle": "Ordem final dos 4 times em cada grupo",
+    "statusSaved": "Salvo",
+    "statusLocked": "Encerrado",
+    "statusPending": "Pendente",
+    "footerEdit": "Toque para editar",
+    "footerSavedLocked": "Seu palpite (encerrado)",
+    "footerOpenEmpty": "Sem palpite ainda",
+    "footerLockedEmpty": "Encerrado sem palpite"
+  },
+  "groupDetail": {
+    "subtitle": "Ordem final dos 4 times",
+    "lockedNotice": "Palpite encerrado para este grupo.",
+    "positionLabels": [
+      "1º (1º colocado)",
+      "2º (vai aos 32-avos)",
+      "3º (vai se for top 8)",
+      "4º (eliminado)"
+    ],
+    "pointsIfRight": "{{count}} pts se acertar",
+    "duplicateError": "Cada time só pode aparecer uma vez na ordem.",
+    "submit": "Salvar palpite",
+    "submitting": "Salvando…",
+    "saved": "Palpite salvo.",
+    "openTeamSelect": "Escolher {{label}}"
+  },
+  "tournament": {
+    "pageTitle": "Palpite do torneio",
+    "pageSubtitle": "Quem fica em 1º, 2º e 3º lugar",
+    "rulesLink": "Regras",
+    "lockClosed": "Palpite encerrado — a fase de grupos terminou.",
+    "lockOpenHint_one": "Você pode editar até o fim da fase de grupos ({{count}} jogo restante).",
+    "lockOpenHint_other": "Você pode editar até o fim da fase de grupos ({{count}} jogos restantes).",
+    "champion": "Campeão",
+    "championSubtitle": "30 pts se acertar",
+    "runnerUp": "Vice-campeão",
+    "runnerUpSubtitle": "15 pts se acertar",
+    "thirdPlace": "Terceiro lugar",
+    "thirdPlaceSubtitle": "10 pts se acertar",
+    "submit": "Salvar palpite",
+    "submitting": "Salvando…",
+    "saved": "Palpite salvo.",
+    "chooseLowercase": "Escolher {{label}}"
+  },
+  "quickPredict": {
+    "exitAria": "Sair do modo rápido",
+    "homeLabel": "Casa",
+    "awayLabel": "Visitante",
+    "scoreShortcuts": "Atalhos de placar",
+    "skip": "Pular",
+    "save": "Salvar",
+    "saving": "Salvando…",
+    "allDoneTitle": "Tudo palpitado!",
+    "allDoneEmpty": "Você já palpitou em todos os jogos abertos. Volte quando novos jogos forem liberados.",
+    "allDoneCount_one": "Você palpitou {{count}} jogo nessa rodada. Boa sorte!",
+    "allDoneCount_other": "Você palpitou {{count}} jogos nessa rodada. Boa sorte!",
+    "backToHome": "Voltar pra Home"
+  }
+}

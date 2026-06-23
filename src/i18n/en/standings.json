@@ -1,0 +1,36 @@
+{
+  "pageTitle": "Standings",
+  "subtitles": {
+    "group": "Top 2 of each group + 8 best 3rds advance to the Round of 32",
+    "r32": "16 matches · single elimination",
+    "r16": "8 matches · single elimination",
+    "qf": "4 matches · single elimination",
+    "sf": "2 matches · winners go to the final",
+    "final": "Third-place play-off + tournament final"
+  },
+  "tabs": {
+    "group": "Group Stage",
+    "r32": "Round of 32",
+    "r16": "Round of 16",
+    "qf": "Quarter-finals",
+    "sf": "Semi",
+    "final": "Final"
+  },
+  "tableHeaders": {
+    "wins": "W",
+    "draws": "D",
+    "losses": "L",
+    "goalDiff": "GD",
+    "points": "PTS"
+  },
+  "loadError": "Error: {{message}}",
+  "bracket": {
+    "tba": "TBD",
+    "emptyR32": "Bracket will fill in after the group stage (from June 27).",
+    "emptyR16": "Awaiting Round of 32 results.",
+    "emptyQF": "Awaiting Round of 16 results.",
+    "emptySF": "Awaiting quarter-final results.",
+    "emptyFinal": "Awaiting semi-final results.",
+    "emptyGroup": "No group-stage matches found."
+  }
+}
