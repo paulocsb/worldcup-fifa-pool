@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom'
 import {
   ArrowLeft,
   CheckCircle2,
@@ -27,10 +32,23 @@ const POSITION_POINTS = [5, 5, 3, 2]
 
 export function GroupDetailPage() {
   const params = useParams<{ letter: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
   const letterParam = (params.letter ?? '').toUpperCase()
   const letter = ALL_GROUPS.includes(letterParam as GroupLetter)
     ? (letterParam as GroupLetter)
     : null
+
+  // Mirror PageHeader: pop history when available so the back button doesn't
+  // push a fresh entry to /predictions/groups (which would create a navigation
+  // loop with the PageHeader's own navigate(-1)).
+  function handleBack() {
+    if (location.key !== 'default') {
+      navigate(-1)
+    } else {
+      navigate('/predictions/groups', { replace: true })
+    }
+  }
 
   const auth = useAuth()
   const userId = auth.session?.user.id
@@ -128,13 +146,14 @@ export function GroupDetailPage() {
           className="pointer-events-none absolute inset-y-0 left-0 w-1.5 [background-color:var(--accent-c)]"
         />
         <div className="flex items-center gap-3">
-          <Link
-            to="/predictions/groups"
+          <button
+            type="button"
+            onClick={handleBack}
             aria-label="Voltar"
-            className="grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95"
           >
             <ArrowLeft className="size-5" />
-          </Link>
+          </button>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h1 className="font-display text-3xl font-black uppercase leading-tight tracking-tight md:text-4xl">
