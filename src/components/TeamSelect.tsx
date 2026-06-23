@@ -26,19 +26,24 @@ function SelectedTeamLabel({ team }: { team: Team }) {
 
 interface TeamSelectProps {
   teams: Team[]
-  /** ids que NÃO podem ser escolhidos (já escolhidos em outros campos) */
-  excludeIds?: number[]
   value: number | null
   onChange: (id: number) => void
+  /**
+   * Returns a short label (e.g., "2º", "Campeão") when the team is already
+   * assigned to another slot in the same screen. The team stays selectable —
+   * selecting it triggers a swap on the parent (via onChange). Receivers
+   * decide swap semantics.
+   */
+  assignedAtLabel?: (teamId: number) => string | null
   placeholder?: string
   disabled?: boolean
 }
 
 export function TeamSelect({
   teams,
-  excludeIds = [],
   value,
   onChange,
+  assignedAtLabel,
   placeholder = 'Escolher seleção',
   disabled,
 }: TeamSelectProps) {
@@ -53,7 +58,6 @@ export function TeamSelect({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return teams.filter((t) => {
-      if (excludeIds.includes(t.id) && t.id !== value) return false
       if (!q) return true
       return (
         t.name.toLowerCase().includes(q) ||
@@ -61,7 +65,7 @@ export function TeamSelect({
         `grupo ${t.group_letter.toLowerCase()}`.includes(q)
       )
     })
-  }, [teams, excludeIds, value, query])
+  }, [teams, query])
 
   return (
     <>
@@ -121,6 +125,10 @@ export function TeamSelect({
               ) : (
                 filtered.map((t) => {
                   const isSelected = t.id === value
+                  const otherSlotLabel =
+                    !isSelected && assignedAtLabel
+                      ? assignedAtLabel(t.id)
+                      : null
                   return (
                     <li key={t.id}>
                       <button
@@ -141,9 +149,16 @@ export function TeamSelect({
                             Grupo {t.group_letter}
                           </span>
                         </div>
-                        {isSelected && (
-                          <Check className="size-4 shrink-0 text-primary" />
-                        )}
+                        <div className="flex items-center gap-2">
+                          {otherSlotLabel && (
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              em {otherSlotLabel}
+                            </span>
+                          )}
+                          {isSelected && (
+                            <Check className="size-4 shrink-0 text-primary" />
+                          )}
+                        </div>
                       </button>
                     </li>
                   )

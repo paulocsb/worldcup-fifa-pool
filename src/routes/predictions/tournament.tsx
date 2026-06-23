@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, Loader2, Lock, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -28,11 +28,16 @@ export function TournamentPredictionPage() {
   const [runnerUp, setRunnerUp] = useState<number | null>(null)
   const [third, setThird] = useState<number | null>(null)
 
+  // Hydrate from server only on first load. Without this guard, any refetch
+  // (window focus, realtime invalidation, staleTime tick) would overwrite
+  // user edits in flight, making the dropdowns feel uneditable.
+  const hydrated = useRef(false)
   useEffect(() => {
-    if (current.data) {
+    if (current.data && !hydrated.current) {
       setChampion(current.data.champion_team_id)
       setRunnerUp(current.data.runner_up_team_id)
       setThird(current.data.third_place_team_id)
+      hydrated.current = true
     }
   }, [current.data])
 
@@ -40,6 +45,32 @@ export function TournamentPredictionPage() {
   const allFilled = champion && runnerUp && third
   const distinct =
     champion !== runnerUp && champion !== third && runnerUp !== third
+
+  // Tournament slot semantics: champion / runner-up / 3rd. Picking a team
+  // that's already in another slot swaps the two — same UX as group-detail.
+  const slots: Array<{
+    label: string
+    value: number | null
+    set: (v: number | null) => void
+  }> = [
+    { label: 'Campeão', value: champion, set: setChampion },
+    { label: 'Vice', value: runnerUp, set: setRunnerUp },
+    { label: '3º', value: third, set: setThird },
+  ]
+  function slotLabelOfTeam(teamId: number, excludeIdx: number): string | null {
+    const idx = slots.findIndex(
+      (s, i) => i !== excludeIdx && s.value === teamId,
+    )
+    return idx >= 0 ? slots[idx].label : null
+  }
+  function setAtSlot(idx: number, teamId: number) {
+    const currentAtIdx = slots[idx].value
+    const otherIdx = slots.findIndex(
+      (s, i) => i !== idx && s.value === teamId,
+    )
+    if (otherIdx >= 0) slots[otherIdx].set(currentAtIdx)
+    slots[idx].set(teamId)
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -101,8 +132,8 @@ export function TournamentPredictionPage() {
             sublabel="30 pts se acertar"
             teams={teams.data ?? []}
             value={champion}
-            onChange={setChampion}
-            excludeIds={[runnerUp, third].filter(Boolean) as number[]}
+            onChange={(id) => setAtSlot(0, id)}
+            assignedAtLabel={(tid) => slotLabelOfTeam(tid, 0)}
             disabled={!isOpen}
           />
           <Slot
@@ -113,8 +144,8 @@ export function TournamentPredictionPage() {
             sublabel="15 pts se acertar"
             teams={teams.data ?? []}
             value={runnerUp}
-            onChange={setRunnerUp}
-            excludeIds={[champion, third].filter(Boolean) as number[]}
+            onChange={(id) => setAtSlot(1, id)}
+            assignedAtLabel={(tid) => slotLabelOfTeam(tid, 1)}
             disabled={!isOpen}
           />
           <Slot
@@ -125,8 +156,8 @@ export function TournamentPredictionPage() {
             sublabel="10 pts se acertar"
             teams={teams.data ?? []}
             value={third}
-            onChange={setThird}
-            excludeIds={[champion, runnerUp].filter(Boolean) as number[]}
+            onChange={(id) => setAtSlot(2, id)}
+            assignedAtLabel={(tid) => slotLabelOfTeam(tid, 2)}
             disabled={!isOpen}
           />
 
@@ -178,7 +209,7 @@ interface SlotProps {
   teams: Team[]
   value: number | null
   onChange: (id: number) => void
-  excludeIds: number[]
+  assignedAtLabel: (teamId: number) => string | null
   disabled?: boolean
 }
 
@@ -189,7 +220,7 @@ function Slot({
   teams,
   value,
   onChange,
-  excludeIds,
+  assignedAtLabel,
   disabled,
 }: SlotProps) {
   return (
@@ -205,7 +236,7 @@ function Slot({
         teams={teams}
         value={value}
         onChange={onChange}
-        excludeIds={excludeIds}
+        assignedAtLabel={assignedAtLabel}
         placeholder={`Escolher ${label.toLowerCase()}`}
         disabled={disabled}
       />

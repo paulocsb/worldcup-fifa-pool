@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -22,6 +22,7 @@ import {
 import { useTeams } from '@/hooks/useTeams'
 
 const POSITION_LABELS = ['1º (1º colocado)', '2º (vai aos 32-avos)', '3º (vai se for top 8)', '4º (eliminado)']
+const POSITION_LABELS_SHORT = ['1º', '2º', '3º', '4º']
 const POSITION_POINTS = [5, 5, 3, 2]
 
 export function GroupDetailPage() {
@@ -48,14 +49,21 @@ export function GroupDetailPage() {
     [predictions.data, letter],
   )
 
+  // Hydrate from server only on first load per group letter. Without this
+  // guard, any refetch (window focus, realtime invalidation, staleTime tick)
+  // would overwrite user edits in flight — making the dropdowns feel
+  // uneditable. The ref resets when the letter param changes so navigating
+  // to a different group reads from the server again.
+  const hydratedFor = useRef<string | null>(null)
   useEffect(() => {
-    if (current) {
+    if (current && hydratedFor.current !== letter) {
       setFirst(current.first_team_id)
       setSecond(current.second_team_id)
       setThird(current.third_team_id)
       setFourth(current.fourth_team_id)
+      hydratedFor.current = letter
     }
-  }, [current])
+  }, [current, letter])
 
   if (!letter) return <Navigate to="/predictions/groups" replace />
 
@@ -66,7 +74,7 @@ export function GroupDetailPage() {
 
   const groupTeams = teams.data?.filter((t) => t.group_letter === letter) ?? []
   const isOpen = locks.data?.[letter] ?? false
-  const positions: Array<[number | null, (id: number) => void]> = [
+  const positions: Array<[number | null, (v: number | null) => void]> = [
     [first, setFirst],
     [second, setSecond],
     [third, setThird],
@@ -74,6 +82,29 @@ export function GroupDetailPage() {
   ]
   const allFilled = positions.every(([v]) => v !== null)
   const allDistinct = new Set(positions.map(([v]) => v)).size === 4
+
+  // Position label (1º / 2º / 3º / 4º) for a team currently assigned to a
+  // slot other than `excludeIdx`. Used to show "em 2º" inside the dropdown.
+  function slotLabelOfTeam(teamId: number, excludeIdx: number): string | null {
+    const idx = positions.findIndex(
+      ([v], i) => i !== excludeIdx && v === teamId,
+    )
+    return idx >= 0 ? POSITION_LABELS_SHORT[idx] : null
+  }
+
+  // Set a team at a position. If the team is already at another position,
+  // swap: that other position takes whatever was previously at `idx` (which
+  // may be null), so the user never gets stuck.
+  function setAtPosition(idx: number, teamId: number) {
+    const currentAtIdx = positions[idx][0]
+    const otherIdx = positions.findIndex(
+      ([v], i) => i !== idx && v === teamId,
+    )
+    if (otherIdx >= 0) {
+      positions[otherIdx][1](currentAtIdx)
+    }
+    positions[idx][1](teamId)
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -131,11 +162,7 @@ export function GroupDetailPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          {positions.map(([value, setValue], idx) => {
-            const others = positions
-              .filter((_, i) => i !== idx)
-              .map(([v]) => v)
-              .filter(Boolean) as number[]
+          {positions.map(([value], idx) => {
             return (
               <div key={idx} className="space-y-2">
                 <div className="flex items-baseline justify-between">
@@ -149,8 +176,8 @@ export function GroupDetailPage() {
                 <TeamSelect
                   teams={groupTeams}
                   value={value}
-                  onChange={setValue}
-                  excludeIds={others}
+                  onChange={(id) => setAtPosition(idx, id)}
+                  assignedAtLabel={(tid) => slotLabelOfTeam(tid, idx)}
                   placeholder={`Escolher ${idx + 1}º`}
                   disabled={!isOpen}
                 />
