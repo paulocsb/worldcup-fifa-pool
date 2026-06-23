@@ -195,6 +195,7 @@ Deno.serve(async (req) => {
       elapsed_minutes: status === 'live' ? f.fixture.status.elapsed : null,
       live_status_short: status === 'live' ? f.fixture.status.short : null,
       venue: f.fixture.venue.name,
+      venue_city: f.fixture.venue.city,
       last_synced_at: new Date().toISOString(),
     }
 

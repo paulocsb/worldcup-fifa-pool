@@ -13,6 +13,7 @@ import { useRealtimeInvalidator } from '@/hooks/useRealtimeInvalidator'
 import { dateKey, sectionDateLabel } from '@/lib/format'
 import type { TabSlug } from '@/lib/tournamentPhase'
 import { emptyStateForTab } from '@/lib/tournamentPhase'
+import { venueLabel } from '@/lib/venueCountry'
 
 interface BracketPhaseProps {
   /** Stages incluídos nesta tab (ex: ['third_place', 'final']) */
@@ -164,9 +165,9 @@ function PlaceholderCard({ match }: { match: MatchWithTeams }) {
         </span>
       </header>
 
-      {match.venue && (
+      {(match.venue || match.venue_city) && (
         <div className="mb-3 truncate text-[11px] text-muted-foreground">
-          {match.venue}
+          {venueLabel(match.venue, match.venue_city)}
         </div>
       )}
 

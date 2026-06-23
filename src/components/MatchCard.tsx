@@ -4,6 +4,7 @@ import type { MatchWithTeams } from '@/hooks/useMatches'
 import type { Prediction, Team } from '@/types/db'
 import { isPredictionOpen } from '@/lib/matchLock'
 import { groupColorToken, phaseColorToken } from '@/lib/groupColors'
+import { venueLabel } from '@/lib/venueCountry'
 import { cn } from '@/lib/utils'
 import { TeamFlag } from './TeamFlag'
 import { MatchStatusBadge } from './MatchStatusBadge'
@@ -121,9 +122,9 @@ export function MatchCard({ match, prediction, onPredict }: MatchCardProps) {
           <MatchStatusBadge match={match} />
         </header>
 
-        {match.venue && (
+        {(match.venue || match.venue_city) && (
           <div className="mb-2 truncate text-[11px] text-muted-foreground">
-            {match.venue}
+            {venueLabel(match.venue, match.venue_city)}
           </div>
         )}
 

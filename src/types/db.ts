@@ -194,6 +194,7 @@ export type Database = {
           statistics: Json | null
           status: Database["public"]["Enums"]["match_status"]
           venue: string | null
+          venue_city: string | null
         }
         Insert: {
           away_score?: number | null
@@ -220,6 +221,7 @@ export type Database = {
           statistics?: Json | null
           status?: Database["public"]["Enums"]["match_status"]
           venue?: string | null
+          venue_city?: string | null
         }
         Update: {
           away_score?: number | null
@@ -246,6 +248,7 @@ export type Database = {
           statistics?: Json | null
           status?: Database["public"]["Enums"]["match_status"]
           venue?: string | null
+          venue_city?: string | null
         }
         Relationships: [
           {

@@ -18,6 +18,7 @@ import { usePageBackground, type PageTheme } from '@/hooks/usePageBackground'
 import { PHASE_LABEL_PT } from '@/lib/groupColors'
 import { cn } from '@/lib/utils'
 import { kickoffLabel } from '@/lib/format'
+import { venueLabel } from '@/lib/venueCountry'
 import type { Team } from '@/types/db'
 
 function ScoreboardTeam({ team }: { team: Team | null }) {
@@ -102,8 +103,9 @@ export function MatchDetailPage() {
     m.stage === 'group' && m.group_letter
       ? `Grupo ${m.group_letter}`
       : PHASE_LABEL_PT[m.stage]
+  const venueText = venueLabel(m.venue, m.venue_city)
   const headerSubtitle = `${kickoffLabel(m.kickoff_at)}${
-    m.venue ? ` · ${m.venue}` : ''
+    venueText ? ` · ${venueText}` : ''
   }`
   const headerAccent: 'primary' | 'gold' =
     m.stage === 'final' || m.stage === 'third_place' ? 'gold' : 'primary'

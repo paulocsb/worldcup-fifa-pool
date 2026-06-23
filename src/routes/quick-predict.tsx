@@ -23,6 +23,7 @@ import {
 } from '@/hooks/usePredictions'
 import { isPredictionOpen } from '@/lib/matchLock'
 import { kickoffLabel } from '@/lib/format'
+import { venueLabel } from '@/lib/venueCountry'
 import { cn } from '@/lib/utils'
 
 const QUICK_PRESETS: Array<[number, number]> = [
@@ -221,9 +222,9 @@ export function QuickPredictPage() {
               {kickoffLabel(current.kickoff_at)}
             </span>
           </div>
-          {current.venue && (
+          {(current.venue || current.venue_city) && (
             <p className="mb-4 text-[11px] text-muted-foreground">
-              {current.venue}
+              {venueLabel(current.venue, current.venue_city)}
             </p>
           )}
 
