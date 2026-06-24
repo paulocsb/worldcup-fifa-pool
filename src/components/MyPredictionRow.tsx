@@ -4,6 +4,7 @@ import type { MatchWithTeams } from "@/hooks/useMatches";
 import type { Prediction, Score } from "@/types/db";
 import { useScoringConfig } from "@/hooks/useScoringConfig";
 import { kickoffLabel } from "@/lib/format";
+import { groupColorToken, phaseColorToken } from "@/lib/groupColors";
 import { TeamFlag } from "./TeamFlag";
 import { GroupPill } from "./GroupPill";
 import { PhasePill } from "./PhasePill";
@@ -18,19 +19,18 @@ interface Props {
 }
 
 /**
- * Card da tela /me/predictions. O placar do PALPITE é o protagonista (centro,
- * grande); o resultado real aparece logo abaixo em estilo discreto.
+ * Card da tela /me/predictions. Alinhado ao idioma do MatchCard redesenhado:
+ * moldura com borda na cor do grupo/fase (accent), header band tonal, pílula
+ * solid à DIREITA e status à ESQUERDA. O corpo equilibra PALPITE × RESULTADO
+ * REAL lado a lado (rótulos "Palpite"/"Real"/"Parcial") para a leitura de
+ * "acertei?" ser instantânea.
  *
- * Estados visuais (priority order):
- *   - ao vivo: borda vermelha + pill pulsante "ao vivo"
- *   - exato: borda gold + coroa + palpite em gold
- *   - resultado certo (>0 pts): "+N pts" em primary
- *   - 0 pts: muted
- *   - finished pré-cutoff (ex: MD1): tag "Não pontua" — palpite registrado,
- *     mas não contabiliza pontos por regra de equidade
- *   - aguardando: pill "aguardando" no topo, sem linha de resultado
+ * Precedência visual da moldura: exato (gold) > ao vivo (vermelho) > accent do
+ * grupo/fase (estado comum). Gold/vermelho são cores NOMEADAS; o accent vem do
+ * Surface como canais HSL crus — por isso só ativamos o accent do Surface no
+ * estado comum, evitando concorrência de bordas.
  *
- * Click → match-detail.
+ * Click → match-detail (card inteiro é Link, sem CTA/footer).
  */
 export function MyPredictionRow({ match, prediction, score }: Props) {
   const scoring = useScoringConfig();
@@ -52,31 +52,38 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
   const isFinishedNotScoring =
     isFinished && points === null && matchdayPreCutoff;
 
+  // Token de cor de identidade (grupo na fase de grupos, senão fase). Só vira
+  // accent do Surface no estado comum — exato/live dominam com cores nomeadas.
+  const accentToken =
+    match.stage === "group"
+      ? groupColorToken(match.group_letter)
+      : phaseColorToken(match.stage);
+  const useAccent = !isExact && !isLive && !!accentToken;
+
   return (
     <Surface
       as="div"
-      variant="card"
+      variant={useAccent ? "tonal" : "card"}
+      accent={useAccent ? (accentToken ?? undefined) : undefined}
       interactive
-      padding="sm"
+      padding="none"
       className={cn(
-        "block",
-        // Prioridade visual: exact > live > normal. Cores nomeadas
-        // (gold/destructive) sobrescrevem a borda/bg neutros do Surface card.
+        "block overflow-hidden",
+        // Exato e ao vivo sobrescrevem a borda/bg com cores NOMEADAS (vencem o
+        // accent do grupo/fase). Caso comum: a borda accent vem do Surface tonal.
         isExact
           ? "border-gold/60 bg-gold/[0.06] hover:border-gold"
           : isLive
             ? "border-destructive/50 bg-destructive/[0.04] hover:border-destructive/70"
-            : "hover:border-border",
+            : undefined,
       )}
     >
       <Link to={`/matches/${match.id}`} className="block">
-        {/* Header: pill de contexto + indicador de estado/pontos */}
-        <div className="mb-2.5 flex items-center justify-between">
-          {match.group_letter ? (
-            <GroupPill letter={match.group_letter} size="sm" withLabel />
-          ) : (
-            <PhasePill stage={match.stage} size="sm" variant="tinted" />
-          )}
+        {/* Header: status à ESQUERDA, pílula de identidade à DIREITA (solid).
+            Band NEUTRA (bg-muted/40): a identidade do grupo/fase já vem da
+            BORDA accent do card + da pílula solid. Tom neutro evita conflito
+            entre os pontos coloridos (verde/gold) e grupos vermelhos/coral. */}
+        <div className="flex items-center justify-between gap-2 bg-muted/40 px-3 py-2">
           <StatusIndicator
             score={score}
             isExact={isExact}
@@ -85,76 +92,142 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
             postponedShort={match.live_status_short}
             isFinishedNotScoring={isFinishedNotScoring}
           />
+          <div className="shrink-0">
+            {match.group_letter ? (
+              <GroupPill letter={match.group_letter} variant="solid" size="sm" />
+            ) : (
+              <PhasePill stage={match.stage} variant="solid" size="sm" />
+            )}
+          </div>
         </div>
 
-        {/* Scoreboard — PALPITE é o protagonista no centro */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-          <div className="flex min-w-0 items-center justify-end gap-2">
+        {/* Corpo: times empurrados para as BORDAS (casa à esquerda, visitante à
+            direita) para usar a largura de forma simétrica; o bloco central de
+            comparação (palpite × real) fica verdadeiramente centralizado. */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 pb-3 pt-1">
+          {/* Casa: CÓDIGO na borda externa (esq), bandeira pro centro — mesma
+              ordem do MatchCard (código fora, bandeira dentro). */}
+          <div className="flex min-w-0 items-center justify-start gap-2">
             <span className="font-display truncate text-base font-bold uppercase tracking-tight">
               {match.home_team?.code ?? "—"}
             </span>
             <TeamFlag team={match.home_team} size={28} />
           </div>
 
-          <div className="px-1 text-center">
-            <span
-              className={cn(
-                "font-display text-2xl font-black leading-none tabular-nums",
-                isExact && "text-gold",
+          {/* Bloco central de comparação. Quando há placar (real/parcial) usa um
+              GRID de 2 colunas (rótulo | placar): a coluna 1 assume a largura do
+              rótulo mais largo, então os placares (coluna 2) começam no MESMO x
+              nas duas linhas e empilham alinhados. tabular-nums garante dígitos
+              de mesma largura para "2−1" cair sobre "1−0". Quando é só texto
+              (início/aviso) trata como sub-linha fora do grid. */}
+          <div className="flex flex-col items-center gap-0.5 px-1">
+            <div className="grid grid-cols-[auto_auto] items-baseline gap-x-2">
+              <ScoreLine
+                label={t("myPrediction.guess")}
+                home={prediction.home_score}
+                away={prediction.away_score}
+                tone={isExact ? "gold" : "default"}
+                primary
+              />
+              {showRealScore && (
+                <ScoreLine
+                  label={isLive ? t("partial") : t("myPrediction.real")}
+                  home={match.home_score}
+                  away={match.away_score}
+                  tone={isLive ? "live" : isExact ? "gold" : "muted"}
+                />
               )}
-            >
-              {prediction.home_score}
-              <span className="mx-1 text-muted-foreground/50">–</span>
-              {prediction.away_score}
-            </span>
+            </div>
+            {!showRealScore &&
+              (isPostponed ? (
+                <span className="text-[11px] font-medium text-amber-500">
+                  {match.live_status_short === "SUSP"
+                    ? t("suspendedWaiting")
+                    : t("postponedWaitingDate")}
+                </span>
+              ) : (
+                <span className="text-center text-[11px] text-muted-foreground">
+                  <span className="uppercase tracking-wider">
+                    {t("startsAt")}
+                  </span>{" "}
+                  <span className="font-medium text-foreground/70">
+                    {kickoffLabel(match.kickoff_at)}
+                  </span>
+                </span>
+              ))}
           </div>
 
-          <div className="flex min-w-0 items-center gap-2">
+          {/* Visitante: bandeira pro centro, CÓDIGO na borda externa (dir) —
+              espelha o MatchCard (código fora, bandeira dentro). */}
+          <div className="flex min-w-0 items-center justify-end gap-2">
             <TeamFlag team={match.away_team} size={28} />
             <span className="font-display truncate text-base font-bold uppercase tracking-tight">
               {match.away_team?.code ?? "—"}
             </span>
           </div>
         </div>
-
-        {/* Sub-linha abaixo do palpite (mesmo espaço, 3 cenários):
-            1. Live ou finalizada → "Parcial/Resultado X-Y"
-            2. Postponed → "Aguardando nova data" ou "Suspenso no minuto N"
-            3. Scheduled → "Início [data/hora]" */}
-        {showRealScore ? (
-          <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            <span className="uppercase tracking-wider">
-              {isLive ? t("partial") : t("result")}
-            </span>{" "}
-            <span
-              className={cn(
-                "font-display font-bold tabular-nums",
-                isLive
-                  ? "text-destructive"
-                  : isExact
-                    ? "text-gold"
-                    : "text-foreground/70",
-              )}
-            >
-              {match.home_score ?? "-"}–{match.away_score ?? "-"}
-            </span>
-          </p>
-        ) : isPostponed ? (
-          <p className="mt-2 text-center text-[11px] text-amber-500">
-            {match.live_status_short === "SUSP"
-              ? t("suspendedWaiting")
-              : t("postponedWaitingDate")}
-          </p>
-        ) : (
-          <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            <span className="uppercase tracking-wider">{t("startsAt")}</span>{" "}
-            <span className="font-medium text-foreground/70">
-              {kickoffLabel(match.kickoff_at)}
-            </span>
-          </p>
-        )}
       </Link>
     </Surface>
+  );
+}
+
+/**
+ * Linha rotulada de placar no centro do confronto. Renderiza DUAS células
+ * diretas do grid pai (`grid-cols-[auto_auto]`): rótulo na coluna 1, placar na
+ * coluna 2. Assim a coluna 1 assume a largura do rótulo mais largo ("Palpite")
+ * e os placares (coluna 2) começam no MESMO x — empilhando alinhados.
+ *
+ * Os dois placares têm o MESMO tamanho de fonte (`text-lg`) e `tabular-nums`,
+ * garantindo dígitos de mesma largura para o traço de "2−1" cair exatamente
+ * sobre o de "1−0". O palpite (`primary`) destaca-se pelo peso/cor, não pelo
+ * tamanho; o real é distinguido pelo rótulo e tom mais discreto. Fragmento sem
+ * wrapper para as células participarem diretamente do grid.
+ */
+function ScoreLine({
+  label,
+  home,
+  away,
+  tone,
+  primary = false,
+}: {
+  label: string;
+  home: number | null;
+  away: number | null;
+  tone: "default" | "gold" | "live" | "muted";
+  primary?: boolean;
+}) {
+  return (
+    <>
+      <span
+        className={cn(
+          "justify-self-end text-right text-[9px] font-semibold uppercase tracking-wider",
+          tone === "live"
+            ? "text-destructive/80"
+            : tone === "gold"
+              ? "text-gold/80"
+              : "text-muted-foreground",
+        )}
+      >
+        {label}
+      </span>
+      <span
+        className={cn(
+          "font-display text-lg leading-none tabular-nums",
+          primary ? "font-black" : "font-bold",
+          tone === "gold"
+            ? "text-gold"
+            : tone === "live"
+              ? "text-destructive"
+              : tone === "muted"
+                ? "text-foreground/70"
+                : "text-foreground",
+        )}
+      >
+        {home ?? "-"}
+        <span className="mx-0.5 text-muted-foreground/50">–</span>
+        {away ?? "-"}
+      </span>
+    </>
   );
 }
 

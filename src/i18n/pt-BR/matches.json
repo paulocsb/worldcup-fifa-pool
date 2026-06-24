@@ -58,7 +58,9 @@
     "zeroPoints_other": "{{count}} pts",
     "noScoring": "Não pontua",
     "waiting": "Aguardando",
-    "live": "Ao vivo"
+    "live": "Ao vivo",
+    "guess": "Palpite",
+    "real": "Real"
   },
   "mePage": {
     "title": "Meus palpites",

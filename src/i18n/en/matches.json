@@ -58,7 +58,9 @@
     "zeroPoints_other": "{{count}} pts",
     "noScoring": "Doesn't score",
     "waiting": "Waiting",
-    "live": "Live"
+    "live": "Live",
+    "guess": "Guess",
+    "real": "Actual"
   },
   "mePage": {
     "title": "My predictions",
