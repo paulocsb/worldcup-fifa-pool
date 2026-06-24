@@ -11,7 +11,7 @@ if (!('crypto' in globalThis)) {
 
 export default defineConfig({
   plugins: [react(), VitePWA({
-    registerType: 'prompt',
+    registerType: 'autoUpdate',
     includeAssets: [
       'pwa-icon-192.png',
       'pwa-icon-512.png',
@@ -60,6 +60,9 @@ export default defineConfig({
         /^\/functions\/v1/,
       ],
       globPatterns: ['**/*.{js,css,html,svg,ico,woff2}'],
+      cleanupOutdatedCaches: true,
+      skipWaiting: true,
+      clientsClaim: true,
       runtimeCaching: [
         {
           // Bandeiras de seleções (flagcdn.com)
