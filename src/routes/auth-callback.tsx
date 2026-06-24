@@ -80,7 +80,9 @@ export function AuthCallback() {
   return (
     <main className="container flex min-h-svh flex-col items-center justify-center gap-4 py-12">
       <div className="space-y-2 text-center">
-        <h1 className="text-xl font-bold">{t('signInFailed')}</h1>
+        <h1 className="font-display text-2xl font-black uppercase leading-tight tracking-tight">
+          {t('signInFailed')}
+        </h1>
         <p className="max-w-sm text-sm text-muted-foreground">
           {state.message}
         </p>

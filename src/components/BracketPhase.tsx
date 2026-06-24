@@ -31,6 +31,7 @@ interface BracketPhaseProps {
  * - Sem matches no banco → empty state
  */
 export function BracketPhase({ stages, slug }: BracketPhaseProps) {
+  const { t } = useTranslation('matches')
   const auth = useAuth()
   const matches = useMatches()
   const predictions = useMyPredictions(auth.session?.user.id)
@@ -110,7 +111,7 @@ export function BracketPhase({ stages, slug }: BracketPhaseProps) {
           <section key={key} className="space-y-3">
             <SectionHeader
               title={label}
-              trailing={`${dayMatches.length} jogo${dayMatches.length === 1 ? '' : 's'}`}
+              trailing={t('matchesCount', { count: dayMatches.length })}
               sticky
             />
             <ul className="space-y-3">

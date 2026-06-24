@@ -45,7 +45,7 @@ export function ProfilePage() {
   const accuracy = stats.data?.accuracy ?? 0
 
   return (
-    <section className="container space-y-6 py-6">
+    <section className="container space-y-6 py-4">
       <header className="flex flex-col items-center gap-3 text-center">
         {profile.data && (
           <Avatar
@@ -56,7 +56,7 @@ export function ProfilePage() {
           />
         )}
         <div>
-          <h1 className="font-display text-3xl font-black uppercase tracking-tight">
+          <h1 className="font-display text-3xl font-black uppercase leading-tight tracking-tight md:text-4xl">
             {profile.data?.display_name}
           </h1>
           <p className="text-sm text-muted-foreground">

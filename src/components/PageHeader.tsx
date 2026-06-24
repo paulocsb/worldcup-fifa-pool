@@ -18,9 +18,22 @@ interface PageHeaderProps {
   trailing?: React.ReactNode
   /** Conteúdo opcional ABAIXO da linha do título (banner, hero, etc) */
   banner?: React.ReactNode
-  /** Cor do accent bar inferior — padrão: primary */
-  accent?: 'primary' | 'gold' | 'destructive' | string
+  /**
+   * Cor do accent bar inferior — padrão: `primary`.
+   *
+   * Valores nomeados (`primary` | `gold` | `destructive`) resolvem para
+   * classes Tailwind reais. Qualquer outra string é tratada como uma cor
+   * CSS arbitrária e aplicada via inline `style` (ex.: `'hsl(var(--group-e))'`),
+   * já que classes Tailwind dinâmicas não sobrevivem ao purge.
+   */
+  accent?: 'primary' | 'gold' | 'destructive' | (string & {})
   className?: string
+}
+
+const NAMED_ACCENT_CLASS: Record<'primary' | 'gold' | 'destructive', string> = {
+  primary: 'bg-primary',
+  gold: 'bg-gold',
+  destructive: 'bg-destructive',
 }
 
 /**
@@ -53,17 +66,18 @@ export function PageHeader({
     }
   }
 
-  const accentColor =
-    accent === 'primary'
-      ? 'bg-primary'
-      : accent === 'gold'
-        ? 'bg-gold'
-        : accent === 'destructive'
-          ? 'bg-destructive'
-          : `[background-color:${accent}]`
+  const namedAccentClass =
+    accent in NAMED_ACCENT_CLASS
+      ? NAMED_ACCENT_CLASS[accent as keyof typeof NAMED_ACCENT_CLASS]
+      : null
+  // Strings arbitrárias (ex.: 'hsl(var(--group-e))') vão via inline style,
+  // pois classes Tailwind dinâmicas não sobrevivem ao purge.
+  const accentStyle = namedAccentClass
+    ? undefined
+    : ({ backgroundColor: accent } as React.CSSProperties)
 
   return (
-    <header className={cn('relative space-y-2 pb-3', className)}>
+    <header className={cn('space-y-3', className)}>
       <div className="flex items-start gap-3">
         {backTo && (
           <button
@@ -83,21 +97,22 @@ export function PageHeader({
           {subtitle && (
             <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
           )}
+          {/* Accent bar — assinatura visual, alinhada à esquerda do título
+              (dentro da coluna, então acompanha o recuo do back button). */}
+          <span
+            aria-hidden
+            style={accentStyle}
+            className={cn(
+              'mt-2 block h-1 w-12 rounded-full',
+              namedAccentClass,
+            )}
+          />
         </div>
 
         {trailing && <div className="shrink-0 self-center">{trailing}</div>}
       </div>
 
       {banner}
-
-      {/* Accent bar inferior — assinatura visual */}
-      <span
-        aria-hidden
-        className={cn(
-          'pointer-events-none absolute -bottom-0 left-0 h-1 w-12 rounded-full',
-          accentColor,
-        )}
-      />
     </header>
   )
 }

@@ -270,6 +270,11 @@
   .safe-top {
     padding-top: max(env(safe-area-inset-top), 0.5rem);
   }
+  /* Apenas o inset do notch (0 quando não há). Para somar ao py-* interno
+     das telas sem criar espaço extra em devices sem notch. */
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
   /* Reserva espaço pro BottomNav fixo + safe-area do home indicator (iOS) */
   .pb-nav {
     padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));

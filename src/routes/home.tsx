@@ -147,7 +147,7 @@ export function HomePage() {
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
               {t('hello')}
             </p>
-            <h1 className="font-display truncate text-3xl font-black uppercase tracking-tight">
+            <h1 className="font-display truncate text-3xl font-black uppercase leading-tight tracking-tight md:text-4xl">
               {profile.data?.display_name ?? '—'}
             </h1>
           </div>

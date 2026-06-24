@@ -338,9 +338,7 @@ function MatchPalpites({
           <div className="space-y-4">
             {finishedGroups.map((g) => (
               <div key={g.key} className="space-y-2">
-                <h3 className="font-display text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
-                  {g.title}
-                </h3>
+                <SectionHeader title={g.title} tone="muted" size="sm" />
                 <ul className="space-y-2">
                   {g.rows.map((r) => (
                     <li key={r.match.id}>
@@ -369,9 +367,7 @@ function MatchPalpites({
           <div className="space-y-4">
             {scheduledGroups.map((g) => (
               <div key={g.key} className="space-y-2">
-                <h3 className="font-display text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
-                  {g.title}
-                </h3>
+                <SectionHeader title={g.title} tone="muted" size="sm" />
                 <ul className="space-y-2">
                   {g.rows.map((r) => (
                     <li key={r.match.id}>

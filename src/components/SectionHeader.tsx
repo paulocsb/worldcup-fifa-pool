@@ -7,10 +7,18 @@ export type SectionHeaderTone =
   | 'gold'
   | 'muted'
 
+export type SectionHeaderSize = 'md' | 'sm'
+
 interface SectionHeaderProps {
   title: string
   /** Tom do título + accent bar lateral */
   tone?: SectionHeaderTone
+  /**
+   * Escala do cabeçalho.
+   * - `md` (padrão): título de seção → `<h2>` Saira Condensed Black.
+   * - `sm`: sub-cabeçalho dentro de uma seção → `<h3>` menor (label uppercase).
+   */
+  size?: SectionHeaderSize
   /** Ícone opcional antes do título (renderizado na cor do tone) */
   icon?: React.ReactNode
   /** Conteúdo à direita (subtítulo, contagem, link) */
@@ -47,11 +55,14 @@ const TONE_BAR: Record<SectionHeaderTone, string> = {
 export function SectionHeader({
   title,
   tone = 'default',
+  size = 'md',
   icon,
   trailing,
   sticky = false,
   className,
 }: SectionHeaderProps) {
+  const isSm = size === 'sm'
+  const Title = isSm ? 'h3' : 'h2'
   return (
     <header
       className={cn(
@@ -65,17 +76,24 @@ export function SectionHeader({
         {/* Accent bar vertical */}
         <span
           aria-hidden
-          className={cn('h-4 w-1 rounded-full', TONE_BAR[tone])}
+          className={cn(
+            'w-1 rounded-full',
+            isSm ? 'h-3' : 'h-4',
+            TONE_BAR[tone],
+          )}
         />
         {icon && <span className={TONE_TEXT[tone]}>{icon}</span>}
-        <h2
+        <Title
           className={cn(
-            'font-display text-base font-black uppercase leading-none tracking-wider md:text-lg',
+            'font-display font-black uppercase leading-none',
+            isSm
+              ? 'text-[11px] tracking-[0.15em]'
+              : 'text-base tracking-wider md:text-lg',
             TONE_TEXT[tone],
           )}
         >
           {title}
-        </h2>
+        </Title>
       </div>
       {trailing && (
         <span className="text-[11px] font-medium text-muted-foreground">

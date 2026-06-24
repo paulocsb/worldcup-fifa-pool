@@ -1,20 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import {
-  Navigate,
-  useLocation,
-  useNavigate,
-  useParams,
-} from 'react-router-dom'
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Loader2,
-  Lock,
-} from 'lucide-react'
+import { Navigate, useParams } from 'react-router-dom'
+import { CheckCircle2, Loader2, Lock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { TeamSelect } from '@/components/TeamSelect'
 import { GroupPill } from '@/components/GroupPill'
+import { PageHeader } from '@/components/PageHeader'
 import { groupColorToken } from '@/lib/groupColors'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
@@ -32,8 +23,6 @@ const POSITION_POINTS = [5, 5, 3, 2]
 
 export function GroupDetailPage() {
   const params = useParams<{ letter: string }>()
-  const navigate = useNavigate()
-  const location = useLocation()
   const { t } = useTranslation('predictions')
   const { t: tCommon } = useTranslation('common')
   const POSITION_LABELS = t('groupDetail.positionLabels', {
@@ -43,17 +32,6 @@ export function GroupDetailPage() {
   const letter = ALL_GROUPS.includes(letterParam as GroupLetter)
     ? (letterParam as GroupLetter)
     : null
-
-  // Mirror PageHeader: pop history when available so the back button doesn't
-  // push a fresh entry to /predictions/groups (which would create a navigation
-  // loop with the PageHeader's own navigate(-1)).
-  function handleBack() {
-    if (location.key !== 'default') {
-      navigate(-1)
-    } else {
-      navigate('/predictions/groups', { replace: true })
-    }
-  }
 
   const auth = useAuth()
   const userId = auth.session?.user.id
@@ -91,9 +69,7 @@ export function GroupDetailPage() {
   if (!letter) return <Navigate to="/predictions/groups" replace />
 
   const token = groupColorToken(letter)
-  const accentStyle = token
-    ? ({ '--accent-c': `hsl(var(--${token}))` } as React.CSSProperties)
-    : undefined
+  const accent = token ? `hsl(var(--${token}))` : undefined
 
   const groupTeams = teams.data?.filter((t) => t.group_letter === letter) ?? []
   const isOpen = locks.data?.[letter] ?? false
@@ -144,34 +120,14 @@ export function GroupDetailPage() {
   const loading = teams.isPending || predictions.isPending || locks.isPending
 
   return (
-    <section style={accentStyle} className="container space-y-5 py-4">
-      <header className="relative overflow-hidden rounded-2xl border border-border bg-[color:var(--accent-c)]/10 p-4">
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-0 w-1.5 [background-color:var(--accent-c)]"
-        />
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleBack}
-            aria-label={tCommon('back')}
-            className="grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground active:scale-95"
-          >
-            <ArrowLeft className="size-5" />
-          </button>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h1 className="font-display text-3xl font-black uppercase leading-tight tracking-tight md:text-4xl">
-                {tCommon('group')} {letter}
-              </h1>
-              <GroupPill letter={letter} size="sm" withLabel={false} />
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t('groupDetail.subtitle')}
-            </p>
-          </div>
-        </div>
-      </header>
+    <section className="container space-y-4 py-4">
+      <PageHeader
+        title={`${tCommon('group')} ${letter}`}
+        subtitle={t('groupDetail.subtitle')}
+        backTo="/predictions/groups"
+        accent={accent}
+        trailing={<GroupPill letter={letter} size="sm" withLabel={false} />}
+      />
 
       {!isOpen && !loading && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">

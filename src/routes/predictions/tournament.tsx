@@ -87,7 +87,7 @@ export function TournamentPredictionPage() {
   const loading = teams.isPending || lock.isPending || current.isPending
 
   return (
-    <section className="container space-y-6 py-4">
+    <section className="container space-y-4 py-4">
       <PageHeader
         title={t('tournament.pageTitle')}
         subtitle={t('tournament.pageSubtitle')}
