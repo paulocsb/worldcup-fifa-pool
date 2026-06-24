@@ -1,20 +1,18 @@
 import { Link } from 'react-router-dom'
-import { Clock, Lock, MapPin, Pencil } from 'lucide-react'
+import { Clock, Lock, Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { MatchWithTeams } from '@/hooks/useMatches'
 import type { Prediction, Score, Team } from '@/types/db'
 import { isPredictionOpen, lockTime } from '@/lib/matchLock'
-import {
-  groupColorToken,
-  phaseColorToken,
-  PHASE_LABEL_PT,
-} from '@/lib/groupColors'
+import { groupColorToken, phaseColorToken } from '@/lib/groupColors'
 import { useTeamName } from '@/lib/teamI18n'
 import { venueLabel } from '@/lib/venueCountry'
-import { kickoffLabel, timeUntil } from '@/lib/format'
+import { kickoffLabel, sectionDateLabel, timeOfDay, timeUntil } from '@/lib/format'
 import { useNow } from '@/hooks/useNow'
 import { cn } from '@/lib/utils'
 import { TeamFlag } from './TeamFlag'
+import { GroupPill } from './GroupPill'
+import { PhasePill } from './PhasePill'
 import { MatchStatusBadge } from './MatchStatusBadge'
 import { MatchTimer } from './match/MatchTimer'
 import { AnimatedScore } from './AnimatedScore'
@@ -159,6 +157,76 @@ function Scoreboard({
   )
 }
 
+/**
+ * Lado de time no corpo HORIZONTAL (agendado): CÓDIGO + bandeira 36px,
+ * encostados no centro. `mirror` espelha (bandeira + CÓDIGO) para o visitante.
+ * Sem nome completo — a 320px só o código cabe ao lado da caixa de horário.
+ */
+function ScheduledTeam({ team, mirror }: { team: Team | null; mirror?: boolean }) {
+  const name = useTeamName(team)
+  const code = (
+    <span className="font-display truncate text-lg font-black uppercase leading-none">
+      {team?.code ?? '—'}
+    </span>
+  )
+  const flag = <TeamFlag team={team} size={36} />
+  return (
+    <div
+      aria-label={name}
+      className={cn(
+        'flex min-w-0 items-center gap-2',
+        mirror ? 'justify-start' : 'justify-end',
+      )}
+    >
+      {mirror ? (
+        <>
+          {flag}
+          {code}
+        </>
+      ) : (
+        <>
+          {code}
+          {flag}
+        </>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Corpo HORIZONTAL para jogos sem placar (scheduled/postponed/cancelled):
+ * CÓDIGO + bandeira | caixa de horário (borda na cor cheia do accent) | bandeira
+ * + CÓDIGO. A caixa central mostra a hora do kickoff (HH:mm) ou "—" se inválida.
+ * Replica o layout aprovado no /card-lab (MatchCardScheduledNext).
+ */
+function ScheduledBody({
+  match,
+  hasAccent,
+}: {
+  match: MatchWithTeams
+  hasAccent: boolean
+}) {
+  const ts = Date.parse(match.kickoff_at)
+  const time = Number.isNaN(ts) ? '—' : timeOfDay(match.kickoff_at)
+  return (
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3">
+      <ScheduledTeam team={match.home_team} />
+      {/* Caixa de horário — borda na cor CHEIA do accent (sem /opacity, gotcha-safe). */}
+      <div
+        className={cn(
+          'rounded-xl border-2 px-3 py-1.5',
+          hasAccent ? 'border-[hsl(var(--accent-c))]' : 'border-border',
+        )}
+      >
+        <span className="font-display text-xl font-bold tabular-nums">
+          {time}
+        </span>
+      </div>
+      <ScheduledTeam team={match.away_team} mirror />
+    </div>
+  )
+}
+
 export function MatchCard({
   match,
   prediction,
@@ -167,7 +235,6 @@ export function MatchCard({
   compactTime = false,
 }: MatchCardProps) {
   const { t } = useTranslation('matches')
-  const { t: tCommon } = useTranslation('common')
 
   // Countdown do lock: ativamos o relógio compartilhado só nos cards na janela
   // de <60min até o lock (kickoff − 5min). Fora dela, useNow(false) não se
@@ -187,6 +254,17 @@ export function MatchCard({
   const showScore = match.status === 'finished' || match.status === 'live'
   const isLive = match.status === 'live'
   const isFinished = match.status === 'finished'
+  const isPostponedOrCancelled =
+    match.status === 'postponed' || match.status === 'cancelled'
+  // Linha de contexto (header-left no agendado): data (omitida quando compactTime,
+  // pois /matches já agrupa por dia) + local, juntados por " · ". Sem horário —
+  // ele vai na caixa central do corpo.
+  const contextLine = [
+    compactTime ? '' : sectionDateLabel(match.kickoff_at),
+    venueLabel(match.venue, match.venue_city),
+  ]
+    .filter(Boolean)
+    .join(' · ')
   // Placar exato: palpite === resultado real (mesma regra da MyPredictionRow).
   const isExact =
     isFinished &&
@@ -223,11 +301,6 @@ export function MatchCard({
   const accentStyle = accentToken
     ? ({ '--accent-c': `var(--${accentToken})` } as React.CSSProperties)
     : undefined
-  // Label do header band: "Grupo X" na fase de grupos; nome da fase no mata-mata.
-  const headerLabel =
-    match.stage === 'group' && match.group_letter
-      ? `${tCommon('group')} ${match.group_letter}`
-      : PHASE_LABEL_PT[match.stage]
 
   const homeScore = match.home_score ?? 0
   const awayScore = match.away_score ?? 0
@@ -271,37 +344,50 @@ export function MatchCard({
         aria-label={ariaLabel}
       >
         {/* Header band tingido pela cor do grupo/fase — único indicador de cor
-            do card (a antiga faixa lateral foi removida para não competir). O
-            label fica na cor do accent (mesma fórmula AA dos pills tinted) e o
-            status à direita (MatchTimer ao vivo/encerrado, senão kickoff). */}
+            do card. À ESQUERDA o contexto varia por estado (MatchTimer ao
+            vivo/encerrado; status de adiamento/cancelamento; data·local no
+            agendado). À DIREITA, sempre a pílula de identidade (grupo/fase). */}
         <header
           className={cn(
             'flex items-center justify-between gap-2 px-4 py-2.5',
             accentStyle && 'bg-[hsl(var(--accent-c)_/_0.12)]',
           )}
         >
-          <span className="min-w-0 truncate font-display text-sm font-bold uppercase tracking-wider [color:hsl(var(--accent-c))]">
-            {headerLabel}
-          </span>
           {isLive || isFinished ? (
             <MatchTimer match={match} />
+          ) : isPostponedOrCancelled ? (
+            <MatchStatusBadge match={match} />
           ) : (
-            <MatchStatusBadge match={match} compactTime={compactTime} />
+            <span className="min-w-0 truncate text-[11px] text-muted-foreground">
+              {contextLine}
+            </span>
           )}
+          <div className="shrink-0">
+            {match.stage === 'group' && match.group_letter ? (
+              <GroupPill letter={match.group_letter} variant="solid" size="sm" />
+            ) : (
+              <PhasePill stage={match.stage} variant="solid" size="sm" />
+            )}
+          </div>
         </header>
 
-        {/* Corpo compartilhado: scoreboard vertical. Centro = placar real
-            (live/finished) ou "vs" muted (agendado). */}
-        <div className="px-4 pt-3">
-          <Scoreboard
-            match={match}
-            showScore={showScore}
-            homeWins={homeWins}
-            awayWins={awayWins}
-            live={isLive}
-            t={t}
-          />
-        </div>
+        {/* Corpo ramificado: sem placar → layout HORIZONTAL com caixa de horário
+            central; ao vivo/encerrado → scoreboard VERTICAL (placar, flash,
+            pênaltis, vencedor). */}
+        {showScore ? (
+          <div className="px-4 pt-3">
+            <Scoreboard
+              match={match}
+              showScore={showScore}
+              homeWins={homeWins}
+              awayWins={awayWins}
+              live={isLive}
+              t={t}
+            />
+          </div>
+        ) : (
+          <ScheduledBody match={match} hasAccent={!!accentStyle} />
+        )}
       </Link>
 
       <footer className="mt-3 px-4 pb-4">
@@ -367,17 +453,6 @@ export function MatchCard({
                 : t('prediction.noneLocked')
             }
           />
-        )}
-
-        {/* Estádio rebaixado a info terciária: só em jogos agendados, onde o
-            placar ainda não disputa a hierarquia visual. */}
-        {!showScore && (match.venue || match.venue_city) && (
-          <p className="mt-2 flex items-center justify-center gap-1 truncate text-[11px] text-muted-foreground">
-            <MapPin className="size-3 shrink-0" aria-hidden />
-            <span className="truncate">
-              {venueLabel(match.venue, match.venue_city)}
-            </span>
-          </p>
         )}
       </footer>
     </article>
