@@ -1,38 +1,50 @@
 import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export type MetricTone = 'primary' | 'gold' | 'emerald' | 'muted'
 
 interface MetricCardProps {
-  icon: React.ReactNode
+  icon: LucideIcon
   label: string
   value: React.ReactNode
   hint?: string
-  /** When provided, the card becomes a Link */
   to?: string
   /**
-   * `compact` (default) — vertical layout: small inline icon next to the label,
-   * large value below. Used in /profile.
-   * `inline` — horizontal layout: icon in a colored circle on the left,
-   * label/value/hint stacked on the right. Used in /home grid.
+   * `compact` (default) — vertical layout used by /profile.
+   * `inline` — horizontal layout with tonal background and a large
+   * decorative icon bleeding off the bottom-right corner. Used in /home.
    */
   variant?: 'compact' | 'inline'
-  /** Color of the icon background circle. Only used in `inline` variant. */
+  /** Color of the card surface, inline icon, and background decoration. */
   tone?: MetricTone
   className?: string
 }
 
-const TONE_WRAP: Record<MetricTone, string> = {
-  primary: 'bg-primary/10 text-primary',
-  gold: 'bg-gold/10 text-gold',
+const TONE_CARD: Record<MetricTone, string> = {
+  primary: 'border-primary/30 bg-primary/[0.04]',
+  gold: 'border-gold/40 bg-gold/[0.05]',
   emerald:
-    'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  muted: 'bg-muted text-muted-foreground',
+    'border-emerald-500/30 bg-emerald-500/[0.04] dark:border-emerald-400/30',
+  muted: 'border-border/60 bg-card/80',
+}
+
+const TONE_ICON: Record<MetricTone, string> = {
+  primary: 'text-primary',
+  gold: 'text-gold',
+  emerald: 'text-emerald-600 dark:text-emerald-400',
+  muted: 'text-muted-foreground',
+}
+
+const TONE_DECO: Record<MetricTone, string> = {
+  primary: 'text-primary/20',
+  gold: 'text-gold/30',
+  emerald: 'text-emerald-500/20 dark:text-emerald-400/20',
+  muted: 'text-muted-foreground/15',
 }
 
 export function MetricCard({
-  icon,
+  icon: Icon,
   label,
   value,
   hint,
@@ -44,19 +56,14 @@ export function MetricCard({
   if (variant === 'inline') {
     const content = (
       <>
-        <div
-          className={cn(
-            'flex size-10 shrink-0 items-center justify-center rounded-full',
-            TONE_WRAP[tone],
-          )}
-        >
-          {icon}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <div className="font-display text-lg font-bold leading-tight">
+        <div className="relative z-10 min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <Icon className={cn('size-3.5 shrink-0', TONE_ICON[tone])} />
+            <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {label}
+            </p>
+          </div>
+          <div className="mt-1 font-display text-lg font-bold leading-tight">
             {value}
           </div>
           {hint && (
@@ -64,22 +71,27 @@ export function MetricCard({
           )}
         </div>
         {to && (
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground/60" />
+          <ChevronRight className="relative z-10 mt-1 size-3.5 shrink-0 self-start text-muted-foreground/60" />
         )}
+        <Icon
+          aria-hidden
+          className={cn(
+            'pointer-events-none absolute -bottom-4 -right-3 size-20 -rotate-12',
+            TONE_DECO[tone],
+          )}
+        />
       </>
     )
     const base = cn(
-      'flex items-center gap-3 rounded-2xl border border-border/60 bg-card/80 p-3 backdrop-blur-sm',
+      'relative flex items-start gap-2 overflow-hidden rounded-2xl border p-3 backdrop-blur-sm',
+      TONE_CARD[tone],
       className,
     )
     if (to) {
       return (
         <Link
           to={to}
-          className={cn(
-            base,
-            'transition-colors hover:border-border hover:bg-card active:scale-[0.99]',
-          )}
+          className={cn(base, 'transition-colors active:scale-[0.99]')}
         >
           {content}
         </Link>
@@ -91,7 +103,7 @@ export function MetricCard({
   const content = (
     <>
       <div className="mb-1.5 flex items-center gap-1.5 text-muted-foreground">
-        {icon}
+        <Icon className="size-3.5" />
         <span className="text-[10px] font-semibold uppercase tracking-wider">
           {label}
         </span>

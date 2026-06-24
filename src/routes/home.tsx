@@ -115,15 +115,7 @@ export function HomePage() {
     return idx === undefined || idx === -1 ? null : idx + 1
   }, [ranking.data, userId])
 
-  const accuracy =
-    stats.data && stats.data.scored_predictions > 0
-      ? Math.round(
-          ((stats.data.exact_scores +
-            (stats.data.scored_predictions - stats.data.exact_scores) * 0.5) /
-            stats.data.scored_predictions) *
-            100,
-        )
-      : 0
+  const accuracy = stats.data?.accuracy ?? 0
 
   return (
     <section className="container space-y-6 py-4">
@@ -179,7 +171,7 @@ export function HomePage() {
         <MetricCard
           variant="inline"
           tone="primary"
-          icon={<Trophy className="size-5" />}
+          icon={Trophy}
           label={t('metrics.position')}
           value={
             <>
@@ -196,7 +188,7 @@ export function HomePage() {
         <MetricCard
           variant="inline"
           tone="primary"
-          icon={<Target className="size-5" />}
+          icon={Target}
           label={t('metrics.myPredictions')}
           value={
             <>
@@ -217,7 +209,7 @@ export function HomePage() {
         <MetricCard
           variant="inline"
           tone="gold"
-          icon={<Crown className="size-5" />}
+          icon={Crown}
           label={t('metrics.tournament')}
           value={
             championTeam && runnerUpTeam && thirdTeam ? (
@@ -254,7 +246,7 @@ export function HomePage() {
         <MetricCard
           variant="inline"
           tone="emerald"
-          icon={<LayoutGrid className="size-5" />}
+          icon={LayoutGrid}
           label={t('metrics.groups')}
           value={
             <>

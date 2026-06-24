@@ -1,12 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { DEFAULT_SCORING } from '@/lib/scoring'
 
 export interface UserStats {
   total_predictions: number
   scored_predictions: number
+  pointed_predictions: number
   total_points: number
   best_score: number
   exact_scores: number
+  accuracy: number
 }
 
 /**
@@ -23,9 +26,11 @@ export function useUserStats(userId: string | undefined) {
         return {
           total_predictions: 0,
           scored_predictions: 0,
+          pointed_predictions: 0,
           total_points: 0,
           best_score: 0,
           exact_scores: 0,
+          accuracy: 0,
         }
       }
 
@@ -53,13 +58,25 @@ export function useUserStats(userId: string | undefined) {
         const breakdown = s.breakdown as { exact?: number } | null
         return (breakdown?.exact ?? 0) > 0
       }).length
+      const pointedPredictions = (scores ?? []).filter(
+        (s) => (s.points ?? 0) > 0,
+      ).length
+      const maxPointsPerMatch = DEFAULT_SCORING.match.exact_score
+      const accuracy =
+        scoredPredictions > 0
+          ? Math.round(
+              (totalPoints / (scoredPredictions * maxPointsPerMatch)) * 100,
+            )
+          : 0
 
       return {
         total_predictions: totalPreds ?? 0,
         scored_predictions: scoredPredictions,
+        pointed_predictions: pointedPredictions,
         total_points: totalPoints,
         best_score: bestScore,
         exact_scores: exactScores,
+        accuracy,
       }
     },
   })

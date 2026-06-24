@@ -42,16 +42,7 @@ export function ProfilePage() {
   const { t, i18n } = useTranslation('profile')
   const updateLanguage = useUpdateLanguage(auth.session?.user.id)
 
-  const accuracy =
-    stats.data && stats.data.scored_predictions > 0
-      ? Math.round(
-          ((stats.data.exact_scores +
-            // Considera "acerto" quando ganhou pelo menos os pts de resultado
-            (stats.data.scored_predictions - stats.data.exact_scores) * 0.5) /
-            stats.data.scored_predictions) *
-            100,
-        )
-      : 0
+  const accuracy = stats.data?.accuracy ?? 0
 
   return (
     <section className="container space-y-6 py-6">
@@ -78,7 +69,7 @@ export function ProfilePage() {
         <SectionHeader title={t('myStats')} tone="primary" />
         <div className="grid grid-cols-2 gap-2">
           <MetricCard
-            icon={<Trophy className="size-3.5" />}
+            icon={Trophy}
             label={t('stat.points')}
             value={stats.data?.total_points ?? 0}
             hint={t('stat.pointsHint', {
@@ -86,19 +77,19 @@ export function ProfilePage() {
             })}
           />
           <MetricCard
-            icon={<Target className="size-3.5" />}
+            icon={Target}
             label={t('stat.exactScores')}
             value={stats.data?.exact_scores ?? 0}
             hint={t('stat.exactHint')}
           />
           <MetricCard
-            icon={<TrendingUp className="size-3.5" />}
+            icon={TrendingUp}
             label={t('stat.best')}
             value={`${stats.data?.best_score ?? 0} ${t('pts', { ns: 'ranking' })}`}
             hint={t('stat.bestHint')}
           />
           <MetricCard
-            icon={<Trophy className="size-3.5" />}
+            icon={Trophy}
             label={t('stat.totalPredictions')}
             value={stats.data?.total_predictions ?? 0}
             hint={t('stat.predictionsHint', { accuracy })}
