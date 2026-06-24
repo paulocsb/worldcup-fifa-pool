@@ -15,14 +15,33 @@ export type PageTheme =
   | 'knockouts'
   | 'final'
   | 'ranking'
+  | 'group'
 
-export function usePageBackground(theme: PageTheme) {
+interface PageBackgroundOptions {
+  /**
+   * Token de cor (sem `--`, ex.: 'group-e') cujos canais HSL crus alimentam
+   * `--page-accent`. Usado apenas quando `theme === 'group'` para tematizar o
+   * fundo na cor do grupo sem precisar de 12 blocos CSS.
+   */
+  accent?: string | null
+}
+
+export function usePageBackground(
+  theme: PageTheme,
+  opts?: PageBackgroundOptions,
+) {
+  const accent = opts?.accent ?? null
   useEffect(() => {
     const prev = document.body.dataset.pageTheme
     document.body.dataset.pageTheme = theme
+    const useAccent = theme === 'group' && !!accent
+    if (useAccent) {
+      document.body.style.setProperty('--page-accent', `var(--${accent})`)
+    }
     return () => {
       if (prev) document.body.dataset.pageTheme = prev
       else delete document.body.dataset.pageTheme
+      if (useAccent) document.body.style.removeProperty('--page-accent')
     }
-  }, [theme])
+  }, [theme, accent])
 }

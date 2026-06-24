@@ -10,6 +10,7 @@ import { Surface } from '@/components/Surface'
 import { groupColorToken } from '@/lib/groupColors'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
+import { usePageBackground } from '@/hooks/usePageBackground'
 import {
   ALL_GROUPS,
   useGroupLocks,
@@ -67,9 +68,14 @@ export function GroupDetailPage() {
     }
   }, [current, letter])
 
+  // Tematiza o fundo da página inteira na cor do grupo. Derivado de `letter`
+  // (definido acima), o accent atualiza ao navegar entre grupos (E→F) sem
+  // desmontar e é limpo no unmount pelo hook.
+  const token = groupColorToken(letter)
+  usePageBackground('group', { accent: token })
+
   if (!letter) return <Navigate to="/predictions/groups" replace />
 
-  const token = groupColorToken(letter)
   const accent = token ? `hsl(var(--${token}))` : undefined
 
   const groupTeams = teams.data?.filter((t) => t.group_letter === letter) ?? []

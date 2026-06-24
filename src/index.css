@@ -38,6 +38,11 @@
     --bg-gradient-from: 60 9% 98%;
     --bg-gradient-to: 151 50% 96%;
 
+    /* Alphas do fundo base/default (versão neutra dos temas).
+       Light: mais sutil pra não escurecer o fundo claro. */
+    --bg-base-glow: 0.09;
+    --bg-base-echo: 0.05;
+
     /* Grupos (12 cores saturadas) */
     --group-a: 142 71% 58%;  /* lime-green   */
     --group-b: 0 84% 60%;    /* red          */
@@ -93,6 +98,10 @@
 
       --bg-gradient-from: 141 41% 6%;
       --bg-gradient-to: 141 50% 4%;
+
+      /* Fundo base mais presente no dark (cards em glass deixam vazar). */
+      --bg-base-glow: 0.13;
+      --bg-base-echo: 0.06;
 
       /* Grupos em dark mode (saturação um pouco mais alta + lightness) */
       --group-a: 142 71% 62%;
@@ -150,6 +159,9 @@
     --bg-gradient-from: 141 41% 6%;
     --bg-gradient-to: 141 50% 4%;
 
+    --bg-base-glow: 0.13;
+    --bg-base-echo: 0.06;
+
     --group-a: 142 71% 62%;
     --group-b: 0 84% 65%;
     --group-c: 25 95% 58%;
@@ -193,9 +205,14 @@
     font-family: 'Noto Sans', Inter, system-ui, sans-serif;
     background:
       radial-gradient(
-        1200px 600px at 50% -10%,
-        hsl(var(--primary) / 0.08),
-        transparent 60%
+        900px 500px at 50% -10%,
+        hsl(var(--primary) / var(--bg-base-glow)),
+        transparent 65%
+      ),
+      radial-gradient(
+        700px 400px at 100% 100%,
+        hsl(var(--primary) / var(--bg-base-echo)),
+        transparent 70%
       ),
       linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
     background-attachment: fixed;
@@ -257,6 +274,23 @@
       radial-gradient(
         700px 400px at 0 100%,
         hsl(var(--accent-gold) / 0.12),
+        transparent 70%
+      ),
+      linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
+  }
+  /* Tema dinâmico na cor do grupo: --page-accent recebe os canais HSL crus
+     (ex.: var(--group-e)) via usePageBackground('group', { accent }).
+     Fallback defensivo para --primary se não estiver setado. */
+  body[data-page-theme='group'] {
+    background:
+      radial-gradient(
+        900px 500px at 50% -10%,
+        hsl(var(--page-accent, var(--primary)) / 0.28),
+        transparent 65%
+      ),
+      radial-gradient(
+        700px 400px at 100% 100%,
+        hsl(var(--page-accent, var(--primary)) / 0.13),
         transparent 70%
       ),
       linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
