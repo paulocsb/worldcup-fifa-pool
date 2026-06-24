@@ -60,7 +60,19 @@
     "waiting": "Aguardando",
     "live": "Ao vivo",
     "guess": "Palpite",
-    "real": "Real"
+    "real": "Real",
+    "cardAria": {
+      "score": "{{home}} a {{away}}",
+      "scoreUnknown": "ainda sem placar",
+      "points_one": "{{count}} ponto",
+      "points_other": "{{count}} pontos",
+      "exact": "{{home}} x {{away}}. Seu palpite {{guess}}, resultado {{real}}. Placar exato, {{points}}.",
+      "finished": "{{home}} x {{away}}. Seu palpite {{guess}}, resultado {{real}}. {{points}}.",
+      "finishedNoScore": "{{home}} x {{away}}. Seu palpite {{guess}}, resultado {{real}}. Não pontua.",
+      "live": "{{home}} x {{away}}, ao vivo. Seu palpite {{guess}}, parcial {{real}}.",
+      "scheduled": "{{home}} x {{away}}. Seu palpite {{guess}}. Início {{kickoff}}.",
+      "postponed": "{{home}} x {{away}}, adiado. Seu palpite {{guess}}."
+    }
   },
   "mePage": {
     "title": "Meus palpites",

@@ -17,6 +17,7 @@ import { MyPredictionRow } from '@/components/MyPredictionRow'
 import { Surface } from '@/components/Surface'
 import { TeamFlag } from '@/components/TeamFlag'
 import { GroupPill } from '@/components/GroupPill'
+import { PredictionScoreBadge } from '@/components/PredictionScoreBadge'
 import { useAuth } from '@/hooks/useAuth'
 import { useMatches } from '@/hooks/useMatches'
 import { useMyPredictions } from '@/hooks/usePredictions'
@@ -460,25 +461,21 @@ function GroupPalpites({
 
         return (
           <li key={letter}>
-            <article
-              style={
-                token
-                  ? ({
-                      '--accent-c': `hsl(var(--${token}))`,
-                    } as React.CSSProperties)
-                  : undefined
-              }
-              className="relative overflow-hidden rounded-xl border border-border bg-card/80 p-3"
+            <Surface
+              variant="tonal"
+              accent={token ?? undefined}
+              padding="none"
+              className="overflow-hidden"
             >
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-y-0 left-0 w-1 [background-color:var(--accent-c)]"
-              />
-              <div className="mb-2 flex items-center justify-between">
-                <GroupPill letter={letter} size="md" withLabel />
-                <PointsBadge points={score?.points ?? null} />
+              {/* Header NEUTRO (bg-muted/40): pontos à ESQUERDA, pílula de
+                  identidade solid à DIREITA. A cor do grupo já vem da BORDA
+                  accent do Surface + da pílula — band neutra evita conflito com
+                  os pontos coloridos. */}
+              <div className="flex items-center justify-between gap-2 bg-muted/40 px-3 py-2">
+                <PredictionScoreBadge points={score?.points ?? null} />
+                <GroupPill letter={letter} variant="solid" size="sm" />
               </div>
-              <ol className="space-y-1">
+              <ol className="space-y-1 px-3 pb-3 pt-2">
                 {order.map((team, idx) => (
                   <OrderedTeamRow
                     key={team.id}
@@ -487,7 +484,7 @@ function GroupPalpites({
                   />
                 ))}
               </ol>
-            </article>
+            </Surface>
           </li>
         )
       })}
@@ -555,21 +552,21 @@ function TournamentPalpite({
       title: t('mePage.champion'),
       teamId: pred.data.champion_team_id,
       icon: <Crown className="size-4 text-gold" />,
-      tone: 'gold' as const,
+      accent: 'accent-gold',
       points: breakdown.champion ?? null,
     },
     {
       title: t('mePage.runnerUp'),
       teamId: pred.data.runner_up_team_id,
       icon: <Award className="size-4 text-muted-foreground" />,
-      tone: 'muted' as const,
+      accent: 'accent-silver',
       points: breakdown.runner_up ?? null,
     },
     {
       title: t('mePage.thirdPlace'),
       teamId: pred.data.third_place_team_id,
       icon: <Medal className="size-4 text-amber-700" />,
-      tone: 'muted' as const,
+      accent: 'accent-bronze',
       points: breakdown.third_place ?? null,
     },
   ]
@@ -582,17 +579,22 @@ function TournamentPalpite({
           title={p.title}
           icon={p.icon}
           team={teamById.get(p.teamId) ?? null}
-          tone={p.tone}
+          accent={p.accent}
           points={p.points}
         />
       ))}
 
       {score && (
-        <li className="flex items-center justify-between rounded-xl border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
-          <span className="font-semibold">{t('mePage.tournamentTotal')}</span>
-          <span className="font-display text-base font-bold tabular-nums text-primary">
-            +{score.points} pts
-          </span>
+        <li>
+          <Surface
+            variant="tonal"
+            accent="primary"
+            padding="none"
+            className="flex items-center justify-between bg-primary/5 px-3 py-2 text-sm"
+          >
+            <span className="font-semibold">{t('mePage.tournamentTotal')}</span>
+            <PredictionScoreBadge points={score.points} className="text-base" />
+          </Surface>
         </li>
       )}
     </ul>
@@ -603,39 +605,47 @@ function TournamentPickRow({
   title,
   icon,
   team,
-  tone,
+  accent,
   points,
 }: {
   title: string
   icon: React.ReactNode
   team: Team | null
-  tone: 'gold' | 'muted'
+  /** Token cerimonial: 'accent-gold' (campeão) | 'accent-silver' | 'accent-bronze'. */
+  accent: string
   points: number | null
 }) {
   const name = useTeamName(team)
+  const isChampion = accent === 'accent-gold'
   return (
-    <li
-      className={cn(
-        'flex items-center gap-3 rounded-xl border bg-card/80 p-3',
-        tone === 'gold' ? 'border-gold/60 bg-gold/[0.06]' : 'border-border/60',
-      )}
-    >
-      {icon}
-      <div className="min-w-0 flex-1">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-          {title}
+    <li>
+      <Surface
+        variant="tonal"
+        accent={accent}
+        padding="none"
+        className={cn(
+          'flex items-center gap-3 p-3',
+          // Campeão ganha realce de fundo gold (a borda já vem do accent).
+          isChampion && 'bg-gold/[0.06]',
+        )}
+      >
+        {icon}
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+            {title}
+          </div>
+          <div className="mt-0.5 flex items-center gap-2">
+            <TeamFlag team={team} size={22} />
+            <span className="font-display text-base font-bold uppercase tracking-tight">
+              {team?.code ?? '—'}
+            </span>
+            <span className="truncate text-xs text-muted-foreground">
+              {name}
+            </span>
+          </div>
         </div>
-        <div className="mt-0.5 flex items-center gap-2">
-          <TeamFlag team={team} size={22} />
-          <span className="font-display text-base font-bold uppercase tracking-tight">
-            {team?.code ?? '—'}
-          </span>
-          <span className="truncate text-xs text-muted-foreground">
-            {name}
-          </span>
-        </div>
-      </div>
-      <PointsBadge points={points} />
+        <PredictionScoreBadge points={points} />
+      </Surface>
     </li>
   )
 }
@@ -659,28 +669,5 @@ function OrderedTeamRow({
         {name}
       </span>
     </li>
-  )
-}
-
-function PointsBadge({ points }: { points: number | null }) {
-  const { t } = useTranslation('matches')
-  if (points === null) {
-    return (
-      <span className="text-[11px] text-muted-foreground">
-        {t('myPrediction.waiting').toLowerCase()}
-      </span>
-    )
-  }
-  const earned = points > 0
-  return (
-    <span
-      className={cn(
-        'font-display text-sm font-bold tabular-nums',
-        earned ? 'text-primary' : 'text-muted-foreground',
-      )}
-    >
-      {earned ? '+' : ''}
-      {points} pt{points === 1 ? '' : 's'}
-    </span>
   )
 }

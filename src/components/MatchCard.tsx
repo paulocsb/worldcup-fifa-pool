@@ -415,7 +415,7 @@ export function MatchCard({
             - agendado + fechado → palpite estático ou "Encerrado" (sem ação). */}
         {showScoreBadge && score ? (
           <div className="flex justify-center">
-            <PredictionScoreBadge score={score} isExact={isExact} />
+            <PredictionScoreBadge points={score.points} isExact={isExact} />
           </div>
         ) : isLive ? (
           <FooterStatic

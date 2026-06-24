@@ -60,7 +60,19 @@
     "waiting": "Waiting",
     "live": "Live",
     "guess": "Guess",
-    "real": "Actual"
+    "real": "Actual",
+    "cardAria": {
+      "score": "{{home}} to {{away}}",
+      "scoreUnknown": "no score yet",
+      "points_one": "{{count}} point",
+      "points_other": "{{count}} points",
+      "exact": "{{home}} vs {{away}}. Your guess {{guess}}, result {{real}}. Exact score, {{points}}.",
+      "finished": "{{home}} vs {{away}}. Your guess {{guess}}, result {{real}}. {{points}}.",
+      "finishedNoScore": "{{home}} vs {{away}}. Your guess {{guess}}, result {{real}}. Doesn't score.",
+      "live": "{{home}} vs {{away}}, live. Your guess {{guess}}, partial {{real}}.",
+      "scheduled": "{{home}} vs {{away}}. Your guess {{guess}}. Kickoff {{kickoff}}.",
+      "postponed": "{{home}} vs {{away}}, postponed. Your guess {{guess}}."
+    }
   },
   "mePage": {
     "title": "My predictions",

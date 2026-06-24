@@ -5,6 +5,7 @@ import type { Prediction, Score } from "@/types/db";
 import { useScoringConfig } from "@/hooks/useScoringConfig";
 import { kickoffLabel } from "@/lib/format";
 import { groupColorToken, phaseColorToken } from "@/lib/groupColors";
+import { useTeamName } from "@/lib/teamI18n";
 import { TeamFlag } from "./TeamFlag";
 import { GroupPill } from "./GroupPill";
 import { PhasePill } from "./PhasePill";
@@ -52,6 +53,58 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
   const isFinishedNotScoring =
     isFinished && points === null && matchdayPreCutoff;
 
+  // aria-label consolidado: um leitor de tela ouve o DESFECHO em linguagem
+  // natural ("Brasil x Argentina. Seu palpite 2 a 1, resultado 2 a 1. Placar
+  // exato, 5 pontos.") em vez dos fragmentos soltos (códigos, números, rótulos),
+  // que ficam aria-hidden. Times pelo NOME completo (não o code).
+  const homeName = useTeamName(match.home_team);
+  const awayName = useTeamName(match.away_team);
+  const guess = scoreSpoken(prediction.home_score, prediction.away_score, t);
+  const real = scoreSpoken(match.home_score, match.away_score, t);
+  let cardAria: string;
+  if (isLive) {
+    cardAria = t("myPrediction.cardAria.live", {
+      home: homeName,
+      away: awayName,
+      guess,
+      real,
+    });
+  } else if (isPostponed) {
+    cardAria = t("myPrediction.cardAria.postponed", {
+      home: homeName,
+      away: awayName,
+      guess,
+    });
+  } else if (isFinished) {
+    // "exact" e "finished" exigem pontuação na frase final; quando a partida não
+    // pontua (ex: MD1 pré-cutoff) caímos numa frase sem o trecho de pontos.
+    const pointsSpoken =
+      points !== null
+        ? t("myPrediction.cardAria.points", { count: points })
+        : null;
+    cardAria = t(
+      pointsSpoken === null
+        ? "myPrediction.cardAria.finishedNoScore"
+        : isExact
+          ? "myPrediction.cardAria.exact"
+          : "myPrediction.cardAria.finished",
+      {
+        home: homeName,
+        away: awayName,
+        guess,
+        real,
+        points: pointsSpoken ?? "",
+      },
+    );
+  } else {
+    cardAria = t("myPrediction.cardAria.scheduled", {
+      home: homeName,
+      away: awayName,
+      guess,
+      kickoff: kickoffLabel(match.kickoff_at),
+    });
+  }
+
   // Token de cor de identidade (grupo na fase de grupos, senão fase). Só vira
   // accent do Surface no estado comum — exato/live dominam com cores nomeadas.
   const accentToken =
@@ -78,12 +131,19 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
             : undefined,
       )}
     >
-      <Link to={`/matches/${match.id}`} className="block">
+      <Link
+        to={`/matches/${match.id}`}
+        className="block"
+        aria-label={cardAria}
+      >
         {/* Header: status à ESQUERDA, pílula de identidade à DIREITA (solid).
             Band NEUTRA (bg-muted/40): a identidade do grupo/fase já vem da
             BORDA accent do card + da pílula solid. Tom neutro evita conflito
             entre os pontos coloridos (verde/gold) e grupos vermelhos/coral. */}
-        <div className="flex items-center justify-between gap-2 bg-muted/40 px-3 py-2">
+        <div
+          aria-hidden
+          className="flex items-center justify-between gap-2 bg-muted/40 px-3 py-2"
+        >
           <StatusIndicator
             score={score}
             isExact={isExact}
@@ -104,7 +164,10 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
         {/* Corpo: times empurrados para as BORDAS (casa à esquerda, visitante à
             direita) para usar a largura de forma simétrica; o bloco central de
             comparação (palpite × real) fica verdadeiramente centralizado. */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 pb-3 pt-1">
+        <div
+          aria-hidden
+          className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 pb-3 pt-1"
+        >
           {/* Casa: CÓDIGO na borda externa (esq), bandeira pro centro — mesma
               ordem do MatchCard (código fora, bandeira dentro). */}
           <div className="flex min-w-0 items-center justify-start gap-2">
@@ -134,7 +197,7 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
                   label={isLive ? t("partial") : t("myPrediction.real")}
                   home={match.home_score}
                   away={match.away_score}
-                  tone={isLive ? "live" : isExact ? "gold" : "muted"}
+                  tone={isExact ? "gold" : isLive ? "live" : "muted"}
                 />
               )}
             </div>
@@ -193,7 +256,7 @@ function ScoreLine({
   label: string;
   home: number | null;
   away: number | null;
-  tone: "default" | "gold" | "live" | "muted";
+  tone: "default" | "live" | "muted" | "gold";
   primary?: boolean;
 }) {
   return (
@@ -204,7 +267,7 @@ function ScoreLine({
           tone === "live"
             ? "text-destructive/80"
             : tone === "gold"
-              ? "text-gold/80"
+              ? "text-gold/90"
               : "text-muted-foreground",
         )}
       >
@@ -214,6 +277,8 @@ function ScoreLine({
         className={cn(
           "font-display text-lg leading-none tabular-nums",
           primary ? "font-black" : "font-bold",
+          // Exato → placar em gold (preferência de design). Caso contrário, alto
+          // contraste: live=destructive, real=foreground/70, palpite=foreground.
           tone === "gold"
             ? "text-gold"
             : tone === "live"
@@ -229,6 +294,20 @@ function ScoreLine({
       </span>
     </>
   );
+}
+
+/**
+ * Placar falado para leitores de tela: "2 a 1" (pt) / "2 to 1" (en). Quando
+ * algum lado é null (placar real ainda indefinido) cai para "—" via i18n.
+ */
+function scoreSpoken(
+  home: number | null,
+  away: number | null,
+  t: ReturnType<typeof useTranslation<"matches">>["t"],
+): string {
+  if (home === null || away === null)
+    return t("myPrediction.cardAria.scoreUnknown");
+  return t("myPrediction.cardAria.score", { home, away });
 }
 
 function StatusIndicator({
@@ -269,7 +348,7 @@ function StatusIndicator({
     );
   }
   if (score !== null) {
-    return <PredictionScoreBadge score={score} isExact={isExact} />;
+    return <PredictionScoreBadge points={score.points} isExact={isExact} />;
   }
   if (isFinishedNotScoring) {
     return (
