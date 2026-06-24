@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { Match } from '@/types/db'
 import { cn } from '@/lib/utils'
-import { kickoffLabel } from '@/lib/format'
+import { kickoffLabel, timeOfDay } from '@/lib/format'
 
 function useLiveLabel(): (
   short: string | null,
@@ -25,6 +25,7 @@ function useLiveLabel(): (
 
 export function MatchStatusBadge({
   match,
+  compactTime = false,
 }: {
   match: Pick<
     Match,
@@ -36,6 +37,12 @@ export function MatchStatusBadge({
     | 'elapsed_extra_minutes'
     | 'live_status_short'
   >
+  /**
+   * Quando a data já está num cabeçalho de seção (ex.: /matches agrupado por
+   * dia), exibe só a hora (HH:mm) para partidas agendadas, evitando repetir
+   * "Hoje, 16:00". Não afeta os estados ao vivo/encerrado.
+   */
+  compactTime?: boolean
 }) {
   const { t } = useTranslation('matches')
   const liveLabel = useLiveLabel()
@@ -61,7 +68,7 @@ export function MatchStatusBadge({
   }
   if (match.status === 'finished') {
     return (
-      <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-foreground/80">
         {t('status.finished')}
       </span>
     )
@@ -86,7 +93,7 @@ export function MatchStatusBadge({
   }
   return (
     <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-      {kickoffLabel(match.kickoff_at)}
+      {compactTime ? timeOfDay(match.kickoff_at) : kickoffLabel(match.kickoff_at)}
     </span>
   )
 }

@@ -1,10 +1,17 @@
 export function MatchCardSkeleton() {
   return (
-    <article className="rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm">
+    <article className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm">
+      {/* Faixa lateral neutra — espelha a do MatchCard real para evitar CLS. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-border/60"
+      />
       <div className="mb-3 flex items-center justify-between">
         <div className="skeleton h-5 w-24 rounded-full" />
         <div className="skeleton h-5 w-16 rounded-full" />
       </div>
+      {/* Linha de venue — casa com a linha de local do MatchCard real. */}
+      <div className="skeleton mb-2 h-2.5 w-40 rounded-full" />
       <div className="divide-y divide-border/40">
         {[0, 1].map((i) => (
           <div key={i} className="flex items-center gap-3 py-2">

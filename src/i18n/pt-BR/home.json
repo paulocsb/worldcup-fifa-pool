@@ -4,6 +4,8 @@
   "noScoreYet": "Ainda sem pontos",
   "nextMatches": "Próximos jogos",
   "noNextMatches": "Sem jogos agendados.",
+  "matchesError": "Não foi possível carregar os jogos.",
+  "tryAgain": "Tentar de novo",
   "viewAll": "Ver todos",
   "groupPredictions": "Palpites por grupo",
   "groupSummary": "{{saved}}/{{total}} salvos · {{open}} abertos",
@@ -14,6 +16,9 @@
   "pendingCount_one": "{{count}} palpite pendente",
   "pendingCount_other": "{{count}} palpites pendentes",
   "liveNow": "Ao vivo agora",
+  "podium": {
+    "summary": "Palpite do torneio. Campeão: {{champion}}. Vice: {{runnerUp}}. Terceiro: {{third}}."
+  },
   "metrics": {
     "position": "Ranking",
     "positionHint_one": "{{count}} pt",

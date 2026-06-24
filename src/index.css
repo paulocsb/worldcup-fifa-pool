@@ -396,3 +396,15 @@ img.fifa-logo-dark { display: none !important; }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 .animate-score-flip { animation: score-flip 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* Flash de gol: glow gold one-shot ao mudar o placar ao vivo. */
+@keyframes score-flash {
+  0%   { text-shadow: 0 0 0 hsl(var(--accent-gold) / 0); color: hsl(var(--accent-gold)); }
+  25%  { text-shadow: 0 0 14px hsl(var(--accent-gold) / 0.9); color: hsl(var(--accent-gold)); }
+  100% { text-shadow: 0 0 0 hsl(var(--accent-gold) / 0); }
+}
+.animate-score-flash { animation: score-flash 1s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-score-flash { animation: none; }
+}

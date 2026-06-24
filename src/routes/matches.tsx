@@ -9,6 +9,7 @@ import { SectionHeader } from '@/components/SectionHeader'
 import { useAuth } from '@/hooks/useAuth'
 import { useMatches, type MatchWithTeams } from '@/hooks/useMatches'
 import { useMyPredictions } from '@/hooks/usePredictions'
+import { useMyScores } from '@/hooks/useMyScores'
 import { useRealtimeInvalidator } from '@/hooks/useRealtimeInvalidator'
 import { dateKey, sectionDateLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -33,14 +34,16 @@ export function MatchesPage() {
     all: t('filters.all'),
   }
   const auth = useAuth()
+  const userId = auth.session?.user.id
   const matches = useMatches()
-  const predictions = useMyPredictions(auth.session?.user.id)
+  const predictions = useMyPredictions(userId)
+  const scores = useMyScores(userId)
   const [filter, setFilter] = useState<Filter>('upcoming')
   const [active, setActive] = useState<MatchWithTeams | null>(null)
 
   useRealtimeInvalidator({
-    tables: ['matches'],
-    queryKeys: [['matches']],
+    tables: ['matches', 'scores'],
+    queryKeys: [['matches'], ['my-scores', userId]],
   })
 
   const predictionByMatch = useMemo(() => {
@@ -143,6 +146,7 @@ export function MatchesPage() {
                     <MatchCard
                       match={m}
                       prediction={predictionByMatch.get(m.id)}
+                      score={scores.data?.byMatch.get(m.id) ?? null}
                       onPredict={setActive}
                     />
                   </li>
@@ -164,7 +168,9 @@ export function MatchesPage() {
                     <MatchCard
                       match={m}
                       prediction={predictionByMatch.get(m.id)}
+                      score={scores.data?.byMatch.get(m.id) ?? null}
                       onPredict={setActive}
+                      compactTime
                     />
                   </li>
                 ))}
@@ -177,7 +183,7 @@ export function MatchesPage() {
       <PredictionSheet
         match={active}
         existing={active ? predictionByMatch.get(active.id) : undefined}
-        userId={auth.session?.user.id}
+        userId={userId}
         onClose={() => setActive(null)}
       />
     </section>

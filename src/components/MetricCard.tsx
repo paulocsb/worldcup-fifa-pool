@@ -22,10 +22,10 @@ interface MetricCardProps {
 }
 
 const TONE_CARD: Record<MetricTone, string> = {
-  primary: 'border-primary/30 bg-primary/[0.04]',
-  gold: 'border-gold/40 bg-gold/[0.05]',
+  primary: 'border-primary/30 bg-primary/[0.08]',
+  gold: 'border-gold/40 bg-gold/[0.09]',
   emerald:
-    'border-emerald-500/30 bg-emerald-500/[0.04] dark:border-emerald-400/30',
+    'border-emerald-500/30 bg-emerald-500/[0.08] dark:border-emerald-400/30',
   muted: 'border-border/60 bg-card/80',
 }
 
@@ -38,9 +38,9 @@ const TONE_ICON: Record<MetricTone, string> = {
 
 const TONE_DECO: Record<MetricTone, string> = {
   primary: 'text-primary/20',
-  gold: 'text-gold/30',
+  gold: 'text-gold/20',
   emerald: 'text-emerald-500/20 dark:text-emerald-400/20',
-  muted: 'text-muted-foreground/15',
+  muted: 'text-muted-foreground/20',
 }
 
 export function MetricCard({
@@ -83,7 +83,7 @@ export function MetricCard({
       </>
     )
     const base = cn(
-      'relative flex items-start gap-2 overflow-hidden rounded-2xl border p-3 backdrop-blur-sm',
+      'relative flex items-start gap-2 overflow-hidden rounded-2xl border p-3 shadow-sm backdrop-blur-sm',
       TONE_CARD[tone],
       className,
     )
@@ -91,7 +91,10 @@ export function MetricCard({
       return (
         <Link
           to={to}
-          className={cn(base, 'transition-colors active:scale-[0.99]')}
+          className={cn(
+            base,
+            'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]',
+          )}
         >
           {content}
         </Link>

@@ -7,6 +7,7 @@
     "all": "All"
   },
   "liveNow": "Live now",
+  "cardAria": "{{home}} vs {{away}}, {{status}}",
   "noneMatching": "No matches in this filter.",
   "loadError": "Failed to load matches: {{message}}",
   "matchesCount_one": "{{count}} match",
@@ -27,7 +28,8 @@
     "noneLocked": "No prediction recorded",
     "predict": "Predict",
     "edit": "Edit",
-    "closed": "Closed"
+    "closed": "Closed",
+    "closesIn": "closes in {{time}}"
   },
   "detail": {
     "tabs": {

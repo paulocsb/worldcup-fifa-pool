@@ -30,8 +30,6 @@ export function AuthCallback() {
       return
     }
 
-    let timeoutId: ReturnType<typeof setTimeout>
-
     // Pode já ter sido exchanged antes desse mount (caching) — checa agora
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
@@ -49,7 +47,7 @@ export function AuthCallback() {
     })
 
     // Fallback: se em 8s não tiver sessão, mostra erro com link pra retry
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setState((s) =>
         s.kind === 'waiting'
           ? {

@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { Crown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { MatchWithTeams } from '@/hooks/useMatches'
 import type { Prediction, Score } from '@/types/db'
@@ -8,6 +7,7 @@ import { kickoffLabel } from '@/lib/format'
 import { TeamFlag } from './TeamFlag'
 import { GroupPill } from './GroupPill'
 import { PhasePill } from './PhasePill'
+import { PredictionScoreBadge } from './PredictionScoreBadge'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -45,7 +45,6 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
     isFinished &&
     prediction.home_score === match.home_score &&
     prediction.away_score === match.away_score
-  const earned = points !== null && points > 0
   // Matches da fase de grupos antes do cutoff (ex: MD1) não pontuam por design
   const matchdayPreCutoff =
     match.stage === 'group' &&
@@ -73,8 +72,7 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
           <PhasePill stage={match.stage} size="sm" variant="tinted" />
         )}
         <StatusIndicator
-          points={points}
-          earned={earned}
+          score={score}
           isExact={isExact}
           isLive={isLive}
           isPostponed={isPostponed}
@@ -154,16 +152,14 @@ export function MyPredictionRow({ match, prediction, score }: Props) {
 }
 
 function StatusIndicator({
-  points,
-  earned,
+  score,
   isExact,
   isLive,
   isPostponed,
   postponedShort,
   isFinishedNotScoring,
 }: {
-  points: number | null
-  earned: boolean
+  score: Score | null
   isExact: boolean
   isLive: boolean
   isPostponed: boolean
@@ -194,22 +190,8 @@ function StatusIndicator({
       </span>
     )
   }
-  if (points !== null) {
-    return (
-      <span
-        className={cn(
-          'inline-flex items-center gap-1 font-display text-sm font-bold tabular-nums',
-          isExact && 'text-gold',
-          earned && !isExact && 'text-primary',
-          !earned && 'text-muted-foreground',
-        )}
-      >
-        {isExact && <Crown className="size-3.5" />}
-        {earned
-          ? t('myPrediction.earnedPoints', { count: points })
-          : t('myPrediction.zeroPoints', { count: points })}
-      </span>
-    )
+  if (score !== null) {
+    return <PredictionScoreBadge score={score} isExact={isExact} />
   }
   if (isFinishedNotScoring) {
     return (

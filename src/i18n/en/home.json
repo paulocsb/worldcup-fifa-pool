@@ -4,6 +4,8 @@
   "noScoreYet": "No points yet",
   "nextMatches": "Upcoming matches",
   "noNextMatches": "No scheduled matches.",
+  "matchesError": "Couldn't load the matches.",
+  "tryAgain": "Try again",
   "viewAll": "View all",
   "groupPredictions": "Group predictions",
   "groupSummary": "{{saved}}/{{total}} saved · {{open}} open",
@@ -14,6 +16,9 @@
   "pendingCount_one": "{{count}} pending prediction",
   "pendingCount_other": "{{count}} pending predictions",
   "liveNow": "Live now",
+  "podium": {
+    "summary": "Tournament prediction. Champion: {{champion}}. Runner-up: {{runnerUp}}. Third: {{third}}."
+  },
   "metrics": {
     "position": "Ranking",
     "positionHint_one": "{{count}} pt",

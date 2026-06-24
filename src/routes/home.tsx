@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
+  CalendarX,
   Crown,
   LayoutGrid,
-  Loader2,
+  RefreshCw,
   Radio,
   Target,
   Trophy,
@@ -15,13 +16,16 @@ import { useOpenPendingMatchesCount } from '@/routes/quick-predict'
 import { Avatar } from '@/components/Avatar'
 import { FifaLogo } from '@/components/FifaLogo'
 import { MatchCard } from '@/components/MatchCard'
+import { MatchCardSkeleton } from '@/components/MatchCardSkeleton'
 import { MetricCard } from '@/components/MetricCard'
+import { MetricGridSkeleton } from '@/components/MetricCardSkeleton'
 import { PredictionSheet } from '@/components/PredictionSheet'
 import { SectionHeader } from '@/components/SectionHeader'
 import { TeamFlag } from '@/components/TeamFlag'
 import { useAuth } from '@/hooks/useAuth'
 import { useMatches, type MatchWithTeams } from '@/hooks/useMatches'
 import { useMyPredictions } from '@/hooks/usePredictions'
+import { useMyScores } from '@/hooks/useMyScores'
 import { useProfile } from '@/hooks/useProfile'
 import { useRanking } from '@/hooks/useRanking'
 import { useTeams, useTournamentLockOpen } from '@/hooks/useTeams'
@@ -33,6 +37,7 @@ import {
   useMyGroupPredictions,
 } from '@/hooks/useGroupPredictions'
 import type { AvatarStyle } from '@/lib/dicebear'
+import { useTeamName } from '@/lib/teamI18n'
 import { useRealtimeInvalidator } from '@/hooks/useRealtimeInvalidator'
 import type { Prediction } from '@/types/db'
 
@@ -42,6 +47,7 @@ export function HomePage() {
   const profile = useProfile(userId)
   const matches = useMatches()
   const predictions = useMyPredictions(userId)
+  const scores = useMyScores(userId)
   const ranking = useRanking()
   const teams = useTeams()
   const tournamentPrediction = useTournamentPrediction(userId)
@@ -55,7 +61,7 @@ export function HomePage() {
 
   useRealtimeInvalidator({
     tables: ['matches', 'scores'],
-    queryKeys: [['matches'], ['ranking']],
+    queryKeys: [['matches'], ['ranking'], ['my-scores', userId]],
   })
 
   const championTeam = useMemo(
@@ -115,7 +121,15 @@ export function HomePage() {
     return idx === undefined || idx === -1 ? null : idx + 1
   }, [ranking.data, userId])
 
+  const championName = useTeamName(championTeam)
+  const runnerUpName = useTeamName(runnerUpTeam)
+  const thirdName = useTeamName(thirdTeam)
+
   const accuracy = stats.data?.accuracy ?? 0
+
+  const metricsPending = ranking.isPending || stats.isPending
+  const rankingError = ranking.isError
+  const statsError = stats.isError
 
   return (
     <section className="container space-y-6 py-4">
@@ -167,21 +181,28 @@ export function HomePage() {
         </Link>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
+      {metricsPending ? (
+        <MetricGridSkeleton />
+      ) : (
+      <div className="grid grid-cols-2 gap-2.5">
         <MetricCard
           variant="inline"
           tone="primary"
           icon={Trophy}
           label={t('metrics.position')}
           value={
-            <>
-              {myPosition ? `${myPosition}º` : '—'}
-              {myRow && (
-                <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
-                  {myRow.total_points} {t('pts', { ns: 'ranking' })}
-                </span>
-              )}
-            </>
+            rankingError ? (
+              <span className="text-muted-foreground">—</span>
+            ) : (
+              <>
+                {myPosition ? `${myPosition}º` : '—'}
+                {myRow && (
+                  <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
+                    {myRow.total_points} {t('pts', { ns: 'ranking' })}
+                  </span>
+                )}
+              </>
+            )
           }
           to="/ranking"
         />
@@ -191,18 +212,22 @@ export function HomePage() {
           icon={Target}
           label={t('metrics.myPredictions')}
           value={
-            <>
-              {stats.data?.total_predictions ?? 0}
-              {stats.data && stats.data.scored_predictions > 0 ? (
-                <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
-                  {t('metrics.predictionsHint', { accuracy })}
-                </span>
-              ) : (
-                <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
-                  {t('metrics.noPredictions')}
-                </span>
-              )}
-            </>
+            statsError ? (
+              <span className="text-muted-foreground">—</span>
+            ) : (
+              <>
+                {stats.data?.total_predictions ?? 0}
+                {stats.data && stats.data.scored_predictions > 0 ? (
+                  <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
+                    {t('metrics.predictionsHint', { accuracy })}
+                  </span>
+                ) : (
+                  <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
+                    {t('metrics.noPredictions')}
+                  </span>
+                )}
+              </>
+            )
           }
           to="/me/predictions"
         />
@@ -213,22 +238,29 @@ export function HomePage() {
           label={t('metrics.tournament')}
           value={
             championTeam && runnerUpTeam && thirdTeam ? (
-              <span className="flex items-center gap-1.5">
-                <span className="flex items-center gap-1">
+              <span
+                className="flex items-center gap-1.5"
+                aria-label={t('podium.summary', {
+                  champion: championName,
+                  runnerUp: runnerUpName,
+                  third: thirdName,
+                })}
+              >
+                <span className="flex items-center gap-1" aria-hidden>
                   <TeamFlag team={championTeam} size={14} />
                   <span className="font-display text-sm font-black uppercase tracking-tight text-gold">
                     {championTeam.code}
                   </span>
                 </span>
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1" aria-hidden>
                   <TeamFlag team={runnerUpTeam} size={14} />
-                  <span className="font-display text-sm font-black uppercase tracking-tight text-slate-400">
+                  <span className="font-display text-sm font-black uppercase tracking-tight text-silver">
                     {runnerUpTeam.code}
                   </span>
                 </span>
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1" aria-hidden>
                   <TeamFlag team={thirdTeam} size={14} />
-                  <span className="font-display text-sm font-black uppercase tracking-tight text-amber-700">
+                  <span className="font-display text-sm font-black uppercase tracking-tight text-bronze">
                     {thirdTeam.code}
                   </span>
                 </span>
@@ -266,6 +298,7 @@ export function HomePage() {
           to="/predictions/groups"
         />
       </div>
+      )}
 
       {live.length > 0 && (
         <div className="space-y-3">
@@ -280,6 +313,7 @@ export function HomePage() {
                 <MatchCard
                   match={m}
                   prediction={predictionByMatch.get(m.id)}
+                  score={scores.data?.byMatch.get(m.id) ?? null}
                   onPredict={setActive}
                 />
               </li>
@@ -292,19 +326,42 @@ export function HomePage() {
         <SectionHeader
           title={t('nextMatches')}
           trailing={
-            <Link to="/matches" className="text-primary hover:underline">
+            <Link
+              to="/matches"
+              className="-my-2.5 -mr-2 inline-flex min-h-11 items-center px-2 text-primary hover:underline active:scale-[0.98]"
+            >
               {t('viewAll')}
             </Link>
           }
         />
         {matches.isPending ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          <ul className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <li key={i}>
+                <MatchCardSkeleton />
+              </li>
+            ))}
+          </ul>
+        ) : matches.isError ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-4 py-8 text-center">
+            <CalendarX className="size-7 text-muted-foreground/50" aria-hidden />
+            <p className="text-sm text-muted-foreground">{t('matchesError')}</p>
+            <button
+              type="button"
+              onClick={() => matches.refetch()}
+              className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-border/60 px-4 text-sm font-medium text-foreground transition-colors hover:bg-card active:scale-[0.98]"
+            >
+              <RefreshCw className="size-4" aria-hidden />
+              {t('tryAgain')}
+            </button>
           </div>
         ) : upcoming.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            {t('noNextMatches')}
-          </p>
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-4 py-8 text-center">
+            <CalendarX className="size-7 text-muted-foreground/50" aria-hidden />
+            <p className="text-sm text-muted-foreground">
+              {t('noNextMatches')}
+            </p>
+          </div>
         ) : (
           <ul className="space-y-3">
             {upcoming.map((m) => (
@@ -312,6 +369,7 @@ export function HomePage() {
                 <MatchCard
                   match={m}
                   prediction={predictionByMatch.get(m.id)}
+                  score={scores.data?.byMatch.get(m.id) ?? null}
                   onPredict={setActive}
                 />
               </li>

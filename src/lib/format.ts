@@ -67,9 +67,16 @@ export function dateKey(iso: string): string {
   return format(new Date(iso), 'yyyy-MM-dd')
 }
 
-export function timeUntil(iso: string): string {
-  return formatDistanceToNowStrict(new Date(iso), {
-    locale: activeLocale(),
-    addSuffix: false,
-  })
+export function timeUntil(
+  iso: string | Date,
+  opts?: { unit?: 'minute' | 'hour' | 'day' },
+): string {
+  return formatDistanceToNowStrict(
+    typeof iso === 'string' ? new Date(iso) : iso,
+    {
+      locale: activeLocale(),
+      addSuffix: false,
+      unit: opts?.unit,
+    },
+  )
 }
