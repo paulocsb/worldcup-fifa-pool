@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom'
-import { Clock, Lock, MapPin, Pencil, Trophy } from 'lucide-react'
+import { Clock, Lock, MapPin, Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { MatchWithTeams } from '@/hooks/useMatches'
 import type { Prediction, Score, Team } from '@/types/db'
 import { isPredictionOpen, lockTime } from '@/lib/matchLock'
-import { groupColorToken, phaseColorToken } from '@/lib/groupColors'
+import {
+  groupColorToken,
+  phaseColorToken,
+  PHASE_LABEL_PT,
+} from '@/lib/groupColors'
 import { useTeamName } from '@/lib/teamI18n'
 import { venueLabel } from '@/lib/venueCountry'
 import { kickoffLabel, timeUntil } from '@/lib/format'
@@ -12,9 +16,8 @@ import { useNow } from '@/hooks/useNow'
 import { cn } from '@/lib/utils'
 import { TeamFlag } from './TeamFlag'
 import { MatchStatusBadge } from './MatchStatusBadge'
+import { MatchTimer } from './match/MatchTimer'
 import { AnimatedScore } from './AnimatedScore'
-import { GroupPill } from './GroupPill'
-import { PhasePill } from './PhasePill'
 import { PredictionScoreBadge } from './PredictionScoreBadge'
 
 interface MatchCardProps {
@@ -34,59 +37,124 @@ interface MatchCardProps {
   compactTime?: boolean
 }
 
-function TeamRow({
+/**
+ * Coluna vertical de time no scoreboard — espelha a ScoreboardTeam da
+ * match-detail (escudo + código + nome), mas com escudo 44px (não 64px) para
+ * caber a 320px ao lado do centro. Compartilhada pelos 3 estados
+ * (scheduled/live/finished). Vencedor em destaque; perdedor atenuado.
+ */
+function ScoreboardTeam({
   team,
-  score,
-  showScore,
   isWinner,
-  isLive,
+  dimmed,
 }: {
   team: Team | null
-  score: number | null | undefined
-  showScore: boolean
   isWinner: boolean
-  isLive: boolean
+  dimmed: boolean
 }) {
-  const teamName = useTeamName(team)
+  const name = useTeamName(team)
   return (
     <div
       className={cn(
-        'flex items-center gap-3 py-2',
-        showScore && !isWinner && 'opacity-70',
+        'flex min-w-0 flex-col items-center gap-1.5 text-center transition-opacity',
+        dimmed && 'opacity-60',
       )}
     >
-      <TeamFlag team={team} size={40} />
-      <div className="min-w-0 flex-1">
+      <TeamFlag team={team} size={44} />
+      <div className="min-w-0 max-w-full">
         <div
           className={cn(
-            'font-display text-lg font-black uppercase leading-tight tracking-tight',
-            isWinner && 'text-foreground',
+            'font-display truncate text-base font-black uppercase leading-none tracking-tight',
+            isWinner ? 'text-foreground' : 'text-muted-foreground',
           )}
         >
           {team?.code ?? '—'}
         </div>
-        {/* Nome completo só em jogos agendados: dá respiro ao placar quando
-            ao vivo/encerrado, onde o placar é o foco. */}
-        {team && !showScore && (
+        {team && (
           <div className="truncate text-[11px] leading-tight text-muted-foreground">
-            {teamName}
+            {name}
           </div>
         )}
       </div>
-      <span
-        className={cn(
-          'shrink-0 font-display text-4xl font-bold leading-none',
-          !showScore && 'text-muted-foreground/30',
-          isWinner && 'text-primary',
-        )}
-        aria-hidden={!showScore}
-      >
+    </div>
+  )
+}
+
+/**
+ * Corpo do card: scoreboard vertical centrado por time, grid [1fr_auto_1fr]
+ * como a match-detail. Compartilhado pelos 3 estados — diverge só no centro:
+ *
+ * - `live`/`finished` → placar real (AnimatedScore, flash de gol só ao vivo),
+ *   vencedor em `text-primary`, perdedor atenuado.
+ * - agendado (`showScore=false`) → "vs" muted no centro, espelhando exatamente
+ *   o estilo da match-detail (jogo agendado). O palpite NÃO fica mais aqui —
+ *   migrou para o botão full-width do footer.
+ *
+ * Pênaltis (Fase 4): mata-mata decidido nas penalidades ganha uma sub-linha
+ * "H–A nos pênaltis" abaixo do placar do tempo normal/prorrogação. Só aparece
+ * quando ambos os campos de pênaltis são não-nulos.
+ */
+function Scoreboard({
+  match,
+  showScore,
+  homeWins,
+  awayWins,
+  live,
+  t,
+}: {
+  match: MatchWithTeams
+  showScore: boolean
+  homeWins: boolean
+  awayWins: boolean
+  live: boolean
+  t: (key: string, opts?: Record<string, unknown>) => string
+}) {
+  const homePens = match.home_score_penalties
+  const awayPens = match.away_score_penalties
+  const hasPenalties = homePens != null && awayPens != null
+  return (
+    <div>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-1">
+        <ScoreboardTeam
+          team={match.home_team}
+          isWinner={homeWins}
+          dimmed={awayWins}
+        />
         {showScore ? (
-          <AnimatedScore value={score ?? 0} flash={isLive} />
+          <span className="inline-flex items-baseline gap-1 px-1 font-display text-4xl font-black leading-none tracking-tight tabular-nums">
+            <AnimatedScore
+              value={match.home_score ?? 0}
+              flash={live}
+              className={homeWins ? 'text-primary' : undefined}
+            />
+            <span className="text-2xl text-muted-foreground/50">–</span>
+            <AnimatedScore
+              value={match.away_score ?? 0}
+              flash={live}
+              className={awayWins ? 'text-primary' : undefined}
+            />
+          </span>
         ) : (
-          <span className="tabular-nums">—</span>
+          <span className="px-2 font-display text-xl font-bold uppercase text-muted-foreground">
+            vs
+          </span>
         )}
-      </span>
+        <ScoreboardTeam
+          team={match.away_team}
+          isWinner={awayWins}
+          dimmed={homeWins}
+        />
+      </div>
+
+      {/* Sub-linha de pênaltis: vencedor da disputa em destaque (text-primary).
+          Compacta e centrada — secundária ao placar do tempo normal acima. */}
+      {hasPenalties && (
+        <p className="mt-1.5 text-center text-[11px] font-medium text-muted-foreground">
+          <span className="tabular-nums text-foreground/80">
+            {t('prediction.penalties', { home: homePens, away: awayPens })}
+          </span>
+        </p>
+      )}
     </div>
   )
 }
@@ -99,6 +167,7 @@ export function MatchCard({
   compactTime = false,
 }: MatchCardProps) {
   const { t } = useTranslation('matches')
+  const { t: tCommon } = useTranslation('common')
 
   // Countdown do lock: ativamos o relógio compartilhado só nos cards na janela
   // de <60min até o lock (kickoff − 5min). Fora dela, useNow(false) não se
@@ -141,126 +210,108 @@ export function MatchCard({
     status: statusDescriptor,
   })
 
-  // Token de cor dominante do card: cor do grupo se for fase de grupos,
-  // senão a cor da fase. A faixa lateral SEMPRE reflete grupo/fase; o sinal
-  // de "ao vivo" fica só no badge pulsante.
+  // Token de cor dominante do card: cor do grupo se for fase de grupos, senão a
+  // cor da fase. Carregada pelo header band tonal (não há mais faixa lateral —
+  // um único indicador de cor evita sinais concorrentes).
   const accentToken =
     match.stage === 'group'
       ? groupColorToken(match.group_letter)
       : phaseColorToken(match.stage)
+  // Guardamos os CANAIS HSL crus (ex.: "271 81% 56%") — não o hsl() pronto —
+  // para poder aplicar opacidade real via hsl(var(--accent-c) / 0.4). O Tailwind
+  // v3 descarta o modificador /opacity em cores arbitrárias com var().
   const accentStyle = accentToken
-    ? ({ '--accent-c': `hsl(var(--${accentToken}))` } as React.CSSProperties)
+    ? ({ '--accent-c': `var(--${accentToken})` } as React.CSSProperties)
     : undefined
+  // Label do header band: "Grupo X" na fase de grupos; nome da fase no mata-mata.
+  const headerLabel =
+    match.stage === 'group' && match.group_letter
+      ? `${tCommon('group')} ${match.group_letter}`
+      : PHASE_LABEL_PT[match.stage]
 
   const homeScore = match.home_score ?? 0
   const awayScore = match.away_score ?? 0
-  const homeWins = showScore && homeScore > awayScore
-  const awayWins = showScore && awayScore > homeScore
+  // Vencedor real: em mata-mata decidido nos pênaltis o tempo normal
+  // (home_score/away_score) costuma estar empatado, então quem vence é quem tem
+  // mais pênaltis. Sem pênaltis, decide o placar do tempo normal/prorrogação.
+  const homePens = match.home_score_penalties
+  const awayPens = match.away_score_penalties
+  const decidedByPenalties = homePens != null && awayPens != null
+  const homeWins = showScore
+    ? decidedByPenalties
+      ? homePens > awayPens
+      : homeScore > awayScore
+    : false
+  const awayWins = showScore
+    ? decidedByPenalties
+      ? awayPens > homePens
+      : awayScore > homeScore
+    : false
+
+  // Palpite formatado para o footer (botão / chip estático).
+  const predictionLabel = prediction
+    ? `${prediction.home_score}–${prediction.away_score}`
+    : null
 
   return (
     <article
       style={accentStyle}
       className={cn(
-        'animate-float-in relative overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]',
-        !isLive && 'hover:[border-color:var(--accent-c)]/60',
+        'animate-float-in relative overflow-hidden rounded-2xl border bg-card/80 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]',
+        // Borda na cor do grupo/fase (identidade visível em repouso, reforçada
+        // no hover). Fallback neutro caso não haja accent (não esperado).
+        accentStyle
+          ? 'border-[hsl(var(--accent-c)_/_0.45)] hover:border-[hsl(var(--accent-c)_/_0.75)]'
+          : 'border-border/60',
       )}
     >
-      {/* Faixa de cor lateral esquerda — identifica grupo/fase visualmente.
-          Reflete sempre grupo/fase, inclusive ao vivo (o sinal de "ao vivo"
-          fica apenas no badge pulsante). */}
-      <span
-        aria-hidden
-        className={cn(
-          'pointer-events-none absolute inset-y-0 left-0 w-1',
-          accentStyle && '[background-color:var(--accent-c)]',
-        )}
-      />
-
       <Link
         to={`/matches/${match.id}`}
         className="block"
         aria-label={ariaLabel}
       >
-        <header className="mb-3 flex items-center justify-between gap-2">
-          {match.group_letter ? (
-            <GroupPill letter={match.group_letter} size="md" withLabel />
-          ) : (
-            <PhasePill stage={match.stage} size="md" variant="solid" />
+        {/* Header band tingido pela cor do grupo/fase — único indicador de cor
+            do card (a antiga faixa lateral foi removida para não competir). O
+            label fica na cor do accent (mesma fórmula AA dos pills tinted) e o
+            status à direita (MatchTimer ao vivo/encerrado, senão kickoff). */}
+        <header
+          className={cn(
+            'flex items-center justify-between gap-2 px-4 py-2.5',
+            accentStyle && 'bg-[hsl(var(--accent-c)_/_0.12)]',
           )}
-          <MatchStatusBadge match={match} compactTime={compactTime} />
+        >
+          <span className="min-w-0 truncate font-display text-sm font-bold uppercase tracking-wider [color:hsl(var(--accent-c))]">
+            {headerLabel}
+          </span>
+          {isLive || isFinished ? (
+            <MatchTimer match={match} />
+          ) : (
+            <MatchStatusBadge match={match} compactTime={compactTime} />
+          )}
         </header>
 
-        <div className="divide-y divide-border/40">
-          <TeamRow
-            team={match.home_team}
-            score={match.home_score}
+        {/* Corpo compartilhado: scoreboard vertical. Centro = placar real
+            (live/finished) ou "vs" muted (agendado). */}
+        <div className="px-4 pt-3">
+          <Scoreboard
+            match={match}
             showScore={showScore}
-            isWinner={homeWins}
-            isLive={isLive}
-          />
-          <TeamRow
-            team={match.away_team}
-            score={match.away_score}
-            showScore={showScore}
-            isWinner={awayWins}
-            isLive={isLive}
+            homeWins={homeWins}
+            awayWins={awayWins}
+            live={isLive}
+            t={t}
           />
         </div>
       </Link>
 
-      <footer className="mt-3 border-t border-border/40 pt-3">
-        <div className="flex items-center justify-between gap-2">
-        {prediction ? (
-          <span className="flex items-center gap-1.5 text-xs">
-            <Trophy className="size-3 text-gold" />
-            <span className="text-muted-foreground">
-              {t('prediction.label')}:
-            </span>
-            <span className="font-display font-semibold tabular-nums">
-              {prediction.home_score}–{prediction.away_score}
-            </span>
-          </span>
-        ) : (
-          <span className="text-xs text-muted-foreground">
-            {open ? t('prediction.none') : t('prediction.noneLocked')}
-          </span>
-        )}
-        {showScoreBadge && score ? (
-          <PredictionScoreBadge score={score} isExact={isExact} />
-        ) : (
-        <button
-          type="button"
-          onClick={() => onPredict?.(match)}
-          disabled={!open || !onPredict}
-          className={cn(
-            'inline-flex min-h-11 items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-semibold transition-colors',
-            open
-              ? 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95'
-              : 'bg-muted text-muted-foreground',
-          )}
-        >
-          {open ? (
-            <>
-              <Pencil className="size-3" />
-              {prediction ? t('prediction.edit') : t('prediction.predict')}
-            </>
-          ) : (
-            <>
-              <Lock className="size-3" />
-              {t('prediction.closed')}
-            </>
-          )}
-        </button>
-        )}
-        </div>
-
+      <footer className="mt-3 px-4 pb-4">
         {/* Countdown do lock: aviso âmbar acionável quando falta <60min para o
             palpite fechar. Âmbar (warning), nunca vermelho — vermelho é
-            reservado ao "ao vivo". aria-live: anunciado a leitores de tela. */}
+            reservado ao "ao vivo". Acima do botão. aria-live: anunciado. */}
         {showCountdown && (
           <p
             aria-live="polite"
-            className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-amber-500 dark:text-amber-400"
+            className="mb-2 flex items-center justify-center gap-1 text-[11px] font-semibold text-amber-500 dark:text-amber-400"
           >
             <Clock className="size-3 shrink-0" aria-hidden />
             <span>
@@ -271,10 +322,57 @@ export function MatchCard({
           </p>
         )}
 
+        {/* Ação de palpite full-width no rodapé (tap target ≥44px). Estados:
+            - finished + score → PredictionScoreBadge (+N pts / coroa).
+            - live → chip estático "Seu palpite: X–Y" (já fechado).
+            - agendado + aberto → botão CTA "Palpitar" ou "Seu palpite: X–Y · Editar".
+            - agendado + fechado → palpite estático ou "Encerrado" (sem ação). */}
+        {showScoreBadge && score ? (
+          <div className="flex justify-center">
+            <PredictionScoreBadge score={score} isExact={isExact} />
+          </div>
+        ) : isLive ? (
+          <FooterStatic
+            label={
+              predictionLabel
+                ? `${t('prediction.yourPrediction')}: ${predictionLabel}`
+                : t('prediction.noneLocked')
+            }
+          />
+        ) : open ? (
+          <button
+            type="button"
+            onClick={() => onPredict?.(match)}
+            disabled={!onPredict}
+            className={cn(
+              'inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors active:scale-[0.98] disabled:opacity-60',
+              // Já palpitou → tom suave/contornado (sinal de "feito, toque para
+              // editar"); ainda não → CTA sólido forte ("palpite agora").
+              predictionLabel
+                ? 'border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20'
+                : 'bg-primary/90 text-primary-foreground hover:bg-primary',
+            )}
+          >
+            <Pencil className="size-3.5" aria-hidden />
+            {predictionLabel
+              ? `${t('prediction.yourPrediction')}: ${predictionLabel} · ${t('prediction.edit')}`
+              : t('prediction.predict')}
+          </button>
+        ) : (
+          <FooterStatic
+            locked
+            label={
+              predictionLabel
+                ? `${t('prediction.yourPrediction')}: ${predictionLabel}`
+                : t('prediction.noneLocked')
+            }
+          />
+        )}
+
         {/* Estádio rebaixado a info terciária: só em jogos agendados, onde o
             placar ainda não disputa a hierarquia visual. */}
         {!showScore && (match.venue || match.venue_city) && (
-          <p className="mt-2 flex items-center gap-1 truncate text-[11px] text-muted-foreground">
+          <p className="mt-2 flex items-center justify-center gap-1 truncate text-[11px] text-muted-foreground">
             <MapPin className="size-3 shrink-0" aria-hidden />
             <span className="truncate">
               {venueLabel(match.venue, match.venue_city)}
@@ -283,5 +381,19 @@ export function MatchCard({
         )}
       </footer>
     </article>
+  )
+}
+
+/**
+ * Faixa estática full-width no footer (não clicável): palpite fechado (lock) ou
+ * ao vivo. Espelha a altura/forma do botão CTA para não causar salto visual.
+ * `locked` adiciona o cadeado.
+ */
+function FooterStatic({ label, locked }: { label: string; locked?: boolean }) {
+  return (
+    <div className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-lg bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground">
+      {locked && <Lock className="size-3.5 shrink-0" aria-hidden />}
+      <span className="truncate font-display tabular-nums">{label}</span>
+    </div>
   )
 }

@@ -24,12 +24,14 @@
   },
   "prediction": {
     "label": "Palpite",
+    "yourPrediction": "Seu palpite",
     "none": "Sem palpite",
     "noneLocked": "Sem palpite registrado",
     "predict": "Palpitar",
     "edit": "Editar",
     "closed": "Encerrado",
-    "closesIn": "fecha em {{time}}"
+    "closesIn": "fecha em {{time}}",
+    "penalties": "{{home}}–{{away}} nos pênaltis"
   },
   "detail": {
     "tabs": {

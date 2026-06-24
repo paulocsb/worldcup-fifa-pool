@@ -23,13 +23,29 @@ import { venueLabel } from '@/lib/venueCountry'
 import { useTeamName } from '@/lib/teamI18n'
 import type { Team } from '@/types/db'
 
-function ScoreboardTeam({ team }: { team: Team | null }) {
+function ScoreboardTeam({
+  team,
+  dimmed = false,
+}: {
+  team: Team | null
+  dimmed?: boolean
+}) {
   const name = useTeamName(team)
   return (
-    <div className="flex flex-col items-center gap-2 text-center">
+    <div
+      className={cn(
+        'flex flex-col items-center gap-2 text-center transition-opacity',
+        dimmed && 'opacity-60',
+      )}
+    >
       <TeamFlag team={team} size={64} />
       <div className="min-w-0">
-        <div className="font-display truncate text-2xl font-black uppercase leading-none tracking-tight">
+        <div
+          className={cn(
+            'font-display truncate text-2xl font-black uppercase leading-none tracking-tight',
+            dimmed && 'text-muted-foreground',
+          )}
+        >
           {team?.code ?? '—'}
         </div>
         {team && (
@@ -104,6 +120,26 @@ export function MatchDetailPage() {
   const m = detail.data
   const showScore = m.status === 'finished' || m.status === 'live'
 
+  // Vencedor real: em mata-mata decidido nos pênaltis o tempo normal
+  // (home_score/away_score) costuma estar empatado, então quem vence é quem tem
+  // mais pênaltis. Sem pênaltis, decide o placar do tempo normal/prorrogação.
+  // Mesma abordagem inline do MatchCard (ResultScoreboard) para consistência.
+  const homePens = m.home_score_penalties
+  const awayPens = m.away_score_penalties
+  const decidedByPenalties = homePens != null && awayPens != null
+  const homeScore = m.home_score ?? 0
+  const awayScore = m.away_score ?? 0
+  const homeWins = showScore
+    ? decidedByPenalties
+      ? homePens > awayPens
+      : homeScore > awayScore
+    : false
+  const awayWins = showScore
+    ? decidedByPenalties
+      ? awayPens > homePens
+      : awayScore > homeScore
+    : false
+
   const headerTitle =
     m.stage === 'group' && m.group_letter
       ? `${tCommon('group')} ${m.group_letter}`
@@ -146,13 +182,19 @@ export function MatchDetailPage() {
           </div>
         )}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-          <ScoreboardTeam team={m.home_team} />
+          <ScoreboardTeam team={m.home_team} dimmed={awayWins} />
           <div className="px-1 text-center">
             {showScore ? (
-              <span className="inline-flex items-baseline gap-1 font-display text-5xl font-black leading-none tracking-tight">
-                <AnimatedScore value={m.home_score ?? 0} />
+              <span className="inline-flex items-baseline gap-1 font-display text-5xl font-black leading-none tracking-tight tabular-nums">
+                <AnimatedScore
+                  value={homeScore}
+                  className={homeWins ? 'text-primary' : undefined}
+                />
                 <span className="text-muted-foreground/60">–</span>
-                <AnimatedScore value={m.away_score ?? 0} />
+                <AnimatedScore
+                  value={awayScore}
+                  className={awayWins ? 'text-primary' : undefined}
+                />
               </span>
             ) : (
               <span className="font-display text-xl font-bold uppercase text-muted-foreground">
@@ -160,8 +202,19 @@ export function MatchDetailPage() {
               </span>
             )}
           </div>
-          <ScoreboardTeam team={m.away_team} />
+          <ScoreboardTeam team={m.away_team} dimmed={homeWins} />
         </div>
+
+        {/* Sub-linha de pênaltis: "H–A nos pênaltis" (Fase 4, mesma chave i18n
+            do MatchCard). Só quando ambos os campos são não-nulos. Secundária ao
+            placar 5xl acima; números destacados, muted, compacta a 320px. */}
+        {decidedByPenalties && (
+          <p className="mt-2.5 text-center text-xs font-medium text-muted-foreground">
+            <span className="tabular-nums text-foreground/80">
+              {t('prediction.penalties', { home: homePens, away: awayPens })}
+            </span>
+          </p>
+        )}
       </div>
 
       <nav

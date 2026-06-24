@@ -24,12 +24,14 @@
   },
   "prediction": {
     "label": "Prediction",
+    "yourPrediction": "Your prediction",
     "none": "No prediction",
     "noneLocked": "No prediction recorded",
     "predict": "Predict",
     "edit": "Edit",
     "closed": "Closed",
-    "closesIn": "closes in {{time}}"
+    "closesIn": "closes in {{time}}",
+    "penalties": "{{home}}–{{away}} on penalties"
   },
   "detail": {
     "tabs": {
