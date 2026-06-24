@@ -17,13 +17,45 @@
     "final": "Final"
   },
   "tableHeaders": {
+    "position": "Position",
+    "team": "Team",
+    "played": "P",
     "wins": "W",
     "draws": "D",
     "losses": "L",
+    "goalsFor": "GF",
+    "goalsAgainst": "GA",
     "goalDiff": "GD",
-    "points": "PTS"
+    "points": "PTS",
+    "playedLong": "Matches played",
+    "winsLong": "Wins",
+    "drawsLong": "Draws",
+    "lossesLong": "Losses",
+    "goalsForLong": "Goals for",
+    "goalsAgainstLong": "Goals against",
+    "goalDiffLong": "Goal difference",
+    "pointsLong": "Points"
+  },
+  "groupCaption": "Group {{letter}} standings",
+  "cell": {
+    "position": "{{position}}th place",
+    "played": "{{count}} matches played",
+    "wins": "{{count}} wins",
+    "draws": "{{count}} draws",
+    "losses": "{{count}} losses",
+    "goalsFor": "{{count}} goals for",
+    "goalsAgainst": "{{count}} goals against",
+    "goalDiff": "{{value}} goal difference",
+    "points": "{{count}} points"
+  },
+  "legend": {
+    "qualified": "Qualified (1st & 2nd)",
+    "playoff": "Best 3rd-placed advance (play-off)",
+    "eliminated": "Eliminated (4th)"
   },
   "loadError": "Error: {{message}}",
+  "empty": "Standings will show up here once the groups are set.",
+  "emptyGroup": "No teams in this group yet.",
   "bracket": {
     "tba": "TBD",
     "emptyR32": "Bracket will fill in after the group stage (from June 27).",

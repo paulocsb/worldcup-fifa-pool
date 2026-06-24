@@ -17,13 +17,45 @@
     "final": "Final"
   },
   "tableHeaders": {
+    "position": "Posição",
+    "team": "Seleção",
+    "played": "J",
     "wins": "V",
     "draws": "E",
     "losses": "D",
+    "goalsFor": "GP",
+    "goalsAgainst": "GC",
     "goalDiff": "SG",
-    "points": "PTS"
+    "points": "PTS",
+    "playedLong": "Jogos disputados",
+    "winsLong": "Vitórias",
+    "drawsLong": "Empates",
+    "lossesLong": "Derrotas",
+    "goalsForLong": "Gols pró",
+    "goalsAgainstLong": "Gols contra",
+    "goalDiffLong": "Saldo de gols",
+    "pointsLong": "Pontos"
+  },
+  "groupCaption": "Classificação do Grupo {{letter}}",
+  "cell": {
+    "position": "{{position}}º lugar",
+    "played": "{{count}} jogos",
+    "wins": "{{count}} vitórias",
+    "draws": "{{count}} empates",
+    "losses": "{{count}} derrotas",
+    "goalsFor": "{{count}} gols pró",
+    "goalsAgainst": "{{count}} gols contra",
+    "goalDiff": "{{value}} de saldo de gols",
+    "points": "{{count}} pontos"
+  },
+  "legend": {
+    "qualified": "Classificado (1º e 2º)",
+    "playoff": "Melhores 3ºs avançam (repescagem)",
+    "eliminated": "Eliminado (4º)"
   },
   "loadError": "Erro: {{message}}",
+  "empty": "A classificação aparece aqui assim que os grupos forem definidos.",
+  "emptyGroup": "Sem seleções neste grupo ainda.",
   "bracket": {
     "tba": "A definir",
     "emptyR32": "Chaveamento será preenchido após a fase de grupos (a partir de 27/06).",
