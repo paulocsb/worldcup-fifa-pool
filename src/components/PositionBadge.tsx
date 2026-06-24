@@ -46,13 +46,16 @@ export function PositionBadge({
         ? 'px-3 py-1.5 text-sm'
         : 'px-2.5 py-1 text-xs'
 
-  const styleVar = { '--c': `hsl(var(--${token}))` } as React.CSSProperties
+  // Guardamos os CANAIS HSL crus (ex.: "43 96% 56%") para poder aplicar
+  // opacidade real via hsl(var(--c) / 0.1) — o Tailwind v3 descarta o /opacity
+  // em cores arbitrárias com var().
+  const styleVar = { '--c': `var(--${token})` } as React.CSSProperties
 
   if (variant === 'icon-only') {
     return (
       <Icon
         style={styleVar}
-        className={cn(iconSize, '[color:var(--c)]', className)}
+        className={cn(iconSize, '[color:hsl(var(--c))]', className)}
         aria-label={label}
       />
     )
@@ -65,9 +68,9 @@ export function PositionBadge({
         'inline-flex items-center gap-1 rounded-full font-display font-bold uppercase tracking-wider',
         pad,
         variant === 'solid' &&
-          'text-[hsl(var(--background))] [background-color:var(--c)]',
+          'text-[hsl(var(--background))] [background-color:hsl(var(--c))]',
         variant === 'tinted' &&
-          'border bg-[color:var(--c)]/10 [border-color:var(--c)] [color:var(--c)]',
+          'border bg-[hsl(var(--c)_/_0.1)] [border-color:hsl(var(--c))] [color:hsl(var(--c))]',
         className,
       )}
     >

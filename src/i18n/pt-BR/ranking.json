@@ -7,5 +7,15 @@
   "exactUnit_one": "cravado",
   "exactUnit_other": "cravados",
   "scoredUnit_one": "jogo",
-  "scoredUnit_other": "jogos"
+  "scoredUnit_other": "jogos",
+  "yourPosition": "Sua posição",
+  "youLabel": "Você",
+  "goToMyRow": "Ir para a sua posição no ranking",
+  "rowAria": "{{position}}º lugar, {{name}}, {{points}} pontos",
+  "rowAriaYou": "{{position}}º lugar, {{name}} (você), {{points}} pontos",
+  "deltaUp_one": "subiu {{count}} posição",
+  "deltaUp_other": "subiu {{count}} posições",
+  "deltaDown_one": "caiu {{count}} posição",
+  "deltaDown_other": "caiu {{count}} posições",
+  "deltaSame": "manteve a posição"
 }

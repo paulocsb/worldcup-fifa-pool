@@ -384,6 +384,45 @@ export type Database = {
           },
         ]
       }
+      ranking_snapshot: {
+        Row: {
+          captured_at: string
+          exact_count: number
+          scored_count: number
+          total_points: number
+          user_id: string
+        }
+        Insert: {
+          captured_at?: string
+          exact_count?: number
+          scored_count?: number
+          total_points?: number
+          user_id: string
+        }
+        Update: {
+          captured_at?: string
+          exact_count?: number
+          scored_count?: number
+          total_points?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ranking_snapshot_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ranking_snapshot_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_total_scores"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       scores: {
         Row: {
           breakdown: Json

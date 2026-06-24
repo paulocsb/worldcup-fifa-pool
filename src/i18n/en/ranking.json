@@ -7,5 +7,15 @@
   "exactUnit_one": "exact",
   "exactUnit_other": "exact",
   "scoredUnit_one": "match",
-  "scoredUnit_other": "matches"
+  "scoredUnit_other": "matches",
+  "yourPosition": "Your position",
+  "youLabel": "You",
+  "goToMyRow": "Go to your position in the ranking",
+  "rowAria": "{{position}} place, {{name}}, {{points}} points",
+  "rowAriaYou": "{{position}} place, {{name}} (you), {{points}} points",
+  "deltaUp_one": "up {{count}} position",
+  "deltaUp_other": "up {{count}} positions",
+  "deltaDown_one": "down {{count}} position",
+  "deltaDown_other": "down {{count}} positions",
+  "deltaSame": "position unchanged"
 }

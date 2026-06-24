@@ -25,7 +25,19 @@ interface ComputeReport {
   matches_pre_cutoff_skipped: number
   predictions_scored: number
   total_points_awarded: number
+  scores_changed: boolean
+  snapshot_users: number
   errors: string[]
+}
+
+interface ScoreRow {
+  user_id: string
+  source: 'match'
+  match_id: number
+  group_letter: null
+  points: number
+  breakdown: Record<string, unknown>
+  computed_at: string
 }
 
 Deno.serve(async (req) => {
@@ -35,6 +47,8 @@ Deno.serve(async (req) => {
     matches_pre_cutoff_skipped: 0,
     predictions_scored: 0,
     total_points_awarded: 0,
+    scores_changed: false,
+    snapshot_users: 0,
     errors: [],
   }
 
@@ -90,6 +104,10 @@ Deno.serve(async (req) => {
     return json(report, 500)
   }
 
+  // Acumula TODAS as linhas de score desta rodada (todos os matches avaliados)
+  // antes de comparar com o estado atual e fazer o upsert.
+  const allRows: ScoreRow[] = []
+
   for (const m of matches ?? []) {
     report.matches_evaluated += 1
 
@@ -137,20 +155,132 @@ Deno.serve(async (req) => {
         points: result.points,
         breakdown: result.breakdown,
         computed_at: new Date().toISOString(),
-      }
+      } satisfies ScoreRow
     })
 
+    allRows.push(...rows)
+  }
+
+  // -------------------------------------------------------------------------
+  // Detecção de mudança: comparar os scores computados nesta rodada com os
+  // já gravados. hasChanges = existe linha nova OU com `points` diferente.
+  // -------------------------------------------------------------------------
+  let hasChanges = false
+  if (allRows.length > 0) {
+    const matchIds = [...new Set(allRows.map((r) => r.match_id))]
+    const { data: existing, error: existErr } = await supabase
+      .from('scores')
+      .select('user_id, match_id, points')
+      .eq('source', 'match')
+      .in('match_id', matchIds)
+    if (existErr) {
+      report.errors.push(`existing scores: ${existErr.message}`)
+    }
+    const existingPoints = new Map<string, number>()
+    for (const e of existing ?? []) {
+      existingPoints.set(`${e.user_id}|${e.match_id}`, e.points)
+    }
+    hasChanges = allRows.some((r) => {
+      const prev = existingPoints.get(`${r.user_id}|${r.match_id}`)
+      return prev === undefined || prev !== r.points
+    })
+  }
+  report.scores_changed = hasChanges
+
+  // -------------------------------------------------------------------------
+  // Snapshot (best-effort): SÓ quando há mudança, captura os agregados ATUAIS
+  // (pré-upsert) de todos os usuários a partir de `scores` source='match'.
+  // Falha aqui não impede o upsert dos scores (cálculo é mais crítico).
+  // -------------------------------------------------------------------------
+  if (hasChanges) {
+    try {
+      const snapshotRows = await buildSnapshotRows(supabase)
+      if (snapshotRows.length > 0) {
+        const { error: snapErr } = await supabase
+          .from('ranking_snapshot')
+          .upsert(snapshotRows, { onConflict: 'user_id' })
+        if (snapErr) {
+          report.errors.push(`ranking_snapshot upsert: ${snapErr.message}`)
+        } else {
+          report.snapshot_users = snapshotRows.length
+        }
+      }
+    } catch (e) {
+      report.errors.push(`ranking_snapshot: ${String(e)}`)
+    }
+    console.log(
+      `compute-scores: scores changed, ranking_snapshot captured for ${report.snapshot_users} users`,
+    )
+  } else {
+    console.log('compute-scores: no score changes, ranking_snapshot untouched')
+  }
+
+  // -------------------------------------------------------------------------
+  // Upsert dos scores. Otimização: só quando há mudança (idempotente de
+  // qualquer forma; pular evita writes desnecessários no cron horário).
+  // -------------------------------------------------------------------------
+  if (hasChanges && allRows.length > 0) {
     const { error: upsertErr } = await supabase
       .from('scores')
-      .upsert(rows, { onConflict: 'user_id,source,match_id,group_letter' })
+      .upsert(allRows, { onConflict: 'user_id,source,match_id,group_letter' })
     if (upsertErr) {
-      report.errors.push(`upsert scores m=${m.id}: ${upsertErr.message}`)
+      report.errors.push(`upsert scores: ${upsertErr.message}`)
     }
   }
 
   report.ok = report.errors.length === 0
   return json(report, report.ok ? 200 : 207)
 })
+
+// ---------------------------------------------------------------------------
+// Agrega os scores ATUAIS (source='match') por usuário, espelhando o
+// comparador do ranking (total_points / exact_count / scored_count).
+// Em memória: o bolão é pequeno (dezenas de users × ~100 jogos).
+// ---------------------------------------------------------------------------
+async function buildSnapshotRows(
+  supabase: ReturnType<typeof createClient>,
+): Promise<
+  Array<{
+    user_id: string
+    total_points: number
+    exact_count: number
+    scored_count: number
+    captured_at: string
+  }>
+> {
+  const { data, error } = await supabase
+    .from('scores')
+    .select('user_id, points, breakdown')
+    .eq('source', 'match')
+  if (error) throw new Error(error.message)
+
+  const agg = new Map<
+    string,
+    { total_points: number; exact_count: number; scored_count: number }
+  >()
+  for (const s of data ?? []) {
+    if (!s.user_id) continue
+    const breakdown = s.breakdown as { exact?: number } | null
+    const cur = agg.get(s.user_id) ?? {
+      total_points: 0,
+      exact_count: 0,
+      scored_count: 0,
+    }
+    cur.total_points += s.points ?? 0
+    cur.scored_count += 1
+    if ((breakdown?.exact ?? 0) > 0) cur.exact_count += 1
+    agg.set(s.user_id, cur)
+  }
+
+  const capturedAt = new Date().toISOString()
+  return [...agg.entries()].map(([user_id, v]) => ({
+    user_id,
+    total_points: v.total_points,
+    exact_count: v.exact_count,
+    scored_count: v.scored_count,
+    captured_at: capturedAt,
+  }))
+}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body, null, 2), {
