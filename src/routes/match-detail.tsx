@@ -55,6 +55,7 @@ export function MatchDetailPage() {
   const matchId = params.id ? Number(params.id) : null
   const [tab, setTab] = useState<Tab>('events')
   const { t } = useTranslation('matches')
+  const { t: tCommon } = useTranslation('common')
 
   const detail = useMatchDetail(matchId)
   useTriggerMatchDetailSync(matchId)
@@ -103,7 +104,6 @@ export function MatchDetailPage() {
   const m = detail.data
   const showScore = m.status === 'finished' || m.status === 'live'
 
-  const { t: tCommon } = useTranslation('common')
   const headerTitle =
     m.stage === 'group' && m.group_letter
       ? `${tCommon('group')} ${m.group_letter}`
