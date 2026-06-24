@@ -13,5 +13,23 @@
   "quickPredict": "Quick predict",
   "pendingCount_one": "{{count}} pending prediction",
   "pendingCount_other": "{{count}} pending predictions",
-  "liveNow": "Live now"
+  "liveNow": "Live now",
+  "metrics": {
+    "position": "Ranking",
+    "positionHint_one": "{{count}} pt",
+    "positionHint_other": "{{count}} pts",
+    "noPosition": "No points",
+    "myPredictions": "My predictions",
+    "predictionsHint": "{{accuracy}}% accuracy",
+    "noPredictions": "Start predicting",
+    "tournament": "Tournament pick",
+    "chooseTournament": "Pick one",
+    "tournamentClosed": "Closed",
+    "groups": "Group",
+    "groupsCount": "{{saved}}/{{total}}",
+    "groupsSavedHint_one": "predicted",
+    "groupsSavedHint_other": "predicted",
+    "groupsEmpty_one": "open",
+    "groupsEmpty_other": "open"
+  }
 }

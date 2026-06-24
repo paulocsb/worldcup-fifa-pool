@@ -6,6 +6,7 @@ import {
   LayoutGrid,
   Loader2,
   Radio,
+  Target,
   Trophy,
   Zap,
 } from 'lucide-react'
@@ -14,6 +15,7 @@ import { useOpenPendingMatchesCount } from '@/routes/quick-predict'
 import { Avatar } from '@/components/Avatar'
 import { FifaLogo } from '@/components/FifaLogo'
 import { MatchCard } from '@/components/MatchCard'
+import { MetricCard } from '@/components/MetricCard'
 import { PredictionSheet } from '@/components/PredictionSheet'
 import { SectionHeader } from '@/components/SectionHeader'
 import { TeamFlag } from '@/components/TeamFlag'
@@ -24,13 +26,13 @@ import { useProfile } from '@/hooks/useProfile'
 import { useRanking } from '@/hooks/useRanking'
 import { useTeams, useTournamentLockOpen } from '@/hooks/useTeams'
 import { useTournamentPrediction } from '@/hooks/useTournamentPrediction'
+import { useUserStats } from '@/hooks/useUserStats'
 import {
   ALL_GROUPS,
   useGroupLocks,
   useMyGroupPredictions,
 } from '@/hooks/useGroupPredictions'
 import type { AvatarStyle } from '@/lib/dicebear'
-import { useTeamName } from '@/lib/teamI18n'
 import { useRealtimeInvalidator } from '@/hooks/useRealtimeInvalidator'
 import type { Prediction } from '@/types/db'
 
@@ -47,9 +49,9 @@ export function HomePage() {
   const groupPredictions = useMyGroupPredictions(userId)
   const groupLocks = useGroupLocks()
   const pendingCount = useOpenPendingMatchesCount()
+  const stats = useUserStats(userId)
   const [active, setActive] = useState<MatchWithTeams | null>(null)
   const { t } = useTranslation('home')
-  const { t: tRanking } = useTranslation('ranking')
 
   useRealtimeInvalidator({
     tables: ['matches', 'scores'],
@@ -63,7 +65,20 @@ export function HomePage() {
       ) ?? null,
     [teams.data, tournamentPrediction.data],
   )
-  const championName = useTeamName(championTeam)
+  const runnerUpTeam = useMemo(
+    () =>
+      teams.data?.find(
+        (team) => team.id === tournamentPrediction.data?.runner_up_team_id,
+      ) ?? null,
+    [teams.data, tournamentPrediction.data],
+  )
+  const thirdTeam = useMemo(
+    () =>
+      teams.data?.find(
+        (team) => team.id === tournamentPrediction.data?.third_place_team_id,
+      ) ?? null,
+    [teams.data, tournamentPrediction.data],
+  )
 
   const groupSummary = useMemo(() => {
     const savedSet = new Set(
@@ -100,6 +115,16 @@ export function HomePage() {
     return idx === undefined || idx === -1 ? null : idx + 1
   }, [ranking.data, userId])
 
+  const accuracy =
+    stats.data && stats.data.scored_predictions > 0
+      ? Math.round(
+          ((stats.data.exact_scores +
+            (stats.data.scored_predictions - stats.data.exact_scores) * 0.5) /
+            stats.data.scored_predictions) *
+            100,
+        )
+      : 0
+
   return (
     <section className="container space-y-6 py-4">
       <header className="flex items-center justify-between gap-3">
@@ -123,31 +148,6 @@ export function HomePage() {
         </div>
         <FifaLogo size={40} variant="horizontal" className="shrink-0" />
       </header>
-
-      <Link
-        to="/ranking"
-        className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/5 active:scale-[0.99]"
-      >
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <Trophy className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              {t('yourPosition')}
-            </p>
-            <p className="font-display text-lg font-bold">
-              {myPosition ? `${myPosition}º` : '—'}
-              {myRow && (
-                <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
-                  {myRow.total_points} {tRanking('pts')}
-                </span>
-              )}
-            </p>
-          </div>
-        </div>
-        <ArrowRight className="size-5 text-muted-foreground" />
-      </Link>
 
       {pendingCount > 0 && (
         <Link
@@ -175,63 +175,105 @@ export function HomePage() {
         </Link>
       )}
 
-      <Link
-        to="/predictions/tournament"
-        className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/5 active:scale-[0.99]"
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-gold">
-            <Crown className="size-5" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs uppercase text-muted-foreground">
-              {t('tournamentPrediction')}
-            </p>
-            {championTeam ? (
-              <div className="flex items-center gap-2">
-                <TeamFlag team={championTeam} size={28} />
-                <span className="font-display text-xl font-black uppercase leading-none tracking-tight text-gold">
-                  {championTeam.code}
+      <div className="grid grid-cols-2 gap-2">
+        <MetricCard
+          variant="inline"
+          tone="primary"
+          icon={<Trophy className="size-5" />}
+          label={t('metrics.position')}
+          value={
+            <>
+              {myPosition ? `${myPosition}º` : '—'}
+              {myRow && (
+                <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
+                  {myRow.total_points} {t('pts', { ns: 'ranking' })}
                 </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {championName}
+              )}
+            </>
+          }
+          to="/ranking"
+        />
+        <MetricCard
+          variant="inline"
+          tone="primary"
+          icon={<Target className="size-5" />}
+          label={t('metrics.myPredictions')}
+          value={
+            <>
+              {stats.data?.total_predictions ?? 0}
+              {stats.data && stats.data.scored_predictions > 0 ? (
+                <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
+                  {t('metrics.predictionsHint', { accuracy })}
                 </span>
-              </div>
+              ) : (
+                <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
+                  {t('metrics.noPredictions')}
+                </span>
+              )}
+            </>
+          }
+          to="/me/predictions"
+        />
+        <MetricCard
+          variant="inline"
+          tone="gold"
+          icon={<Crown className="size-5" />}
+          label={t('metrics.tournament')}
+          value={
+            championTeam && runnerUpTeam && thirdTeam ? (
+              <span className="flex items-center gap-1.5">
+                <span className="flex items-center gap-1">
+                  <TeamFlag team={championTeam} size={14} />
+                  <span className="font-display text-sm font-black uppercase tracking-tight text-gold">
+                    {championTeam.code}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <TeamFlag team={runnerUpTeam} size={14} />
+                  <span className="font-display text-sm font-black uppercase tracking-tight text-slate-400">
+                    {runnerUpTeam.code}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <TeamFlag team={thirdTeam} size={14} />
+                  <span className="font-display text-sm font-black uppercase tracking-tight text-amber-700">
+                    {thirdTeam.code}
+                  </span>
+                </span>
+              </span>
             ) : (
-              <p className="text-sm font-semibold">
+              <span className="text-sm font-bold uppercase text-muted-foreground">
                 {tournamentLock.data?.open
-                  ? t('betChampion')
-                  : t('closed')}
-              </p>
-            )}
-          </div>
-        </div>
-        <ArrowRight className="size-5 shrink-0 text-muted-foreground" />
-      </Link>
-
-      <Link
-        to="/predictions/groups"
-        className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/5 active:scale-[0.99]"
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-            <LayoutGrid className="size-5" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs uppercase text-muted-foreground">
-              {t('groupPredictions')}
-            </p>
-            <p className="text-sm font-semibold">
-              {t('groupSummary', {
+                  ? t('metrics.chooseTournament')
+                  : t('metrics.tournamentClosed')}
+              </span>
+            )
+          }
+          to="/predictions/tournament"
+        />
+        <MetricCard
+          variant="inline"
+          tone="emerald"
+          icon={<LayoutGrid className="size-5" />}
+          label={t('metrics.groups')}
+          value={
+            <>
+              {t('metrics.groupsCount', {
                 saved: groupSummary.saved,
                 total: groupSummary.total,
-                open: groupSummary.open,
               })}
-            </p>
-          </div>
-        </div>
-        <ArrowRight className="size-5 shrink-0 text-muted-foreground" />
-      </Link>
+              <span className="ml-2 font-sans text-sm font-medium text-muted-foreground">
+                {groupSummary.saved > 0
+                  ? t('metrics.groupsSavedHint', {
+                      count: groupSummary.saved,
+                    })
+                  : t('metrics.groupsEmpty', { count: groupSummary.open })}
+              </span>
+            </>
+          }
+          to="/predictions/groups"
+        />
+      </div>
 
       {live.length > 0 && (
         <div className="space-y-3">

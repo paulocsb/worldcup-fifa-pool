@@ -15,6 +15,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/Avatar'
 import { Button } from '@/components/ui/button'
+import { MetricCard } from '@/components/MetricCard'
 import { SectionHeader } from '@/components/SectionHeader'
 import { signOut, useAuth } from '@/hooks/useAuth'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
@@ -31,56 +32,6 @@ const themeOptions = [
   { value: 'light' as const, icon: Sun, i18nKey: 'theme.light' },
   { value: 'dark' as const, icon: Moon, i18nKey: 'theme.dark' },
 ]
-
-function StatCard({
-  icon,
-  label,
-  value,
-  hint,
-  to,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string | number
-  hint?: string
-  /** Se passado, o card vira um Link */
-  to?: string
-}) {
-  const content = (
-    <>
-      <div className="mb-1.5 flex items-center gap-1.5 text-muted-foreground">
-        {icon}
-        <span className="text-[10px] font-semibold uppercase tracking-wider">
-          {label}
-        </span>
-        {to && <ChevronRight className="ml-auto size-3 text-muted-foreground/60" />}
-      </div>
-      <div className="font-display text-2xl font-bold tabular-nums">
-        {value}
-      </div>
-      {hint && (
-        <div className="mt-0.5 text-[10px] text-muted-foreground">{hint}</div>
-      )}
-    </>
-  )
-
-  if (to) {
-    return (
-      <Link
-        to={to}
-        className="block rounded-2xl border border-border/60 bg-card/80 p-3 backdrop-blur-sm transition-colors hover:border-border hover:bg-card active:scale-[0.99]"
-      >
-        {content}
-      </Link>
-    )
-  }
-
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card/80 p-3 backdrop-blur-sm">
-      {content}
-    </div>
-  )
-}
 
 export function ProfilePage() {
   const auth = useAuth()
@@ -126,7 +77,7 @@ export function ProfilePage() {
       <section className="space-y-3">
         <SectionHeader title={t('myStats')} tone="primary" />
         <div className="grid grid-cols-2 gap-2">
-          <StatCard
+          <MetricCard
             icon={<Trophy className="size-3.5" />}
             label={t('stat.points')}
             value={stats.data?.total_points ?? 0}
@@ -134,19 +85,19 @@ export function ProfilePage() {
               count: stats.data?.scored_predictions ?? 0,
             })}
           />
-          <StatCard
+          <MetricCard
             icon={<Target className="size-3.5" />}
             label={t('stat.exactScores')}
             value={stats.data?.exact_scores ?? 0}
             hint={t('stat.exactHint')}
           />
-          <StatCard
+          <MetricCard
             icon={<TrendingUp className="size-3.5" />}
             label={t('stat.best')}
             value={`${stats.data?.best_score ?? 0} ${t('pts', { ns: 'ranking' })}`}
             hint={t('stat.bestHint')}
           />
-          <StatCard
+          <MetricCard
             icon={<Trophy className="size-3.5" />}
             label={t('stat.totalPredictions')}
             value={stats.data?.total_predictions ?? 0}
