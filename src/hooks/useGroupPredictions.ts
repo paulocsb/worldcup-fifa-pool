@@ -47,51 +47,24 @@ export function useMyGroupPredictions(userId: string | undefined) {
   })
 }
 
-const LOCK_MINUTES_BEFORE_MD3 = 5
-
 export function useGroupLocks() {
   return useQuery<Record<string, boolean>>({
     queryKey: ['group-locks'],
     staleTime: 30_000,
     queryFn: async () => {
-      // Lock: aberto SE nenhum jogo da MD3 do grupo já começou
-      // E nenhum está nos últimos 5min antes do kickoff.
+      // Lock global: todos os grupos fecham juntos quando o último jogo da
+      // MD2 (qualquer grupo) terminar. Mesma regra que
+      // public.group_predictions_open no servidor.
       const { data, error } = await supabase
         .from('matches')
-        .select('group_letter, kickoff_at, status, matchday')
+        .select('status')
         .eq('stage', 'group')
-        .eq('matchday', 3)
+        .eq('matchday', 2)
       if (error) throw error
 
-      const now = Date.now()
-      const lockMs = LOCK_MINUTES_BEFORE_MD3 * 60 * 1000
+      const globalOpen = (data ?? []).some((m) => m.status !== 'finished')
       const open: Record<string, boolean> = {}
-      // Default: closed (caso o grupo nem tenha MD3 no DB)
-      for (const letter of ALL_GROUPS) open[letter] = false
-
-      // Acumula: aberto se TODAS as MD3 do grupo estiverem scheduled E pré-lock
-      const groupHasMd3 = new Set<string>()
-      const groupAllClear = new Map<string, boolean>()
-
-      for (const m of data ?? []) {
-        if (!m.group_letter) continue
-        groupHasMd3.add(m.group_letter)
-        const kickoff = new Date(m.kickoff_at).getTime()
-        const isStillScheduled = m.status === 'scheduled'
-        const isPreLock = kickoff - lockMs > now
-        const matchOpen = isStillScheduled && isPreLock
-        const prev = groupAllClear.get(m.group_letter)
-        groupAllClear.set(
-          m.group_letter,
-          prev === undefined ? matchOpen : prev && matchOpen,
-        )
-      }
-
-      for (const letter of ALL_GROUPS) {
-        if (groupHasMd3.has(letter)) {
-          open[letter] = groupAllClear.get(letter) ?? false
-        }
-      }
+      for (const letter of ALL_GROUPS) open[letter] = globalOpen
       return open
     },
   })
