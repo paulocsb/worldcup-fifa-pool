@@ -76,7 +76,6 @@ i18n
     resources,
     fallbackLng: DEFAULT_LANGUAGE,
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
-    nonExplicitSupportedLngs: true, // 'pt' resolves to 'pt-BR'
     defaultNS: 'common',
     detection: {
       order: ['localStorage', 'navigator'],
