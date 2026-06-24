@@ -8,9 +8,9 @@
     "statusSaved": "Salvo",
     "statusLocked": "Encerrado",
     "statusPending": "Pendente",
-    "footerEdit": "Toque para editar",
+    "footerEdit": "Editar palpite",
     "footerSavedLocked": "Seu palpite (encerrado)",
-    "footerOpenEmpty": "Sem palpite ainda",
+    "footerOpenCta": "Fazer palpite",
     "footerLockedEmpty": "Encerrado sem palpite"
   },
   "groupDetail": {

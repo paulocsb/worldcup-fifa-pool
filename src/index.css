@@ -486,4 +486,7 @@ img.fifa-logo-dark { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-score-flash { animation: none; }
+  /* Sem animação de entrada: evita que o staggered delay deixe conteúdo
+     invisível (fill `both`) para quem pediu menos movimento. */
+  .animate-float-in { animation: none; }
 }

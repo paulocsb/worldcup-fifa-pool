@@ -6,10 +6,12 @@ import {
   Clock3,
   Loader2,
   Lock,
+  Pencil,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { TeamBadge } from '@/components/TeamBadge'
+import { TeamFlag } from '@/components/TeamFlag'
 import { GroupPill } from '@/components/GroupPill'
+import { useTeamName } from '@/lib/teamI18n'
 import { PageHeader } from '@/components/PageHeader'
 import { Surface } from '@/components/Surface'
 import { useAuth } from '@/hooks/useAuth'
@@ -71,7 +73,7 @@ export function GroupsIndexPage() {
         </div>
       ) : (
         <ul className="space-y-3">
-          {ALL_GROUPS.map((letter: GroupLetter) => {
+          {ALL_GROUPS.map((letter: GroupLetter, idx: number) => {
             const isOpen = locks.data?.[letter] ?? false
             const myPred = predictionByGroup.get(letter)
             const grpTeams = teamsByGroup.get(letter) ?? []
@@ -84,7 +86,13 @@ export function GroupsIndexPage() {
             const token = groupColorToken(letter)
 
             return (
-              <li key={letter}>
+              <li
+                key={letter}
+                className="animate-float-in"
+                // Stagger escalonado por índice, com teto pra os 12 grupos não
+                // demorarem a entrar (mesmo padrão do Ranking, agora com delay).
+                style={{ animationDelay: `${Math.min(idx, 8) * 40}ms` }}
+              >
                 <Link
                   to={`/predictions/groups/${letter}`}
                   className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -102,30 +110,12 @@ export function GroupsIndexPage() {
                       <StatusBadge status={status} />
                     </header>
                     <div className="p-4 pt-3">
-                      {myPred ? (
-                        <PredictedOrder pred={myPred} teams={grpTeams} />
-                      ) : (
-                        <ul className="divide-y divide-border/40">
-                          {grpTeams.map((t) => (
-                            <li key={t.id} className="py-1.5">
-                              <TeamBadge team={t} size="sm" />
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>
-                          {myPred
-                            ? isOpen
-                              ? t('groups.footerEdit')
-                              : t('groups.footerSavedLocked')
-                            : isOpen
-                              ? t('groups.footerOpenEmpty')
-                              : t('groups.footerLockedEmpty')}
-                        </span>
-                        <ArrowRight className="size-4" />
-                      </div>
+                      <GroupOrder
+                        ordered={orderTeams(grpTeams, myPred)}
+                        predicted={Boolean(myPred)}
+                      />
                     </div>
+                    <ActionBar isOpen={isOpen} hasPrediction={Boolean(myPred)} />
                   </Surface>
                 </Link>
               </li>
@@ -138,52 +128,128 @@ export function GroupsIndexPage() {
 }
 
 /**
- * Renders the 4 teams in the order the user predicted (1º → 4º), with
- * positional tint: top 2 in primary (qualify direct), 3rd in amber (best
- * 3rds zone), 4th neutral.
+ * Returns the 4 teams in the order to display. With a prediction, follows the
+ * user's 1º→4º ordering; without one, keeps the screen's pot order (id ASC,
+ * already applied upstream).
  */
-function PredictedOrder({
-  pred,
-  teams,
-}: {
-  pred: GroupPrediction
-  teams: Team[]
-}) {
-  const teamById = new Map(teams.map((t) => [t.id, t]))
-  const ordered = [
+function orderTeams(teams: Team[], pred?: GroupPrediction): Team[] {
+  if (!pred) return teams
+  const byId = new Map(teams.map((t) => [t.id, t]))
+  const ids = [
     pred.first_team_id,
     pred.second_team_id,
     pred.third_team_id,
     pred.fourth_team_id,
   ]
+  return ids.map((id) => byId.get(id)).filter((t): t is Team => Boolean(t))
+}
+
+/**
+ * Single source of truth for the 4-team list, structurally identical with or
+ * without a prediction. Only the ordering (handled upstream) and the position
+ * tile treatment differ between states (see PositionTile).
+ */
+function GroupOrder({
+  ordered,
+  predicted,
+}: {
+  ordered: Team[]
+  predicted: boolean
+}) {
   return (
-    <ol className="space-y-1">
-      {ordered.map((teamId, i) => {
-        const team = teamById.get(teamId)
-        if (!team) return null
+    <ol className="space-y-1.5">
+      {ordered.map((team, i) => {
         const position = i + 1
-        const tone =
-          position <= 2
-            ? 'border-l-2 border-l-primary/70 bg-primary/[0.04]'
-            : position === 3
-              ? 'border-l-2 border-l-amber-500/60 bg-amber-500/[0.05]'
-              : 'border-l-2 border-l-transparent'
         return (
-          <li
-            key={team.id}
-            className={cn(
-              'flex items-center gap-2 rounded-md px-2 py-1.5',
-              tone,
+          <li key={team.id} className="space-y-1.5">
+            {/* Linha de corte tracejada entre 2º e 3º — só quando há palpite,
+                comunicando classificação direta → repescagem (estilo Standings). */}
+            {predicted && position === 3 && (
+              <div
+                aria-hidden
+                className="border-t border-dashed border-border/70"
+              />
             )}
-          >
-            <span className="font-display w-4 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">
-              {position}
-            </span>
-            <TeamBadge team={team} size="sm" />
+            <GroupTeamRow
+              team={team}
+              position={position}
+              predicted={predicted}
+            />
           </li>
         )
       })}
     </ol>
+  )
+}
+
+/** Unified team row: numbered tile + flag + name + code. */
+function GroupTeamRow({
+  team,
+  position,
+  predicted,
+}: {
+  team: Team
+  position: number
+  predicted: boolean
+}) {
+  const name = useTeamName(team)
+  return (
+    <div className="flex items-center gap-2.5">
+      <PositionTile position={position} predicted={predicted} />
+      <TeamFlag team={team} size={26} />
+      <div className="min-w-0 leading-tight">
+        <div className="truncate text-sm font-semibold">{name}</div>
+        {team.code && (
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            {team.code}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Square numbered tile, Ranking-style. When `predicted`, the fill + number
+ * color encode the qualification zone (same semantics as Standings):
+ *   1º/2º → primary (classifica direto), 3º → amber (repescagem), 4º → neutral.
+ * Without a prediction the tile is neutral with a discreet dash, so an empty
+ * state never looks like a guess.
+ */
+function PositionTile({
+  position,
+  predicted,
+}: {
+  position: number
+  predicted: boolean
+}) {
+  if (!predicted) {
+    return (
+      <div
+        aria-hidden
+        className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground/60"
+      >
+        <span className="text-xs leading-none">–</span>
+      </div>
+    )
+  }
+  const tone =
+    position <= 2
+      ? 'bg-primary/15 text-primary'
+      : position === 3
+        ? 'bg-amber-500/15 text-amber-500'
+        : 'bg-muted text-muted-foreground'
+  return (
+    <div
+      className={cn(
+        'flex size-7 shrink-0 items-center justify-center rounded-lg',
+        tone,
+      )}
+    >
+      <span className="font-display text-xs font-black leading-none tabular-nums">
+        {position}
+      </span>
+    </div>
   )
 }
 
@@ -212,5 +278,56 @@ function StatusBadge({
       <Clock3 className="size-3" />
       {t('groups.statusPending')}
     </span>
+  )
+}
+
+/**
+ * Bottom action band of the group card. Not an interactive element itself —
+ * the whole card is a <Link>; this is the visually "clickable" zone that signals
+ * where the tap leads. Four states, mirroring the StatusBadge semantics:
+ *   open + empty  → primary CTA "Fazer palpite" (the only scorable action left)
+ *   open + saved  → neutral "Editar palpite"
+ *   locked + saved → muted, locked "Seu palpite (encerrado)"
+ *   locked + empty → muted, locked "Encerrado sem palpite"
+ */
+function ActionBar({
+  isOpen,
+  hasPrediction,
+}: {
+  isOpen: boolean
+  hasPrediction: boolean
+}) {
+  const { t } = useTranslation('predictions')
+
+  if (isOpen && !hasPrediction) {
+    return (
+      <div className="flex min-h-11 items-center gap-2 border-t border-border/60 bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary">
+        <Pencil className="size-4 shrink-0" />
+        <span className="flex-1">{t('groups.footerOpenCta')}</span>
+        <ArrowRight className="size-4 shrink-0" />
+      </div>
+    )
+  }
+
+  if (isOpen && hasPrediction) {
+    return (
+      <div className="flex min-h-11 items-center gap-2 border-t border-border/60 px-4 py-2.5 text-sm font-medium text-foreground/80">
+        <Pencil className="size-4 shrink-0 text-muted-foreground" />
+        <span className="flex-1">{t('groups.footerEdit')}</span>
+        <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-h-11 items-center gap-2 border-t border-border/60 bg-muted/40 px-4 py-2.5 text-sm font-medium text-muted-foreground">
+      <Lock className="size-4 shrink-0" />
+      <span className="flex-1">
+        {hasPrediction
+          ? t('groups.footerSavedLocked')
+          : t('groups.footerLockedEmpty')}
+      </span>
+      <ArrowRight className="size-4 shrink-0" />
+    </div>
   )
 }

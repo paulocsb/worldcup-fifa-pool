@@ -8,9 +8,9 @@
     "statusSaved": "Saved",
     "statusLocked": "Closed",
     "statusPending": "Pending",
-    "footerEdit": "Tap to edit",
+    "footerEdit": "Edit prediction",
     "footerSavedLocked": "Your prediction (closed)",
-    "footerOpenEmpty": "No prediction yet",
+    "footerOpenCta": "Make prediction",
     "footerLockedEmpty": "Closed without prediction"
   },
   "groupDetail": {
