@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { TeamBadge } from '@/components/TeamBadge'
 import { GroupPill } from '@/components/GroupPill'
 import { PageHeader } from '@/components/PageHeader'
+import { Surface } from '@/components/Surface'
 import { useAuth } from '@/hooks/useAuth'
 import {
   ALL_GROUPS,
@@ -81,48 +82,51 @@ export function GroupsIndexPage() {
                 : 'pending'
 
             const token = groupColorToken(letter)
-            const accentStyle = token
-              ? ({ '--accent-c': `hsl(var(--${token}))` } as React.CSSProperties)
-              : undefined
 
             return (
               <li key={letter}>
                 <Link
                   to={`/predictions/groups/${letter}`}
-                  style={accentStyle}
-                  className="relative block overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-sm transition-all duration-200 active:scale-[0.99] hover:[border-color:var(--accent-c)]/60"
+                  className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-y-0 left-0 w-1 [background-color:var(--accent-c)]"
-                  />
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <GroupPill letter={letter} size="md" withLabel />
-                    <StatusBadge status={status} />
-                  </div>
-                  {myPred ? (
-                    <PredictedOrder pred={myPred} teams={grpTeams} />
-                  ) : (
-                    <ul className="divide-y divide-border/40">
-                      {grpTeams.map((t) => (
-                        <li key={t.id} className="py-1.5">
-                          <TeamBadge team={t} size="sm" />
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>
-                      {myPred
-                        ? isOpen
-                          ? t('groups.footerEdit')
-                          : t('groups.footerSavedLocked')
-                        : isOpen
-                          ? t('groups.footerOpenEmpty')
-                          : t('groups.footerLockedEmpty')}
-                    </span>
-                    <ArrowRight className="size-4" />
-                  </div>
+                  <Surface
+                    as="article"
+                    variant="tonal"
+                    interactive
+                    accent={token ?? undefined}
+                    padding="none"
+                    className="overflow-hidden"
+                  >
+                    <header className="flex items-center justify-between gap-2 bg-[hsl(var(--accent-c)_/_0.12)] px-4 py-2.5">
+                      <GroupPill letter={letter} size="md" withLabel />
+                      <StatusBadge status={status} />
+                    </header>
+                    <div className="p-4 pt-3">
+                      {myPred ? (
+                        <PredictedOrder pred={myPred} teams={grpTeams} />
+                      ) : (
+                        <ul className="divide-y divide-border/40">
+                          {grpTeams.map((t) => (
+                            <li key={t.id} className="py-1.5">
+                              <TeamBadge team={t} size="sm" />
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>
+                          {myPred
+                            ? isOpen
+                              ? t('groups.footerEdit')
+                              : t('groups.footerSavedLocked')
+                            : isOpen
+                              ? t('groups.footerOpenEmpty')
+                              : t('groups.footerLockedEmpty')}
+                        </span>
+                        <ArrowRight className="size-4" />
+                      </div>
+                    </div>
+                  </Surface>
                 </Link>
               </li>
             )

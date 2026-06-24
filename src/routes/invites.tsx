@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionHeader } from '@/components/SectionHeader'
+import { Surface } from '@/components/Surface'
 import {
   randomInviteCode,
   useCreateInvite,
@@ -152,7 +153,7 @@ export function InvitesPage() {
         />
         <form
           onSubmit={handleCreate}
-          className="space-y-4 rounded-2xl border border-border bg-card/80 p-4 backdrop-blur-sm"
+          className="space-y-4 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm"
         >
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -288,9 +289,14 @@ export function InvitesPage() {
             <Loader2 className="size-5 animate-spin text-muted-foreground" />
           </div>
         ) : invites.data?.length === 0 ? (
-          <p className="rounded-2xl border border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
+          <Surface
+            variant="subtle"
+            padding="none"
+            as="p"
+            className="p-6 text-center text-sm text-muted-foreground"
+          >
             {t('list.empty')}
-          </p>
+          </Surface>
         ) : (
           <ul className="space-y-2">
             {invites.data?.map((inv) => (
@@ -328,7 +334,7 @@ function InviteRow({ invite, copied, onCopy, onDelete, deleting }: InviteRowProp
   }, [invite.expires_at, locale])
 
   return (
-    <li className="relative overflow-hidden rounded-2xl border border-border bg-card/80 p-3 backdrop-blur-sm">
+    <li className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/80 p-3 shadow-sm backdrop-blur-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center gap-2">

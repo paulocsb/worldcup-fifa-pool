@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { TeamSelect } from '@/components/TeamSelect'
 import { GroupPill } from '@/components/GroupPill'
 import { PageHeader } from '@/components/PageHeader'
+import { Surface } from '@/components/Surface'
 import { groupColorToken } from '@/lib/groupColors'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
@@ -130,10 +131,15 @@ export function GroupDetailPage() {
       />
 
       {!isOpen && !loading && (
-        <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
+        <Surface
+          variant="notice"
+          tone="warning"
+          padding="sm"
+          className="flex items-center gap-3 text-sm"
+        >
           <Lock className="size-4 shrink-0" />
           <span>{t('groupDetail.lockedNotice')}</span>
-        </div>
+        </Surface>
       )}
 
       {loading ? (
@@ -142,32 +148,39 @@ export function GroupDetailPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          {positions.map(([value], idx) => {
-            return (
-              <div key={idx} className="space-y-2">
-                <div className="flex items-baseline justify-between">
-                  <label className="text-sm font-semibold">
-                    {POSITION_LABELS[idx]}
-                  </label>
-                  <span className="text-xs text-muted-foreground">
-                    {t('groupDetail.pointsIfRight', {
-                      count: POSITION_POINTS[idx],
+          <Surface
+            variant="tonal"
+            accent={token ?? undefined}
+            padding="md"
+            className="space-y-4"
+          >
+            {positions.map(([value], idx) => {
+              return (
+                <div key={idx} className="space-y-2">
+                  <div className="flex items-baseline justify-between">
+                    <label className="text-sm font-semibold">
+                      {POSITION_LABELS[idx]}
+                    </label>
+                    <span className="text-xs text-muted-foreground">
+                      {t('groupDetail.pointsIfRight', {
+                        count: POSITION_POINTS[idx],
+                      })}
+                    </span>
+                  </div>
+                  <TeamSelect
+                    teams={groupTeams}
+                    value={value}
+                    onChange={(id) => setAtPosition(idx, id)}
+                    assignedAtLabel={(tid) => slotLabelOfTeam(tid, idx)}
+                    placeholder={t('groupDetail.openTeamSelect', {
+                      label: POSITION_LABELS_SHORT[idx],
                     })}
-                  </span>
+                    disabled={!isOpen}
+                  />
                 </div>
-                <TeamSelect
-                  teams={groupTeams}
-                  value={value}
-                  onChange={(id) => setAtPosition(idx, id)}
-                  assignedAtLabel={(tid) => slotLabelOfTeam(tid, idx)}
-                  placeholder={t('groupDetail.openTeamSelect', {
-                    label: POSITION_LABELS_SHORT[idx],
-                  })}
-                  disabled={!isOpen}
-                />
-              </div>
-            )
-          })}
+              )
+            })}
+          </Surface>
 
           {mutation.isError && (
             <p className="text-sm text-destructive" role="alert">

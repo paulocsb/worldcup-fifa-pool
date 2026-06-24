@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/PageHeader'
 import { PositionBadge } from '@/components/PositionBadge'
 import { TeamSelect } from '@/components/TeamSelect'
+import { Surface } from '@/components/Surface'
 import { usePageBackground } from '@/hooks/usePageBackground'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
@@ -105,10 +106,15 @@ export function TournamentPredictionPage() {
       />
 
       {!isOpen && !loading && (
-        <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
+        <Surface
+          variant="notice"
+          tone="warning"
+          padding="sm"
+          className="flex items-center gap-3 text-sm"
+        >
           <Lock className="size-4 shrink-0" />
           <span>{t('tournament.lockClosed')}</span>
-        </div>
+        </Surface>
       )}
 
       {isOpen && lock.data && (
@@ -125,42 +131,49 @@ export function TournamentPredictionPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
-          <Slot
-            icon={
-              <PositionBadge position="gold" variant="icon-only" size="lg" />
-            }
-            label={t('tournament.champion')}
-            sublabel={t('tournament.championSubtitle')}
-            teams={teams.data ?? []}
-            value={champion}
-            onChange={(id) => setAtSlot(0, id)}
-            assignedAtLabel={(tid) => slotLabelOfTeam(tid, 0)}
-            disabled={!isOpen}
-          />
-          <Slot
-            icon={
-              <PositionBadge position="silver" variant="icon-only" size="lg" />
-            }
-            label={t('tournament.runnerUp')}
-            sublabel={t('tournament.runnerUpSubtitle')}
-            teams={teams.data ?? []}
-            value={runnerUp}
-            onChange={(id) => setAtSlot(1, id)}
-            assignedAtLabel={(tid) => slotLabelOfTeam(tid, 1)}
-            disabled={!isOpen}
-          />
-          <Slot
-            icon={
-              <PositionBadge position="bronze" variant="icon-only" size="lg" />
-            }
-            label={t('tournament.thirdPlace')}
-            sublabel={t('tournament.thirdPlaceSubtitle')}
-            teams={teams.data ?? []}
-            value={third}
-            onChange={(id) => setAtSlot(2, id)}
-            assignedAtLabel={(tid) => slotLabelOfTeam(tid, 2)}
-            disabled={!isOpen}
-          />
+          <Surface
+            variant="tonal"
+            accent="accent-gold"
+            padding="md"
+            className="space-y-5"
+          >
+            <Slot
+              icon={
+                <PositionBadge position="gold" variant="icon-only" size="lg" />
+              }
+              label={t('tournament.champion')}
+              sublabel={t('tournament.championSubtitle')}
+              teams={teams.data ?? []}
+              value={champion}
+              onChange={(id) => setAtSlot(0, id)}
+              assignedAtLabel={(tid) => slotLabelOfTeam(tid, 0)}
+              disabled={!isOpen}
+            />
+            <Slot
+              icon={
+                <PositionBadge position="silver" variant="icon-only" size="lg" />
+              }
+              label={t('tournament.runnerUp')}
+              sublabel={t('tournament.runnerUpSubtitle')}
+              teams={teams.data ?? []}
+              value={runnerUp}
+              onChange={(id) => setAtSlot(1, id)}
+              assignedAtLabel={(tid) => slotLabelOfTeam(tid, 1)}
+              disabled={!isOpen}
+            />
+            <Slot
+              icon={
+                <PositionBadge position="bronze" variant="icon-only" size="lg" />
+              }
+              label={t('tournament.thirdPlace')}
+              sublabel={t('tournament.thirdPlaceSubtitle')}
+              teams={teams.data ?? []}
+              value={third}
+              onChange={(id) => setAtSlot(2, id)}
+              assignedAtLabel={(tid) => slotLabelOfTeam(tid, 2)}
+              disabled={!isOpen}
+            />
+          </Surface>
 
           {mutation.isError && (
             <p className="text-sm text-destructive" role="alert">

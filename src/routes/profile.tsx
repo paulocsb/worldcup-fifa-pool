@@ -17,6 +17,7 @@ import { Avatar } from '@/components/Avatar'
 import { Button } from '@/components/ui/button'
 import { MetricCard } from '@/components/MetricCard'
 import { SectionHeader } from '@/components/SectionHeader'
+import { Surface } from '@/components/Surface'
 import { signOut, useAuth } from '@/hooks/useAuth'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { useProfile } from '@/hooks/useProfile'
@@ -100,7 +101,7 @@ export function ProfilePage() {
 
       <section className="space-y-3">
         <SectionHeader title={t('appearance')} tone="muted" />
-        <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border bg-card p-1.5">
+        <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border/60 bg-card/80 p-1.5 backdrop-blur-sm">
           {themeOptions.map((opt) => {
             const Icon = opt.icon
             const active = theme === opt.value
@@ -127,7 +128,7 @@ export function ProfilePage() {
 
       <section className="space-y-3">
         <SectionHeader title={t('language.label')} tone="muted" />
-        <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-card p-1.5">
+        <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border/60 bg-card/80 p-1.5 backdrop-blur-sm">
           {SUPPORTED_LANGUAGES.map((lang) => {
             const active = i18n.language === lang
             return (
@@ -154,41 +155,51 @@ export function ProfilePage() {
         </div>
       </section>
 
-      <Link
-        to="/regras"
-        className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/5 active:scale-[0.99]"
-      >
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <BookOpen className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              {t('rules')}
-            </p>
-          </div>
-        </div>
-        <ChevronRight className="size-5 text-muted-foreground" />
-      </Link>
-
-      {isAdmin && (
+      <Surface variant="card" interactive padding="none">
         <Link
-          to="/invites"
-          className="flex items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-gold/10 p-4 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-gold/10 active:scale-[0.99]"
+          to="/regras"
+          className="flex items-center justify-between gap-3 p-4"
         >
           <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gold text-[hsl(141_41%_10%)]">
-              <Shield className="size-5" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <BookOpen className="size-5" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wider text-gold">
-                {t('admin')}
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                {t('rules')}
               </p>
-              <p className="text-sm font-semibold">{t('manageInvites')}</p>
             </div>
           </div>
-          <ChevronRight className="size-5 text-gold" />
+          <ChevronRight className="size-5 text-muted-foreground" />
         </Link>
+      </Surface>
+
+      {isAdmin && (
+        <Surface
+          variant="tonal"
+          accent="accent-gold"
+          interactive
+          padding="none"
+          className="bg-[hsl(var(--accent-c)_/_0.10)]"
+        >
+          <Link
+            to="/invites"
+            className="flex items-center justify-between gap-3 p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gold text-[hsl(141_41%_10%)]">
+                <Shield className="size-5" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-gold">
+                  {t('admin')}
+                </p>
+                <p className="text-sm font-semibold">{t('manageInvites')}</p>
+              </div>
+            </div>
+            <ChevronRight className="size-5 text-gold" />
+          </Link>
+        </Surface>
       )}
 
       <Button variant="outline" size="lg" className="w-full" onClick={signOut}>

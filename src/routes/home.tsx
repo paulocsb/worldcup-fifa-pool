@@ -21,6 +21,7 @@ import { MetricCard } from '@/components/MetricCard'
 import { MetricGridSkeleton } from '@/components/MetricCardSkeleton'
 import { PredictionSheet } from '@/components/PredictionSheet'
 import { SectionHeader } from '@/components/SectionHeader'
+import { Surface } from '@/components/Surface'
 import { TeamFlag } from '@/components/TeamFlag'
 import { useAuth } from '@/hooks/useAuth'
 import { useMatches, type MatchWithTeams } from '@/hooks/useMatches'
@@ -156,28 +157,28 @@ export function HomePage() {
       </header>
 
       {pendingCount > 0 && (
-        <Link
-          to="/palpitar"
-          className="glow-primary group relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-primary/50 bg-primary/10 p-4 shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99]"
-        >
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-primary"
-          />
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              <Zap className="size-5" />
+        <Link to="/palpitar" className="block">
+          <Surface
+            variant="tonal"
+            interactive
+            accent="primary"
+            className="glow-primary flex items-center justify-between gap-3 bg-[hsl(var(--accent-c)_/_0.08)]"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Zap className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wider text-primary">
+                  {t('quickPredict')}
+                </p>
+                <p className="font-display text-lg font-black uppercase tracking-tight">
+                  {t('pendingCount', { count: pendingCount })}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs uppercase tracking-wider text-primary">
-                {t('quickPredict')}
-              </p>
-              <p className="font-display text-lg font-black uppercase tracking-tight">
-                {t('pendingCount', { count: pendingCount })}
-              </p>
-            </div>
-          </div>
-          <ArrowRight className="size-5 shrink-0 text-primary" />
+            <ArrowRight className="size-5 shrink-0 text-primary" />
+          </Surface>
         </Link>
       )}
 
@@ -343,7 +344,11 @@ export function HomePage() {
             ))}
           </ul>
         ) : matches.isError ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-4 py-8 text-center">
+          <Surface
+            variant="subtle"
+            padding="none"
+            className="flex flex-col items-center gap-3 px-4 py-8 text-center"
+          >
             <CalendarX className="size-7 text-muted-foreground/50" aria-hidden />
             <p className="text-sm text-muted-foreground">{t('matchesError')}</p>
             <button
@@ -354,14 +359,18 @@ export function HomePage() {
               <RefreshCw className="size-4" aria-hidden />
               {t('tryAgain')}
             </button>
-          </div>
+          </Surface>
         ) : upcoming.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-4 py-8 text-center">
+          <Surface
+            variant="subtle"
+            padding="none"
+            className="flex flex-col items-center gap-3 px-4 py-8 text-center"
+          >
             <CalendarX className="size-7 text-muted-foreground/50" aria-hidden />
             <p className="text-sm text-muted-foreground">
               {t('noNextMatches')}
             </p>
-          </div>
+          </Surface>
         ) : (
           <ul className="space-y-3">
             {upcoming.map((m) => (

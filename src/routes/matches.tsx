@@ -6,6 +6,7 @@ import { MatchCardSkeleton } from '@/components/MatchCardSkeleton'
 import { PageHeader } from '@/components/PageHeader'
 import { PredictionSheet } from '@/components/PredictionSheet'
 import { SectionHeader } from '@/components/SectionHeader'
+import { Surface } from '@/components/Surface'
 import { useAuth } from '@/hooks/useAuth'
 import { useMatches, type MatchWithTeams } from '@/hooks/useMatches'
 import { useMyPredictions } from '@/hooks/usePredictions'
@@ -124,9 +125,16 @@ export function MatchesPage() {
           ))}
         </ul>
       ) : matches.isError ? (
-        <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+        <Surface
+          variant="notice"
+          tone="destructive"
+          as="p"
+          className="text-sm"
+          role="alert"
+          aria-live="polite"
+        >
           {t('loadError', { message: (matches.error as Error).message })}
-        </p>
+        </Surface>
       ) : filtered.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
           {t('noneMatching')}

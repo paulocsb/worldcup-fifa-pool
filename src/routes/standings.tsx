@@ -7,6 +7,7 @@ import { GroupPill } from '@/components/GroupPill'
 import { GroupStandingsSkeleton } from '@/components/GroupTableSkeleton'
 import { PageHeader } from '@/components/PageHeader'
 import { SubTabs } from '@/components/SubTabs'
+import { Surface } from '@/components/Surface'
 import { TeamFlag } from '@/components/TeamFlag'
 import { useGroupStandings } from '@/hooks/useGroupStandings'
 import { useMatches } from '@/hooks/useMatches'
@@ -110,9 +111,16 @@ function GroupStandingsContent() {
 
   if (standings.isError) {
     return (
-      <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+      <Surface
+        variant="notice"
+        tone="destructive"
+        as="p"
+        className="text-sm"
+        role="alert"
+        aria-live="polite"
+      >
         {tStandings('loadError', { message: (standings.error as Error).message })}
-      </p>
+      </Surface>
     )
   }
 
@@ -121,10 +129,14 @@ function GroupStandingsContent() {
   // só ocorre se não há seleções cadastradas — empty state defensivo.
   if (byGroup.size === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-4 py-8 text-center">
+      <Surface
+        variant="subtle"
+        padding="none"
+        className="flex flex-col items-center gap-3 px-4 py-8 text-center"
+      >
         <TableProperties className="size-7 text-muted-foreground/50" aria-hidden />
         <p className="text-sm text-muted-foreground">{tStandings('empty')}</p>
-      </div>
+      </Surface>
     )
   }
 
@@ -182,20 +194,16 @@ function GroupTable({
 }) {
   const { t } = useTranslation('standings')
   const token = groupColorToken(letter)
-  const accentStyle = token
-    ? ({ '--accent-c': `hsl(var(--${token}))` } as React.CSSProperties)
-    : undefined
 
   return (
-    <article
-      style={accentStyle}
-      className="relative overflow-hidden rounded-2xl border border-border bg-card/80 backdrop-blur-sm"
+    <Surface
+      as="article"
+      variant="tonal"
+      accent={token ?? undefined}
+      padding="none"
+      className="overflow-hidden"
     >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-1 [background-color:var(--accent-c)]"
-      />
-      <header className="px-3 pt-2.5">
+      <header className="bg-[hsl(var(--accent-c)_/_0.12)] px-3 py-2.5">
         <GroupPill letter={letter} size="md" withLabel />
       </header>
       <table className="w-full table-fixed border-collapse">
@@ -273,7 +281,7 @@ function GroupTable({
           )}
         </tbody>
       </table>
-    </article>
+    </Surface>
   )
 }
 

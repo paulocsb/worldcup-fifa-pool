@@ -123,7 +123,7 @@ export function MetricCard({
     </>
   )
   const base = cn(
-    'block rounded-2xl border border-border/60 bg-card/80 p-3 backdrop-blur-sm',
+    'block rounded-2xl border border-border/60 bg-card/80 p-3 shadow-sm backdrop-blur-sm',
     className,
   )
   if (to) {
@@ -132,7 +132,7 @@ export function MetricCard({
         to={to}
         className={cn(
           base,
-          'transition-colors hover:border-border hover:bg-card active:scale-[0.99]',
+          'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]',
         )}
       >
         {content}

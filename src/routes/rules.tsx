@@ -16,6 +16,7 @@ import { FifaLogo } from '@/components/FifaLogo'
 import { PageHeader } from '@/components/PageHeader'
 import { PositionBadge } from '@/components/PositionBadge'
 import { SectionHeader } from '@/components/SectionHeader'
+import { Surface } from '@/components/Surface'
 import { useScoringConfig } from '@/hooks/useScoringConfig'
 import { cn } from '@/lib/utils'
 
@@ -71,7 +72,7 @@ function RuleRow({
 
 function RulesCard({ children }: { children: React.ReactNode }) {
   return (
-    <ul className="divide-y divide-border/40 rounded-2xl border border-border bg-card/80 px-3 backdrop-blur-sm">
+    <ul className="divide-y divide-border/40 rounded-2xl border border-border/60 bg-card/80 px-3 shadow-sm backdrop-blur-sm">
       {children}
     </ul>
   )
@@ -217,7 +218,7 @@ export function RulesPage() {
           tone="muted"
           icon={<Info className="size-4" />}
         />
-        <div className="space-y-2 rounded-2xl border border-border bg-card/80 p-4 text-sm backdrop-blur-sm">
+        <Surface className="space-y-2 text-sm">
           <div className="flex items-start gap-2">
             <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <p>
@@ -271,7 +272,7 @@ export function RulesPage() {
               />
             </p>
           </div>
-        </div>
+        </Surface>
       </section>
     </section>
   )

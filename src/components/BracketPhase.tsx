@@ -7,6 +7,7 @@ import { MatchCardSkeleton } from './MatchCardSkeleton'
 import { PredictionSheet } from './PredictionSheet'
 import { PhasePill } from './PhasePill'
 import { SectionHeader } from './SectionHeader'
+import { Surface } from './Surface'
 import { useAuth } from '@/hooks/useAuth'
 import { useMatches, type MatchWithTeams } from '@/hooks/useMatches'
 import { useMyPredictions } from '@/hooks/usePredictions'
@@ -87,20 +88,31 @@ export function BracketPhase({ stages, slug }: BracketPhaseProps) {
 
   if (matches.isError) {
     return (
-      <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+      <Surface
+        variant="notice"
+        tone="destructive"
+        as="p"
+        className="text-sm"
+        role="alert"
+        aria-live="polite"
+      >
         Erro ao carregar jogos: {(matches.error as Error).message}
-      </p>
+      </Surface>
     )
   }
 
   if (phaseMatches.length === 0) {
     return (
-      <div className="animate-float-in flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-card/40 p-8 text-center">
+      <Surface
+        variant="dashed"
+        padding="none"
+        className="animate-float-in flex flex-col items-center gap-3 p-8 text-center"
+      >
         <Loader2 className="size-6 text-muted-foreground/60" />
         <p className="max-w-xs text-balance text-sm text-muted-foreground">
           {emptyStateForTab(slug)}
         </p>
-      </div>
+      </Surface>
     )
   }
 
@@ -161,7 +173,11 @@ function PlaceholderCard({ match }: { match: MatchWithTeams }) {
   })
 
   return (
-    <article className="animate-float-in relative overflow-hidden rounded-2xl border border-dashed border-border bg-card/40 p-4">
+    <Surface
+      as="article"
+      variant="dashed"
+      className="animate-float-in relative overflow-hidden"
+    >
       <header className="mb-3 flex items-center justify-between gap-2">
         <PhasePill stage={match.stage} size="md" variant="tinted" />
         <span className="text-xs text-muted-foreground tabular-nums">
@@ -184,6 +200,6 @@ function PlaceholderCard({ match }: { match: MatchWithTeams }) {
           {t('bracket.tba')}
         </span>
       </div>
-    </article>
+    </Surface>
   )
 }

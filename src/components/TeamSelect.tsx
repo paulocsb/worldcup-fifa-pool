@@ -82,7 +82,7 @@ export function TeamSelect({
         onClick={() => !disabled && setOpen(true)}
         disabled={disabled}
         className={cn(
-          'flex w-full items-center justify-between gap-3 rounded-lg border border-input bg-background px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50',
+          'flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-input bg-card/80 px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
         )}
       >
         {selected ? (

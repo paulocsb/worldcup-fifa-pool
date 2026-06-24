@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/Avatar'
 import { PageHeader } from '@/components/PageHeader'
 import { RankingListSkeleton } from '@/components/RankingRowSkeleton'
+import { Surface } from '@/components/Surface'
 import { useAuth } from '@/hooks/useAuth'
 import { useRanking, type RankingRow } from '@/hooks/useRanking'
 import { useRealtimeInvalidator } from '@/hooks/useRealtimeInvalidator'
@@ -333,9 +334,16 @@ export function RankingPage() {
       {ranking.isPending ? (
         <RankingListSkeleton rows={8} />
       ) : ranking.isError ? (
-        <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+        <Surface
+          variant="notice"
+          tone="destructive"
+          as="p"
+          className="text-sm"
+          role="alert"
+          aria-live="polite"
+        >
           {tCommon('errors.generic')}: {(ranking.error as Error).message}
-        </p>
+        </Surface>
       ) : rows?.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
           {t('empty')}

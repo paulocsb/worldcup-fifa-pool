@@ -8,6 +8,7 @@
  * Tokens definidos em src/index.css (light + dark).
  */
 
+import type { CSSProperties } from 'react'
 import type { MatchStage } from '@/types/db'
 
 // ---------------------------------------------------------------------------
@@ -133,4 +134,32 @@ export function positionFromRank(rank: number): CeremonialPosition | null {
   if (rank === 2) return 'silver'
   if (rank === 3) return 'bronze'
   return null
+}
+
+// ---------------------------------------------------------------------------
+// Accent channel injection (design system)
+// ---------------------------------------------------------------------------
+/**
+ * Devolve um style que injeta `--accent-c` com os CANAIS HSL CRUS do token
+ * (ex.: `{ '--accent-c': 'var(--group-e)' }` resolve para "271 81% 56%").
+ *
+ * NUNCA devolve `hsl(...)` pronto: o Tailwind v3 descarta o modificador
+ * `/opacity` em cores arbitrárias quando o var() já contém uma cor completa.
+ * Mantendo os canais crus, o consumidor aplica opacidade real via
+ * `border-[hsl(var(--accent-c)_/_0.45)]` etc. (mesma fórmula do MatchCard).
+ *
+ * Aceita:
+ * - token semântico já resolvido por groupColorToken/phaseColorToken/
+ *   positionColorToken (ex.: 'group-e', 'phase-final', 'accent-gold');
+ * - nome de CSS var sem o `--` (ex.: 'primary', 'destructive');
+ * - uma expressão `var(...)` ou canais crus já prontos (passa direto).
+ */
+export function accentVarStyle(token: string): CSSProperties {
+  const trimmed = token.trim()
+  // Já é uma expressão var(...) ou canais crus ("271 81% 56%") → usa como está.
+  const value =
+    trimmed.startsWith('var(') || /^\d/.test(trimmed)
+      ? trimmed
+      : `var(--${trimmed.replace(/^--/, '')})`
+  return { '--accent-c': value } as CSSProperties
 }

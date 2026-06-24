@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { SectionHeader } from '@/components/SectionHeader'
 import { SubTabs } from '@/components/SubTabs'
 import { MyPredictionRow } from '@/components/MyPredictionRow'
+import { Surface } from '@/components/Surface'
 import { TeamFlag } from '@/components/TeamFlag'
 import { GroupPill } from '@/components/GroupPill'
 import { useAuth } from '@/hooks/useAuth'
@@ -295,11 +296,16 @@ function MatchPalpites({
   }
   if (totalCount === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
+      <Surface
+        variant="dashed"
+        padding="none"
+        as="p"
+        className="p-8 text-center text-sm text-muted-foreground"
+      >
         {isPublicView
           ? t('mePage.noMatchPalpitesPublic')
           : t('mePage.noMatchPalpites')}
-      </p>
+      </Surface>
     )
   }
 
@@ -424,11 +430,16 @@ function GroupPalpites({
 
   if (visibleLetters.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
+      <Surface
+        variant="dashed"
+        padding="none"
+        as="p"
+        className="p-8 text-center text-sm text-muted-foreground"
+      >
         {isPublicView
           ? t('mePage.noGroupPalpitesPublic')
           : t('mePage.noGroupPalpites')}
-      </p>
+      </Surface>
     )
   }
 
@@ -509,19 +520,29 @@ function TournamentPalpite({
   // Visão pública e palpite ainda em aberto → esconde
   if (isPublicView && tournamentOpen) {
     return (
-      <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
+      <Surface
+        variant="dashed"
+        padding="none"
+        as="p"
+        className="p-8 text-center text-sm text-muted-foreground"
+      >
         {t('mePage.tournamentLockedSubtitle')}
-      </p>
+      </Surface>
     )
   }
 
   if (!pred.data) {
     return (
-      <p className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
+      <Surface
+        variant="dashed"
+        padding="none"
+        as="p"
+        className="p-8 text-center text-sm text-muted-foreground"
+      >
         {isPublicView
           ? t('mePage.noTournamentPalpitePublic')
           : t('mePage.noTournamentPalpite')}
-      </p>
+      </Surface>
     )
   }
 
