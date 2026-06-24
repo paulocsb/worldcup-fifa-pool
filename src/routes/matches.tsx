@@ -12,6 +12,7 @@ import { useMatches, type MatchWithTeams } from '@/hooks/useMatches'
 import { useMyPredictions } from '@/hooks/usePredictions'
 import { useMyScores } from '@/hooks/useMyScores'
 import { useRealtimeInvalidator } from '@/hooks/useRealtimeInvalidator'
+import { usePageBackground } from '@/hooks/usePageBackground'
 import { dateKey, sectionDateLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Prediction } from '@/types/db'
@@ -46,6 +47,9 @@ export function MatchesPage() {
     tables: ['matches', 'scores'],
     queryKeys: [['matches'], ['my-scores', userId]],
   })
+
+  // Mesmo fundo da Classificação (tema da fase de grupos).
+  usePageBackground('group-stage')
 
   const predictionByMatch = useMemo(() => {
     const map = new Map<number, Prediction>()
@@ -94,7 +98,7 @@ export function MatchesPage() {
 
   return (
     <section className="container space-y-4 py-4">
-      <PageHeader title={t('pageTitle')} />
+      <PageHeader title={t('pageTitle')} backTo="/" />
 
       <nav role="tablist" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           {(Object.keys(filterLabels) as Filter[]).map((f) => (

@@ -11,6 +11,7 @@ import { useEffect } from 'react'
  */
 export type PageTheme =
   | 'default'
+  | 'home'
   | 'group-stage'
   | 'knockouts'
   | 'final'

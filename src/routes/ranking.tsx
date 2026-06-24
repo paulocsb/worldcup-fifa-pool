@@ -328,6 +328,7 @@ export function RankingPage() {
       <PageHeader
         title={t('pageTitle')}
         subtitle={t('subtitle')}
+        backTo="/"
         accent="gold"
       />
 

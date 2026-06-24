@@ -38,10 +38,18 @@
     --bg-gradient-from: 60 9% 98%;
     --bg-gradient-to: 151 50% 96%;
 
-    /* Alphas do fundo base/default (versão neutra dos temas).
+    /* Alphas do verde-marca (tema 'home').
        Light: mais sutil pra não escurecer o fundo claro. */
     --bg-base-glow: 0.09;
     --bg-base-echo: 0.05;
+
+    /* Fundo base/default NEUTRO: halo de luz ambiente no topo, presença
+       comparável aos temas mas em matiz neutro (slate frio, não verde-marca).
+       Light: off-white de fundo → o glow é um azul-frio CLARO bem leve que
+       dá profundidade no topo sem sujar o off-white nem prejudicar contraste. */
+    --bg-neutral-color: 205 70% 58%;
+    --bg-neutral-glow: 0.22;
+    --bg-neutral-echo: 0.10;
 
     /* Grupos (12 cores saturadas) */
     --group-a: 142 71% 58%;  /* lime-green   */
@@ -99,9 +107,16 @@
       --bg-gradient-from: 141 41% 6%;
       --bg-gradient-to: 141 50% 4%;
 
-      /* Fundo base mais presente no dark (cards em glass deixam vazar). */
+      /* Verde-marca mais presente no dark (cards em glass deixam vazar). */
       --bg-base-glow: 0.13;
       --bg-base-echo: 0.06;
+
+      /* Neutro no dark: halo de luz fria (slate) no topo do verde-escuro.
+         Presença comparável aos temas (~0.26-0.32 saturado); um neutro
+         precisa de mais alpha pra "aparecer" tanto quanto cor saturada. */
+      --bg-neutral-color: 205 65% 62%;
+      --bg-neutral-glow: 0.30;
+      --bg-neutral-echo: 0.13;
 
       /* Grupos em dark mode (saturação um pouco mais alta + lightness) */
       --group-a: 142 71% 62%;
@@ -162,6 +177,10 @@
     --bg-base-glow: 0.13;
     --bg-base-echo: 0.06;
 
+    --bg-neutral-color: 205 65% 62%;
+    --bg-neutral-glow: 0.30;
+    --bg-neutral-echo: 0.13;
+
     --group-a: 142 71% 62%;
     --group-b: 0 84% 65%;
     --group-c: 25 95% 58%;
@@ -203,6 +222,33 @@
   body {
     @apply min-h-svh text-foreground;
     font-family: 'Noto Sans', Inter, system-ui, sans-serif;
+    /* Base NEUTRO: halo de luz ambiente (azul-frio) no topo, presença
+       EQUIVALENTE aos temas (ranking/fase) mas em matiz frio/neutro — não
+       verde-marca, não gold, não fase. Azul-frio saturado lê como "luz
+       colorida fria" em alpha alto, não como névoa cinza. */
+    background:
+      radial-gradient(
+        1200px 650px at 50% -10%,
+        hsl(var(--bg-neutral-color) / var(--bg-neutral-glow)),
+        transparent 65%
+      ),
+      radial-gradient(
+        700px 400px at 100% 100%,
+        hsl(var(--bg-neutral-color) / var(--bg-neutral-echo)),
+        transparent 70%
+      ),
+      linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
+    background-attachment: fixed;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.4s ease;
+  }
+
+  /* Backgrounds contextuais por seção */
+
+  /* Home: identidade da marca (verde-gramado). Era o fundo base antes da
+     virada de semântica neutro/marca. */
+  body[data-page-theme='home'] {
     background:
       radial-gradient(
         900px 500px at 50% -10%,
@@ -215,13 +261,7 @@
         transparent 70%
       ),
       linear-gradient(180deg, hsl(var(--bg-gradient-from)) 0%, hsl(var(--bg-gradient-to)) 100%);
-    background-attachment: fixed;
-    font-feature-settings: 'cv11', 'ss01';
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.4s ease;
   }
-
-  /* Backgrounds contextuais por seção */
   body[data-page-theme='group-stage'] {
     background:
       radial-gradient(

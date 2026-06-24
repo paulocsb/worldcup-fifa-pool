@@ -28,6 +28,7 @@ import { useMatches, type MatchWithTeams } from '@/hooks/useMatches'
 import { useMyPredictions } from '@/hooks/usePredictions'
 import { useMyScores } from '@/hooks/useMyScores'
 import { useProfile } from '@/hooks/useProfile'
+import { usePageBackground } from '@/hooks/usePageBackground'
 import { useRanking } from '@/hooks/useRanking'
 import { useTeams, useTournamentLockOpen } from '@/hooks/useTeams'
 import { useTournamentPrediction } from '@/hooks/useTournamentPrediction'
@@ -59,6 +60,8 @@ export function HomePage() {
   const stats = useUserStats(userId)
   const [active, setActive] = useState<MatchWithTeams | null>(null)
   const { t } = useTranslation('home')
+
+  usePageBackground('home')
 
   useRealtimeInvalidator({
     tables: ['matches', 'scores'],
