@@ -106,8 +106,13 @@ function NodeBody({ item, time }: { item: BracketNodeItem; time: string }) {
 }
 
 /**
- * One side of the compact node. Resolved → flag (~20px) + 3-letter code.
+ * One side of the compact node. Resolved → 3-letter code + flag (~20px).
  * Predicted → truncated short slot label (e.g. "3º A/B/C/D/F"), single line.
+ *
+ * The CODE/label always sits on the OUTER edge (left side → left, right side →
+ * right) with the flag tucked toward the center. This keeps the code anchored at
+ * the same x-position whether or not a flag is present, so slot-only nodes
+ * (e.g. "1º H") align their label to the same column as resolved nodes' codes.
  */
 function NodeSide({
   slot,
@@ -121,30 +126,41 @@ function NodeSide({
   const { t } = useTranslation('standings')
   const name = useTeamName(team)
 
-  const content = team ? (
-    <>
-      <TeamFlag team={team} size={20} />
-      <span
-        className="font-display truncate text-sm font-black uppercase leading-none"
-        title={name}
-      >
-        {team.code}
-      </span>
-    </>
+  const code = team ? (
+    <span
+      className="font-display truncate text-sm font-black uppercase leading-none"
+      title={name}
+    >
+      {team.code}
+    </span>
   ) : (
     <span className="truncate font-display text-[11px] font-bold uppercase leading-none tracking-tight text-foreground/75">
       {formatSlotLabelShort(slot, t)}
     </span>
   )
+  const flag = team ? <TeamFlag team={team} size={20} /> : null
 
   return (
     <div
       className={cn(
         'flex min-w-0 items-center gap-1.5',
-        mirror ? 'flex-row-reverse justify-start' : 'justify-end',
+        // Code/label pinned to the OUTER edge; flag toward the center.
+        // Home (left): [code][flag] justify-start. Away (right): [flag][code]
+        // justify-end. Either way the code hugs the outer border.
+        mirror ? 'justify-end' : 'justify-start',
       )}
     >
-      {content}
+      {mirror ? (
+        <>
+          {flag}
+          {code}
+        </>
+      ) : (
+        <>
+          {code}
+          {flag}
+        </>
+      )}
     </div>
   )
 }

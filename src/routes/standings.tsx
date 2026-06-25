@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { TableProperties } from 'lucide-react'
+import { Network, TableProperties } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { BracketPhase } from '@/components/BracketPhase'
-import { BracketTree } from '@/components/bracket/BracketTree'
+import { BracketFullModal } from '@/components/bracket/BracketFullModal'
 import { GroupPill } from '@/components/GroupPill'
 import { GroupStandingsSkeleton } from '@/components/GroupTableSkeleton'
 import { PageHeader } from '@/components/PageHeader'
@@ -43,6 +43,7 @@ export function StandingsPage() {
   const [params, setParams] = useSearchParams()
   const matches = useMatches()
   const { t } = useTranslation('standings')
+  const [bracketOpen, setBracketOpen] = useState(false)
 
   const initialPhase = useMemo(
     () => currentPhase(matches.data ?? []),
@@ -75,17 +76,31 @@ export function StandingsPage() {
         title={t('pageTitle')}
         subtitle={subtitleForTab(activeTab)}
         backTo="/"
+        trailing={
+          <button
+            type="button"
+            onClick={() => setBracketOpen(true)}
+            aria-label={t('bracket.openFull')}
+            aria-haspopup="dialog"
+            className="grid size-11 place-items-center rounded-full bg-[hsl(var(--phase-final)_/_0.14)] [color:hsl(var(--phase-final))] transition-colors hover:bg-[hsl(var(--phase-final)_/_0.22)] active:scale-95"
+          >
+            <Network className="size-5" />
+          </button>
+        }
       />
 
       <SubTabs tabs={tabs} active={activeTab} onChange={handleChangeTab} />
 
       {activeTab === 'group' ? (
         <GroupStandingsContent />
-      ) : activeTab === 'bracket' ? (
-        <BracketTree />
       ) : (
         <BracketPhase stages={activeTabStages} slug={activeTab} />
       )}
+
+      <BracketFullModal
+        open={bracketOpen}
+        onClose={() => setBracketOpen(false)}
+      />
     </section>
   )
 }
