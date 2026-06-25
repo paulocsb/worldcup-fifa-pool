@@ -8,6 +8,7 @@
   },
   "liveNow": "Live now",
   "cardAria": "{{home}} vs {{away}}, {{status}}",
+  "matchNumber": "Match {{number}}",
   "noneMatching": "No matches in this filter.",
   "loadError": "Failed to load matches: {{message}}",
   "matchesCount_one": "{{count}} match",

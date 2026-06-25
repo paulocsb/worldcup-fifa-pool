@@ -33,6 +33,13 @@ interface MatchCardProps {
    * hora (HH:mm) em vez de "Hoje, 16:00", evitando redundância com o header.
    */
   compactTime?: boolean
+  /**
+   * Número OFICIAL do jogo (73–104), exibido SÓ no mata-mata (via BracketPhase)
+   * para casar com os cards previstos (BracketMatchCard, "Jogo NN"). Quando
+   * omitido (home/matches/grupos), o header fica idêntico ao original — sem
+   * regressão. Renderizado como rótulo pequeno acima da linha de contexto.
+   */
+  matchNumber?: number
 }
 
 /**
@@ -233,6 +240,7 @@ export function MatchCard({
   score,
   onPredict,
   compactTime = false,
+  matchNumber,
 }: MatchCardProps) {
   const { t } = useTranslation('matches')
 
@@ -353,15 +361,26 @@ export function MatchCard({
             accentStyle && 'bg-[hsl(var(--accent-c)_/_0.12)]',
           )}
         >
-          {isLive || isFinished ? (
-            <MatchTimer match={match} />
-          ) : isPostponedOrCancelled ? (
-            <MatchStatusBadge match={match} />
-          ) : (
-            <span className="min-w-0 truncate text-[11px] text-muted-foreground">
-              {contextLine}
-            </span>
-          )}
+          {/* Header-left: contexto por estado (MatchTimer / status / data·local).
+              No mata-mata (matchNumber definido) ganha uma linha "Jogo N" ACIMA
+              — espelha o BracketMatchCard ("Jogo 75" + data·local). Em min-w-0
+              para truncar a 320px sem empurrar a pílula. */}
+          <div className="flex min-w-0 flex-col">
+            {matchNumber != null && (
+              <span className="min-w-0 truncate font-display text-[11px] font-bold uppercase tracking-wider text-muted-foreground tabular-nums">
+                {t('matchNumber', { number: matchNumber })}
+              </span>
+            )}
+            {isLive || isFinished ? (
+              <MatchTimer match={match} />
+            ) : isPostponedOrCancelled ? (
+              <MatchStatusBadge match={match} />
+            ) : (
+              <span className="min-w-0 truncate text-[11px] text-muted-foreground">
+                {contextLine}
+              </span>
+            )}
+          </div>
           <div className="shrink-0">
             {match.stage === 'group' && match.group_letter ? (
               <GroupPill letter={match.group_letter} variant="solid" size="sm" />

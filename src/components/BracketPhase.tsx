@@ -252,6 +252,7 @@ export function BracketPhase({ stages, slug }: BracketPhaseProps) {
                       match={item.dbMatch}
                       prediction={predictionByMatch.get(item.dbMatch.id)}
                       onPredict={setActive}
+                      matchNumber={item.bracket.ref}
                     />
                   </li>
                 ) : (

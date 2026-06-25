@@ -8,6 +8,7 @@
   },
   "liveNow": "Ao vivo agora",
   "cardAria": "{{home}} x {{away}}, {{status}}",
+  "matchNumber": "Jogo {{number}}",
   "noneMatching": "Nenhum jogo neste filtro.",
   "loadError": "Erro ao carregar jogos: {{message}}",
   "matchesCount_one": "{{count}} jogo",
