@@ -10,6 +10,7 @@ import {
   halfBracketColumns,
   type BracketHalf,
 } from '@/lib/bracketStructure'
+import { accentVarStyle, phaseColorToken } from '@/lib/groupColors'
 import type { MatchStage } from '@/types/db'
 
 /**
@@ -31,8 +32,11 @@ import type { MatchStage } from '@/types/db'
  * the classic bracket join; the right half mirrors them.
  */
 
-/** Width of a single round column (px). Tuned so 3-letter codes never clip. */
-const COLUMN_WIDTH = 168
+/**
+ * Width of a single round column (px). Tuned so a 3-letter code + flag fits even
+ * after BOTH connector stubs (inbound + outbound) are reserved on every node.
+ */
+const COLUMN_WIDTH = 190
 /** Width of the central Final/3rd column. */
 const CENTER_WIDTH = 216
 /**
@@ -58,7 +62,9 @@ export function BracketFullView({
 
   return (
     <div
-      className="flex items-stretch gap-1 p-4"
+      // select-none: pan/tap gestures must never highlight node text (the
+      // game number / TBD) on touch.
+      className="flex select-none items-stretch gap-1 p-4"
       style={{ height: CANVAS_HEIGHT }}
     >
       {/* Left half: R32 → SF, fanning rightward. */}
@@ -122,8 +128,10 @@ function RoundColumn({
 }) {
   return (
     <div
-      className="flex shrink-0 flex-col"
-      style={{ width: COLUMN_WIDTH }}
+      // Banda sutil na cor da fase (canais HSL crus em --accent-c → alpha
+      // funciona, evita o gotcha de /opacity com var()).
+      className="flex shrink-0 flex-col rounded-2xl bg-[hsl(var(--accent-c)_/_0.07)] py-2"
+      style={{ width: COLUMN_WIDTH, ...accentVarStyle(phaseColorToken(stage)) }}
     >
       <ColumnHeader stage={stage} half={half} />
       <div className="flex flex-1 flex-col justify-around gap-2">
@@ -174,7 +182,10 @@ function CenterColumn({
         className="mx-auto mb-4 h-16 w-auto select-none opacity-90 drop-shadow"
       />
 
-      <section className="space-y-2">
+      <section
+        className="space-y-2 rounded-2xl bg-[hsl(var(--accent-c)_/_0.07)] px-2 py-3"
+        style={accentVarStyle(phaseColorToken('final'))}
+      >
         <h3 className="text-center font-display text-xs font-bold uppercase tracking-wider text-muted-foreground">
           {t('bracket.finalTitle')}
         </h3>
@@ -187,7 +198,10 @@ function CenterColumn({
         )}
       </section>
 
-      <section className="space-y-2">
+      <section
+        className="space-y-2 rounded-2xl bg-[hsl(var(--accent-c)_/_0.07)] px-2 py-3"
+        style={accentVarStyle(phaseColorToken('third_place'))}
+      >
         <h3 className="text-center font-display text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
           {t('bracket.thirdPlace')}
         </h3>
@@ -221,12 +235,14 @@ function ColumnHeader({
   return (
     <div
       className={
+        // px-3: respiro da borda da banda (o pill não cola no canto
+        // arredondado). justify segue o espelhamento da chave (esq/dir).
         half === 'right'
-          ? 'mb-2 flex justify-end'
-          : 'mb-2 flex justify-start'
+          ? 'mb-2 flex justify-end px-3'
+          : 'mb-2 flex justify-start px-3'
       }
     >
-      <PhasePill stage={stage} variant="tinted" size="sm" short />
+      <PhasePill stage={stage} variant="tinted" size="sm" />
     </div>
   )
 }
@@ -253,28 +269,27 @@ function ConnectedNode({
   t: ReturnType<typeof useTranslation>['t']
 }) {
   const mirror = half === 'right'
+  // Cada nó reserva SEMPRE as duas perninhas (a linha só aparece quando há
+  // conector). Com COLUMN_WIDTH alargado pra caber bandeira + 2 perninhas, os
+  // 32-avos (sem linha de entrada) alinham com as demais fases sem truncar.
   return (
     <div
       className="relative flex items-center"
       aria-label={confrontAriaLabel(item, t)}
     >
-      {hasInbound && (
-        <span
-          aria-hidden
-          className={mirror ? 'order-3 ml-1' : '-order-1 mr-1'}
-          style={connectorStubStyle}
-        />
-      )}
+      <span
+        aria-hidden
+        className={mirror ? 'order-3 ml-1' : '-order-1 mr-1'}
+        style={hasInbound ? connectorStubStyle : connectorSpacerStyle}
+      />
       <div className="min-w-0 flex-1">
         <BracketNode item={item} size="sm" onSelect={onSelect} />
       </div>
-      {hasOutbound && (
-        <span
-          aria-hidden
-          className={mirror ? '-order-2 mr-1' : 'order-3 ml-1'}
-          style={connectorStubStyle}
-        />
-      )}
+      <span
+        aria-hidden
+        className={mirror ? '-order-2 mr-1' : 'order-3 ml-1'}
+        style={hasOutbound ? connectorStubStyle : connectorSpacerStyle}
+      />
     </div>
   )
 }
@@ -284,6 +299,13 @@ const connectorStubStyle = {
   height: '1px',
   flexShrink: 0,
   backgroundColor: 'hsl(var(--border))',
+} as const
+
+/** Same footprint as the stub but invisible — keeps every node the same width. */
+const connectorSpacerStyle = {
+  width: '0.75rem',
+  height: '1px',
+  flexShrink: 0,
 } as const
 
 function confrontAriaLabel(
