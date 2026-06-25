@@ -6,10 +6,29 @@ import i18n from '@/i18n'
  * Slugs das tabs da página /standings. Cada slug agrupa 1+ stages do banco.
  * 'final' agrupa third_place + final pra apresentar o fim do torneio juntos.
  */
-export type TabSlug = 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final'
+export type TabSlug =
+  | 'group'
+  | 'bracket'
+  | 'r32'
+  | 'r16'
+  | 'qf'
+  | 'sf'
+  | 'final'
 
+/**
+ * Stages backing each tab. `bracket` is the tree VIEW (Phase 2.2) — not a phase,
+ * so it spans the full knockout and is handled specially in standings.tsx.
+ */
 const TAB_STAGES: Record<TabSlug, ReadonlyArray<MatchStage>> = {
   group: ['group'],
+  bracket: [
+    'round_of_32',
+    'round_of_16',
+    'quarter_final',
+    'semi_final',
+    'third_place',
+    'final',
+  ],
   r32: ['round_of_32'],
   r16: ['round_of_16'],
   qf: ['quarter_final'],
@@ -17,8 +36,10 @@ const TAB_STAGES: Record<TabSlug, ReadonlyArray<MatchStage>> = {
   final: ['third_place', 'final'],
 }
 
+// 'bracket' (a árvore) vem logo após a Fase de Grupos, antes das fases-lista.
 const TAB_ORDER: ReadonlyArray<TabSlug> = [
   'group',
+  'bracket',
   'r32',
   'r16',
   'qf',
@@ -72,6 +93,8 @@ export function stagesForTab(slug: TabSlug): ReadonlyArray<MatchStage> {
 export function currentPhase(matches: MatchWithTeams[]): TabSlug {
   let lastWithMatches: TabSlug | null = null
   for (const slug of TAB_ORDER) {
+    // 'bracket' é uma VISÃO (árvore), não uma fase — nunca é auto-selecionada.
+    if (slug === 'bracket') continue
     const stages = TAB_STAGES[slug]
     const list = matches.filter((m) => stages.includes(m.stage))
     if (list.length > 0) lastWithMatches = slug
@@ -93,6 +116,7 @@ export function subtitleForTab(slug: TabSlug): string {
 export function emptyStateForTab(slug: TabSlug): string {
   const keyMap: Record<TabSlug, string> = {
     group: 'bracket.emptyGroup',
+    bracket: 'bracket.emptyR32',
     r32: 'bracket.emptyR32',
     r16: 'bracket.emptyR16',
     qf: 'bracket.emptyQF',

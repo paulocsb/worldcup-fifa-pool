@@ -10,60 +10,26 @@ import { SectionHeader } from './SectionHeader'
 import { Surface } from './Surface'
 import { TeamFlag } from './TeamFlag'
 import { useAuth } from '@/hooks/useAuth'
-import { useGroupStandings } from '@/hooks/useGroupStandings'
-import { useMatches, type MatchWithTeams } from '@/hooks/useMatches'
+import { type MatchWithTeams } from '@/hooks/useMatches'
 import { useMyPredictions } from '@/hooks/usePredictions'
-import { useRealtimeInvalidator } from '@/hooks/useRealtimeInvalidator'
+import { useBracketNodes, type BracketNodeItem } from '@/hooks/useBracketNodes'
+import {
+  formatSlotLabel,
+  hasBracketStructure,
+  type BracketSlot,
+} from '@/lib/bracketStructure'
 import { sectionDateLabel, timeOfDay } from '@/lib/format'
 import { venueLabel } from '@/lib/venueCountry'
 import { PHASE_LABEL_PT, phaseColorToken } from '@/lib/groupColors'
 import { cn } from '@/lib/utils'
 import type { TabSlug } from '@/lib/tournamentPhase'
 import { emptyStateForTab } from '@/lib/tournamentPhase'
-import {
-  bracketMatchesForStage,
-  buildBracketResolveContext,
-  formatSlotLabel,
-  hasBracketStructure,
-  resolveSlot,
-  type BracketMatch,
-  type BracketResolveContext,
-  type BracketSlot,
-} from '@/lib/bracketStructure'
 
 interface BracketPhaseProps {
   /** Stages incluídos nesta tab (ex: ['third_place', 'final']) */
   stages: ReadonlyArray<MatchStage>
   /** Slug usado pra empty state message */
   slug: TabSlug
-}
-
-/**
- * Um item da lista unificada da fase: SEMPRE um confronto oficial do config
- * (na ordem dos números de jogo, ex 73→88), resolvido contra a classificação.
- *
- * - `dbMatch` presente → o confronto tem registro real no banco (casado por
- *   IDENTIDADE DE TIME, não por contagem) → renderiza o MatchCard completo.
- * - `dbMatch` ausente → confronto previsto → renderiza o BracketMatchCard
- *   (espelho do MatchCard agendado, com label de slot + caixa de horário/TBD).
- */
-interface BracketItem {
-  bracket: BracketMatch
-  resolvedHome: Team | null
-  resolvedAway: Team | null
-  /** Jogo do banco casado por par de times (ambos resolvidos). */
-  dbMatch: MatchWithTeams | null
-  /**
-   * Horário do jogo do banco quando o confronto NÃO casou por par (cai no
-   * BracketMatchCard) mas tem ≥1 slot resolvido e existe um registro da fase
-   * contendo aquele time por id. Usado para a hora na caixa central e, junto
-   * com `venue`/`venueCity`, para enriquecer o header com data · local.
-   */
-  kickoffAt: string | null
-  /** Estádio do jogo do banco associado por ≥1 time resolvido (header). */
-  venue: string | null
-  /** Cidade do estádio do jogo do banco associado (header, via venueLabel). */
-  venueCity: string | null
 }
 
 /**
@@ -85,21 +51,9 @@ interface BracketItem {
 export function BracketPhase({ stages, slug }: BracketPhaseProps) {
   const { t } = useTranslation('matches')
   const auth = useAuth()
-  const matches = useMatches()
-  const standings = useGroupStandings()
+  const nodes = useBracketNodes()
   const predictions = useMyPredictions(auth.session?.user.id)
   const [active, setActive] = useState<MatchWithTeams | null>(null)
-
-  useRealtimeInvalidator({
-    tables: ['matches'],
-    queryKeys: [['matches'], ['group-standings']],
-  })
-
-  // Contexto de resolução de slots (1º/2º de grupos COMPLETOS → Team real).
-  const resolveCtx = useMemo<BracketResolveContext>(
-    () => buildBracketResolveContext(standings.data ?? []),
-    [standings.data],
-  )
 
   const predictionByMatch = useMemo(() => {
     const map = new Map<number, Prediction>()
@@ -108,85 +62,19 @@ export function BracketPhase({ stages, slug }: BracketPhaseProps) {
   }, [predictions.data])
 
   /**
-   * Lista unificada por stage. Para cada confronto do config resolvemos os
-   * slots e tentamos casar um jogo do banco POR PAR DE TIMES. Um jogo só é
-   * "consumido" por um confronto (Set de ids usados), evitando que dois
-   * confrontos disputem o mesmo registro.
+   * Reagrupa os nós (já resolvidos + casados pelo hook) por stage, na ORDEM da
+   * prop `stages`, e dentro de cada stage na ordem oficial (ref). Comportamento
+   * idêntico ao memo inline anterior — a lógica de resolução/casamento migrou
+   * para useBracketNodes/buildBracketNodes sem mudança.
    */
   const sections = useMemo(() => {
-    const phaseMatches = (matches.data ?? []).filter((m) =>
-      stages.includes(m.stage),
-    )
-
     return stages
       .filter(hasBracketStructure)
-      .map((stage) => {
-        const config = bracketMatchesForStage(stage)
-        const dbForStage = phaseMatches.filter((m) => m.stage === stage)
-        const usedDbIds = new Set<number>()
-
-        // 1ª passada: casa confrontos por PAR de times (ambos resolvidos) →
-        // MatchCard. Marca o jogo como consumido para não reaparecer abaixo.
-        const items: BracketItem[] = config.map((bracket) => {
-          const resolvedHome = resolveSlot(bracket.home, resolveCtx)
-          const resolvedAway = resolveSlot(bracket.away, resolveCtx)
-
-          let dbMatch: MatchWithTeams | null = null
-          if (resolvedHome && resolvedAway) {
-            const homeId = resolvedHome.id
-            const awayId = resolvedAway.id
-            dbMatch =
-              dbForStage.find(
-                (m) =>
-                  !usedDbIds.has(m.id) &&
-                  m.home_team_id != null &&
-                  m.away_team_id != null &&
-                  ((m.home_team_id === homeId && m.away_team_id === awayId) ||
-                    (m.home_team_id === awayId && m.away_team_id === homeId)),
-              ) ?? null
-            if (dbMatch) usedDbIds.add(dbMatch.id)
-          }
-
-          return {
-            bracket,
-            resolvedHome,
-            resolvedAway,
-            dbMatch,
-            kickoffAt: null,
-            venue: null,
-            venueCity: null,
-          }
-        })
-
-        // 2ª passada: para os confrontos SEM par casado (vão virar
-        // BracketMatchCard) mas com ≥1 slot resolvido, associa um jogo do banco
-        // da fase que CONTENHA esse time por id — só para LER o horário. Um time
-        // joga um único jogo por fase, então é inequívoco. Excluímos jogos já
-        // consumidos como MatchCard (usedDbIds) para não duplicar leitura.
-        for (const item of items) {
-          if (item.dbMatch) continue
-          const resolvedTeam = item.resolvedHome ?? item.resolvedAway
-          if (!resolvedTeam) continue
-          const teamId = resolvedTeam.id
-          const dbWithTeam = dbForStage.find(
-            (m) =>
-              !usedDbIds.has(m.id) &&
-              (m.home_team_id === teamId || m.away_team_id === teamId) &&
-              m.kickoff_at != null,
-          )
-          if (dbWithTeam) {
-            item.kickoffAt = dbWithTeam.kickoff_at
-            item.venue = dbWithTeam.venue
-            item.venueCity = dbWithTeam.venue_city
-          }
-        }
-
-        return { stage, items }
-      })
+      .map((stage) => ({ stage, items: nodes.forStages([stage]) }))
       .filter((s) => s.items.length > 0)
-  }, [matches.data, stages, resolveCtx])
+  }, [stages, nodes])
 
-  if (matches.isPending) {
+  if (nodes.isPending) {
     return (
       <ul className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -198,7 +86,7 @@ export function BracketPhase({ stages, slug }: BracketPhaseProps) {
     )
   }
 
-  if (matches.isError) {
+  if (nodes.isError) {
     return (
       <Surface
         variant="notice"
@@ -208,7 +96,7 @@ export function BracketPhase({ stages, slug }: BracketPhaseProps) {
         role="alert"
         aria-live="polite"
       >
-        Erro ao carregar jogos: {(matches.error as Error).message}
+        Erro ao carregar jogos: {nodes.error?.message}
       </Surface>
     )
   }
@@ -290,7 +178,7 @@ export function BracketPhase({ stages, slug }: BracketPhaseProps) {
  * Accent: cor da própria fase via phaseColorToken — injetada como CANAIS HSL
  * CRUS em `--accent-c` (gotcha-safe), igual ao MatchCard.
  */
-function BracketMatchCard({ item }: { item: BracketItem }) {
+function BracketMatchCard({ item }: { item: BracketNodeItem }) {
   const { t } = useTranslation('standings')
   const { bracket, resolvedHome, resolvedAway, kickoffAt, venue, venueCity } =
     item

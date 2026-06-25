@@ -165,6 +165,139 @@ export function bracketMatchesForStage(
   return BY_STAGE[stage]
 }
 
+// ---------------------------------------------------------------------------
+// Half-bracket topology (Phase 2.2 tree) — DERIVED from the config, not hardcoded
+// ---------------------------------------------------------------------------
+
+/**
+ * The two semi-finals (left half feeds 101, right half feeds 102) and the games
+ * that close the tournament. Official refs.
+ */
+export const SEMI_FINAL_LEFT_REF = 101
+export const SEMI_FINAL_RIGHT_REF = 102
+export const THIRD_PLACE_REF = 103
+export const FINAL_REF = 104
+
+/** Which half of the bracket a matchup belongs to. */
+export type BracketHalf = 'left' | 'right'
+
+/** All bracket matchups indexed by ref (R32→Final), for traversal. */
+const ALL_BY_REF: ReadonlyMap<BracketMatchRef, BracketMatch> = (() => {
+  const map = new Map<BracketMatchRef, BracketMatch>()
+  for (const stage of Object.keys(BY_STAGE) as MatchStage[]) {
+    for (const m of BY_STAGE[stage]) map.set(m.ref, m)
+  }
+  return map
+})()
+
+/**
+ * Refs of every node (R32/R16/QF/SF) that feeds a given semi-final, collected by
+ * walking the connected tree UPSTREAM from the SF through `winnerOf` slots.
+ * Pure derivation from the config — robust to any future re-encoding of slots.
+ */
+function feedersOf(rootRef: BracketMatchRef): Set<BracketMatchRef> {
+  const acc = new Set<BracketMatchRef>()
+  const visit = (ref: BracketMatchRef) => {
+    if (acc.has(ref)) return
+    acc.add(ref)
+    const match = ALL_BY_REF.get(ref)
+    if (!match) return
+    for (const slot of [match.home, match.away]) {
+      if (slot.kind === 'winnerOf') visit(slot.match)
+    }
+  }
+  visit(rootRef)
+  return acc
+}
+
+/**
+ * Maps each non-final knockout matchup ref to its half (`left` = feeds SF 101,
+ * `right` = feeds SF 102). The Final (104) and third-place (103) are NOT in a
+ * half — they sit in the dedicated Final segment.
+ *
+ * Derived once by traversing the config from both semi-finals.
+ */
+export const BRACKET_HALF_BY_REF: ReadonlyMap<BracketMatchRef, BracketHalf> =
+  (() => {
+    const map = new Map<BracketMatchRef, BracketHalf>()
+    for (const ref of feedersOf(SEMI_FINAL_LEFT_REF)) map.set(ref, 'left')
+    for (const ref of feedersOf(SEMI_FINAL_RIGHT_REF)) map.set(ref, 'right')
+    return map
+  })()
+
+/** Knockout stages of a half-bracket sub-tree, in column order (R32→SF). */
+export const HALF_STAGE_COLUMNS: ReadonlyArray<MatchStage> = [
+  'round_of_32',
+  'round_of_16',
+  'quarter_final',
+  'semi_final',
+] as const
+
+/** Root semi-final ref that closes each half. */
+const HALF_ROOT_REF: Record<BracketHalf, BracketMatchRef> = {
+  left: SEMI_FINAL_LEFT_REF,
+  right: SEMI_FINAL_RIGHT_REF,
+}
+
+/**
+ * Pre-order DFS of a half's connected tree (home before away), yielding every
+ * ref grouped by stage in the order each node is reached while descending.
+ *
+ * Because the descent always visits the HOME feeder before the AWAY feeder, the
+ * two feeders of any node end up ADJACENT (and correctly ordered) in their
+ * column, and the parent node lands at the midpoint of that pair in the next
+ * column. This is what makes the CSS connectors pair the RIGHT matchups.
+ *
+ * For the left half the leaf (R32) order is `74,77,73,75,83,84,81,82`,
+ * R16 `89,90,93,94`, QF `97,98`, SF `101`.
+ */
+function dfsRefsByStage(
+  rootRef: BracketMatchRef,
+): ReadonlyMap<MatchStage, BracketMatchRef[]> {
+  const byStage = new Map<MatchStage, BracketMatchRef[]>()
+  const push = (m: BracketMatch) => {
+    const list = byStage.get(m.stage) ?? []
+    list.push(m.ref)
+    byStage.set(m.stage, list)
+  }
+  const visit = (ref: BracketMatchRef) => {
+    const match = ALL_BY_REF.get(ref)
+    if (!match) return
+    push(match)
+    // Descend home feeder first, then away — keeps feeder pairs adjacent.
+    for (const slot of [match.home, match.away]) {
+      if (slot.kind === 'winnerOf') visit(slot.match)
+    }
+  }
+  visit(rootRef)
+  return byStage
+}
+
+/** Tree (DFS) ordering of refs per stage for each half, computed once. */
+const HALF_TREE_ORDER: Record<
+  BracketHalf,
+  ReadonlyMap<MatchStage, BracketMatchRef[]>
+> = {
+  left: dfsRefsByStage(HALF_ROOT_REF.left),
+  right: dfsRefsByStage(HALF_ROOT_REF.right),
+}
+
+/**
+ * Refs for one half, grouped per column stage. Each column is ordered by the
+ * TREE (DFS), not by fixture number, so column N's node sits between the 2i/2i+1
+ * feeders of column N-1 — i.e. game 89 lands between 74 and 77, not 73 and 74.
+ * Consumed by BracketTree to lay out the 4-column grid (8→4→2→1).
+ */
+export function halfBracketColumns(
+  half: BracketHalf,
+): ReadonlyArray<{ stage: MatchStage; refs: ReadonlyArray<BracketMatchRef> }> {
+  const order = HALF_TREE_ORDER[half]
+  return HALF_STAGE_COLUMNS.map((stage) => ({
+    stage,
+    refs: order.get(stage) ?? [],
+  }))
+}
+
 /** Whether we have an encoded preview for this stage. */
 export function hasBracketStructure(stage: MatchStage): boolean {
   return BY_STAGE[stage].length > 0
@@ -177,6 +310,9 @@ export function hasBracketStructure(stage: MatchStage): boolean {
 /**
  * Localized label for a single slot (pt-BR / en via i18next).
  * `t` must be bound to the `standings` namespace.
+ *
+ * Used by the per-phase list (BracketMatchCard) — always full ("Venc. jogo 74",
+ * "3º A/B/C/D/F"). For the compact tree node use `formatSlotLabelShort`.
  */
 export function formatSlotLabel(slot: BracketSlot, t: TFunction): string {
   switch (slot.kind) {
@@ -190,6 +326,38 @@ export function formatSlotLabel(slot: BracketSlot, t: TFunction): string {
       return t('bracket.slotWinnerOf', { match: slot.match })
     case 'loserOf':
       return t('bracket.slotLoserOf', { match: slot.match })
+  }
+}
+
+/** Max candidate groups to spell out in the compact best-3rd label. */
+const COMPACT_BEST3RD_MAX = 3
+
+/**
+ * SHORT slot label for the compact tree node (BracketNode only), so nothing
+ * truncates to "VE…" on a 320px screen. The node already shows its own game
+ * number, so feeders only need a terse origin:
+ *   winnerOf 74 → "V74", loserOf 101 → "P101" (pt-BR Vencedor/Perdedor).
+ * Group slots stay readable ("1º E", "2º F"); best-3rd is capped to a few
+ * candidates with an ellipsis ("3º A/B/C…") instead of a 5-group string.
+ *
+ * Do NOT use this in the list — keep `formatSlotLabel` there for full context.
+ */
+export function formatSlotLabelShort(slot: BracketSlot, t: TFunction): string {
+  switch (slot.kind) {
+    case 'groupWinner':
+      return t('bracket.slotGroupWinner', { group: slot.group })
+    case 'groupRunnerUp':
+      return t('bracket.slotGroupRunnerUp', { group: slot.group })
+    case 'best3rd': {
+      const shown = slot.candidates.slice(0, COMPACT_BEST3RD_MAX).join('/')
+      const groups =
+        slot.candidates.length > COMPACT_BEST3RD_MAX ? `${shown}…` : shown
+      return t('bracket.slotBest3rd', { groups })
+    }
+    case 'winnerOf':
+      return t('bracket.slotWinnerOfShort', { match: slot.match })
+    case 'loserOf':
+      return t('bracket.slotLoserOfShort', { match: slot.match })
   }
 }
 

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { TableProperties } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { BracketPhase } from '@/components/BracketPhase'
+import { BracketTree } from '@/components/bracket/BracketTree'
 import { GroupPill } from '@/components/GroupPill'
 import { GroupStandingsSkeleton } from '@/components/GroupTableSkeleton'
 import { PageHeader } from '@/components/PageHeader'
@@ -80,6 +81,8 @@ export function StandingsPage() {
 
       {activeTab === 'group' ? (
         <GroupStandingsContent />
+      ) : activeTab === 'bracket' ? (
+        <BracketTree />
       ) : (
         <BracketPhase stages={activeTabStages} slug={activeTab} />
       )}
