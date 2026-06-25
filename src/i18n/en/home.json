@@ -30,7 +30,7 @@
     "tournament": "Tournament",
     "chooseTournament": "Pick one",
     "tournamentClosed": "Closed",
-    "groups": "Group",
+    "groups": "Group predictions",
     "groupsCount": "{{saved}}/{{total}}",
     "groupsSavedHint_one": "predicted",
     "groupsSavedHint_other": "predicted",

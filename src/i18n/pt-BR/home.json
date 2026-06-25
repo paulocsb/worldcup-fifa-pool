@@ -30,7 +30,7 @@
     "tournament": "Torneio",
     "chooseTournament": "Escolher",
     "tournamentClosed": "Encerrado",
-    "groups": "Grupo",
+    "groups": "Palpites de Grupo",
     "groupsCount": "{{saved}}/{{total}}",
     "groupsSavedHint_one": "palpitado",
     "groupsSavedHint_other": "palpitados",
