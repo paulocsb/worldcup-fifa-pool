@@ -4,8 +4,8 @@ This file is a tool-agnostic agent specification for the Bolão FIFA 2026 repo.
 It is read by **Cursor**, **Aider**, **Cline**, **Continue**, **Codex**, and any
 other AI tool that supports the emerging `AGENTS.md` convention.
 
-For Claude Code users, the richer agent setup lives in `.claude/` (3 specialized
-agents + 7 slash commands + 2 hooks). The directives in this file mirror the
+For Claude Code users, the richer agent setup lives in `.claude/` (4 specialized
+agents + 18 slash commands + 2 hooks). The directives in this file mirror the
 shared subset. In case of conflict, `CLAUDE.md` and `.claude/agents/*.md` take
 precedence for Claude Code; this file is the source of truth for everyone else.
 

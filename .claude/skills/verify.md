@@ -12,7 +12,7 @@ description: |
 A focused subset of `/ship`. Designed to run frequently during
 development without waiting on the full self-review pass.
 
-## The 5 checks
+## The 6 checks
 
 ### 1. Type check
 
@@ -23,7 +23,16 @@ pnpm typecheck
 - exit 0 → ✅
 - exit ≠ 0 → 🔴 BLOCK, show errors
 
-### 2. Build
+### 2. Lint
+
+```bash
+pnpm lint
+```
+
+- exit 0, no errors → ✅ (warnings → ⚠️ note the count, don't block)
+- any errors → 🔴 BLOCK, show them
+
+### 3. Build
 
 ```bash
 pnpm build
@@ -32,7 +41,7 @@ pnpm build
 - exit 0 → ✅
 - exit ≠ 0 → 🔴 BLOCK
 
-### 3. Tests
+### 4. Tests
 
 ```bash
 pnpm test
@@ -42,13 +51,13 @@ pnpm test
 - failures → 🔴 BLOCK
 - no test suite (yet) → ⚠️ note "no tests"
 
-### 4. Mobile audit (conditional)
+### 5. Mobile audit (conditional)
 
 Trigger: any changed file matches `src/components/**` or `src/routes/**`.
 
 If triggered → invoke `/mobile-audit`. Surface result.
 
-### 5. Scoring verify (conditional)
+### 6. Scoring verify (conditional)
 
 Trigger: changes touched scoring files.
 
@@ -60,10 +69,11 @@ If triggered → invoke `/scoring-verify`. User runs the queries.
 Verify: <verdict>
 
 1. Typecheck       ✅
-2. Build           ✅
-3. Tests           ✅ 11 passed
-4. Mobile audit    ✅ (3 files audited, 0 blockers)
-5. Scoring verify  n/a
+2. Lint            ✅ (0 errors, 3 warnings)
+3. Build           ✅
+4. Tests           ✅ 11 passed
+5. Mobile audit    ✅ (3 files audited, 0 blockers)
+6. Scoring verify  n/a
 
 → Safe to commit.
 ```
@@ -77,6 +87,7 @@ Verdict:
 | Check | /verify | /ship |
 |---|---|---|
 | typecheck | ✅ | ✅ |
+| lint | ✅ | ✅ |
 | build | ✅ | ✅ |
 | tests | ✅ | ✅ |
 | mobile-audit | ✅ (conditional) | ✅ (conditional) |

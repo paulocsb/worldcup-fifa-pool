@@ -119,6 +119,7 @@ Closes #N (or "Refs spec at docs/specs/...")
 ## Verification
 
 - [x] pnpm typecheck passes
+- [x] pnpm lint passes (0 errors)
 - [x] pnpm build succeeds
 - [x] pnpm test green (if logic changed)
 - [x] /mobile-audit ran (if UI)

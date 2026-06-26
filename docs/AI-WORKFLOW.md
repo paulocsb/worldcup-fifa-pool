@@ -9,7 +9,7 @@ your tool of choice.
 ### Claude Code (best supported)
 
 Just open the repo. Setup is automatic:
-- Agents in `.claude/agents/` (`frontend`, `supabase`, `scoring`) appear in your agent list
+- Agents in `.claude/agents/` (`frontend`, `supabase`, `scoring`, `code-reviewer`) appear in your agent list
 - Skills in `.claude/skills/` register as slash commands (`/db-status`, `/mobile-audit`, etc.)
 - Hooks in `.claude/hooks/` run automatically (typecheck after edits, migration warning before edits)
 - `CLAUDE.md` is loaded as context per turn
@@ -133,7 +133,7 @@ share the link with the broader group.
 These patterns produce bad results in this codebase:
 
 - **"Just clean up the code"** without a target — vague, leads to thrashing.
-- **"Add tests"** — there is no test infrastructure yet (see `docs/FOLLOWUPS.md`). Adding one is a focused task that needs its own PR.
+- **"Add tests for everything"** — Vitest is set up (`pnpm test`, see `src/lib/*.test.ts`), so adding tests is welcome — but a blanket "test everything" is unscoped. Point the AI at a specific module (a hook, `src/lib/`, a component) so the work has clear boundaries.
 - **"Make it look better"** without specifics — the design system is strict; ask for specific changes.
 - **"Translate the UI to English"** — yes, that's a feature we want (i18n is on `docs/FOLLOWUPS.md`), but it's not a casual change. It involves a library choice, string extraction, and a toggle. Open an issue first.
 - **"Speed things up"** without a profiler trace — premature optimization.

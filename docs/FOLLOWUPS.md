@@ -18,8 +18,6 @@ Parked items to revisit. Reorder/check off as you tackle them.
 
 - [ ] **Route-level code splitting** — use `React.lazy` + `Suspense` to shrink initial bundle (~180KB gzip → ~100KB). Each route loads on demand.
 
-- [ ] **Migrate ESLint to flat config** — `pnpm lint` is broken due to legacy config. Update `.eslintrc.*` → `eslint.config.js` (new ESLint 9 format).
-
 ---
 
 ## 🟢 Ongoing operational
@@ -37,10 +35,9 @@ Before flipping visibility to public, complete these:
 
 - [ ] **Create 3–5 `good first issue` issues** so contributors have a clear entry point. Suggested set:
   - i18n: pt-BR + en with `react-i18next` (high-value, well-scoped — see followups above)
-  - Migrate ESLint to flat config (contained, binary outcome)
   - Route-level code splitting with `React.lazy` (measurable bundle impact)
   - Bracket with SVG lines connecting matches
-  - Add Vitest + first test in `src/lib/scoring.ts` (bootstraps the test infra)
+  - Expand test coverage beyond `src/lib/` (e.g. a hook or a critical component) — the Vitest infra is already in place
 - [ ] **Enable GitHub Discussions** (Settings → General → Features → Discussions ✅) for questions that don't fit as issues
 - [ ] **Add repo topics** for discoverability: `ai-first`, `claude-code`, `agents-md`, `supabase`, `react`, `typescript`, `vite`, `pwa`, `world-cup-2026`, `tailwindcss`, `shadcn-ui`
 - [ ] **Branch protection on `main`** (Settings → Branches → Add rule → require PR + CI passing)
@@ -66,13 +63,15 @@ Before flipping visibility to public, complete these:
 - [x] Live / Finished / Waiting sections on `/me/predictions`
 
 ### Infrastructure
+- [x] Vitest test infra + first tests (`src/lib/scoring.test.ts`, `src/lib/bracketNodes.test.ts`) — wired into `pnpm test`, `/verify`, `/ship`, and CI
+- [x] ESLint migrated to flat config (`eslint.config.js`, ESLint 9) — `pnpm lint` passes (0 errors)
 - [x] Resend SMTP + DNS
 - [x] Live score stuck fix (sync-live UTC date range + safety-net cron)
 - [x] Cloudflare NODE_VERSION=22
 - [x] Cloudflare Workers config (`wrangler.jsonc` versioned, `pnpm run deploy` script, docs updated)
 
 ### AI-first repo setup
-- [x] AI-first agent suite (3 agents + 7 skills + 2 hooks)
+- [x] AI-first agent suite (4 agents incl. `code-reviewer` + 18 skills + 2 hooks)
 - [x] Repository internationalization (docs/agents/skills translated to English)
 - [x] LICENSE (MIT + FIFA brand note), CONTRIBUTING.md, AGENTS.md (cross-tool spec), docs/SETUP.md, docs/AI-WORKFLOW.md
 - [x] Operational `docs/SCORING.md`

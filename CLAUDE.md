@@ -176,7 +176,7 @@ their scope.
 | Deep mobile/responsive review | `frontend` (mobile-native by design) | `/mobile-audit` |
 | Migration, RLS, schema, edge function | `supabase` | `security-review` (sensitive change) |
 | Scoring change (formula, cutoff, config) | `scoring` | `/scoring-verify` |
-| Code review before PR/big commit | `code-reviewer` *(if available)* + domain agent | `security-review` |
+| Code review before PR/big commit | `code-reviewer` (independent reviewer) + domain agent | `security-review` |
 | Plan a non-trivial feature | `Plan` (generic) | `/plan` |
 | Broad codebase search | `Explore` (generic) | — |
 

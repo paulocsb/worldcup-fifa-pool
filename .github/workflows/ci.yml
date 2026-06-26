@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate:
-    name: typecheck + build
+    name: typecheck + lint + test + build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -28,6 +28,12 @@ jobs:
 
       - name: TypeScript check
         run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Tests
+        run: pnpm test
 
       - name: Production build
         env:
