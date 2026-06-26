@@ -5,50 +5,96 @@
 [![Built with AI](https://img.shields.io/badge/built%20with-AI%20agents-purple)](AGENTS.md)
 [![PWA](https://img.shields.io/badge/PWA-installable-orange)](https://web.dev/progressive-web-apps/)
 
-> A mobile-first PWA for a friends' World Cup pool — built and evolved by
-> orchestrating specialized AI agents through every phase of development:
-> from spec to ship.
+A mobile-first PWA for a friends' World Cup prediction pool — and an **AI-first
+repository**: you develop here by talking to AI agents that already know the
+codebase, not by reading 50 files first.
 
-📖 **[Read the full story on Medium →](https://medium.com/@paulocsb/bolao-fifa-2026)** *(article coming soon)*
-
-<!-- TODO: add hero screenshot here (iPhone mockup of /home + /matches) -->
+The 2026 World Cup was already underway when this was built, so the whole
+project — schema, RLS, edge functions, UI, scoring, deploy — was driven through
+AI agents calibrated to this repo, with a human at each checkpoint.
+📖 *[The full story on Medium →](https://medium.com/@paulocsb/bolao-fifa-2026) (coming soon)*
 
 ---
 
-## The story in one paragraph
+## Develop here with AI
 
-The 2026 World Cup was already happening when I decided to build a prediction
-pool for my friends group. Brazil's first match was days away. Writing the
-whole thing solo, the conventional way, would mean shipping after Brazil was
-already eliminated. So I tried something different: drive the entire
-project — schema, RLS, edge functions, UI, scoring, deploy, debugging — through
-AI agents calibrated to this codebase. **Spec → impact → plan → implement →
-verify → ship**, with a human (me) holding the steering wheel at each
-checkpoint. Three weeks later, ~20 friends are using it on their phones.
+This is the intended way to work in the repo. Clone it, open it with your AI
+tool (Claude Code, Cursor, Aider, Cline, Continue), and let it drive.
 
-## What it does
+**1. Get the environment up**
+
+```text
+/setup     # installs deps, starts Supabase, sets up env + fixtures (idempotent)
+/dev       # starts the dev stack and prints the URLs you need
+/start     # optional: state briefing + suggested next action
+```
+
+**2. Do the work** — describe what you want in plain language:
+
+```text
+/feature "add a tiebreaker by exact-score count to the ranking"
+/bug     "live score didn't update for GHA × PAN"
+```
+
+`/feature` runs a guided pipeline — **spec → impact → plan → implement →
+verify → PR-ready** — and stops at each checkpoint for your approval.
+`/bug` runs an investigation playbook — reproduce → isolate → root cause →
+fix → validate.
+
+**3. Ship it**
+
+```text
+/ship      # quality gate: typecheck, lint, test, build, review, secrets — then a PR body
+```
+
+Every command lives in [`.claude/skills/`](.claude/skills/) and is
+self-documenting. Prefer to run things by hand, without an AI? See
+[`docs/SETUP.md`](docs/SETUP.md) — same flow, manual steps.
+
+### The agents that drive it
+
+Four specialized agents in [`.claude/agents/`](.claude/agents/), each with deep
+knowledge of this codebase's conventions and the anti-patterns already hit:
+
+| Agent | Owns |
+|---|---|
+| `frontend` | UI, components, routes, hooks — mobile-first React/TS |
+| `supabase` | DB schema, RLS, migrations, edge functions, cron |
+| `scoring` | the dual scoring system (client preview ↔ server truth) |
+| `code-reviewer` | independent, read-only review before a PR |
+
+### The commands, by lifecycle stage
+
+| Stage | Commands |
+|---|---|
+| **Start** | `/setup` · `/dev` · `/start` |
+| **Build** | `/feature` · `/bug` · `/spec` · `/refactor` · `/explain` |
+| **Check** | `/review` · `/verify` · `/ship` · `/mobile-audit` |
+| **Operate** | `/db-status` · `/scoring-verify` · `/deploy-fn` · `/impact` · `/security-sweep` · `/release-notes` |
+
+Other tools (Cursor, Aider, Cline, Continue) read the same conventions via the
+cross-tool spec in [`AGENTS.md`](AGENTS.md). [Hooks](.claude/hooks/) auto-run a
+typecheck after edits and warn before mutating an applied migration.
+
+---
+
+## What the app does
 
 - 🎯 **Score predictions** per match, locked 5 minutes before kickoff
 - 🏆 **Group + tournament predictions** (final order, champion, runner-up, 3rd)
 - 📊 **Live ranking** that updates without refresh as matches end
-- ⚡ **Quick predict** mode for fast batch prediction across many matches
+- ⚡ **Quick predict** for fast batch prediction across many matches
 - 🔐 **Invite-only** access with magic-link auth
-- 📱 **PWA**: installable, offline-friendly for reads
-- 🌗 **Dark mode** by default, with toggle
+- 📱 **PWA**: installable, offline-friendly for reads · 🌗 dark mode by default
 
-## What makes it interesting
+## Make it yours
 
-This isn't just "an app built with Claude". The repo ships a **calibrated
-agent suite** that makes the AI productive on day one:
+Nothing is locked in. Ask the AI agent in plain language and it runs the change
+as a guided `/feature` flow, not a config flag:
 
-- **3 specialized agents** ([`.claude/agents/`](.claude/agents/)) — `frontend`, `supabase`, `scoring` — each with deep knowledge of the project's conventions, anti-patterns we've already hit, and which files to touch.
-- **18 slash commands** ([`.claude/skills/`](.claude/skills/)) covering the full dev lifecycle: `/setup`, `/dev`, `/feature`, `/bug`, `/ship`, plus quality (`/spec`, `/review`, `/verify`, `/refactor`, `/explain`) and operational (`/db-status`, `/scoring-verify`, `/mobile-audit`, etc.).
-- **Cross-tool spec** ([`AGENTS.md`](AGENTS.md)) so Cursor, Aider, Cline, and Continue read the same conventions.
-- **Hooks** ([`.claude/hooks/`](.claude/hooks/)) that auto-typecheck after edits and warn before mutating applied migrations.
-- **Real engineering rigor**: dual scoring implementation (client preview ↔ server truth) kept in sync, RLS on every table, idempotent cron-driven pipelines.
-
-The result: a developer can open the repo with their AI tool of choice and
-ship a real feature in their first session — without first reading 50 files.
+- *"Switch hosting to Vercel"* — `frontend` updates Vite config, deploy script, `docs/DEPLOY.md`.
+- *"Replace API-Football with TheSportsDB"* — `supabase` rewrites the integration and runs `/scoring-verify`.
+- *"Brand the app for Euro 2028"* — `frontend` rewrites color tokens, swaps logos, updates the PWA manifest.
 
 ## Tech stack
 
@@ -62,59 +108,20 @@ ship a real feature in their first session — without first reading 50 files.
 
 Recurring cost: ~$19/month (just API-Football Pro). Everything else fits free tiers.
 
-## Make it yours
-
-The stack ships with Cloudflare Workers + Supabase + API-Football, but
-nothing is locked in. Ask the AI agent in plain language:
-
-- *"Switch hosting to Vercel"* — the `frontend` agent updates Vite config, deploy script, and `docs/DEPLOY.md`.
-- *"Replace API-Football with TheSportsDB"* — the `supabase` agent rewrites `_shared/api-football.ts` and runs `/scoring-verify` to confirm nothing broke.
-- *"Migrate the DB to Neon + Drizzle"* — bigger surface, so the agent writes a `/spec` first, then a phased `/feature` plan to walk you through.
-- *"Brand the app for Euro 2028"* — the `frontend` agent rewrites color tokens, swaps logos, updates the PWA manifest.
-
-Each adaptation is a guided `/feature` flow with checkpoints, not a config flag.
-
-## Try it with your AI agent
-
-The intended way to work in this repo is to let your AI agent drive the
-flow. Clone it, open it with Claude Code, Cursor, Aider, Cline, or Continue,
-and run:
-
-```text
-/setup     # bootstraps the local environment (deps, Supabase, env, fixtures)
-/dev       # starts the dev stack and prints the URLs you need
-```
-
-To work on something:
-
-```text
-/feature "add a tiebreaker by exact-score count to the ranking"
-/bug      "live score didn't update for GHA × PAN"
-/ship                                       # final quality gate before PR
-```
-
-Every slash command lives in [`.claude/skills/`](.claude/skills/) and is
-self-documenting. New session? Run `/start` for a state briefing.
-
-Prefer to run things manually, without an AI in the loop?
-See [`docs/SETUP.md`](docs/SETUP.md) — the same flow as commands.
-
 ## Documentation
 
+- [`docs/AI-WORKFLOW.md`](docs/AI-WORKFLOW.md) — using AI tools with this repo (all tools)
+- [`CLAUDE.md`](CLAUDE.md) / [`AGENTS.md`](AGENTS.md) — agent directives and conventions
 - [`docs/PLAN.md`](docs/PLAN.md) — original scope and data model
 - [`docs/SCORING.md`](docs/SCORING.md) — scoring pipeline and operational guide
 - [`docs/FIFA-2026-FORMAT.md`](docs/FIFA-2026-FORMAT.md) — official tournament rules reference
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — production deploy playbook
-- [`docs/AI-WORKFLOW.md`](docs/AI-WORKFLOW.md) — how to use AI tools with this repo
-- [`CLAUDE.md`](CLAUDE.md) / [`AGENTS.md`](AGENTS.md) — agent directives and conventions
 
-## Want to contribute?
+## Contributing & license
 
-Contributions are welcome but I'm not actively recruiting. The repo is here
-mainly to document an approach. If you'd like to extend it, fork it, or
-borrow the AI-first pattern for your own project: [`CONTRIBUTING.md`](CONTRIBUTING.md).
-
-## License
+Contributions are welcome, though I'm not actively recruiting — the repo mainly
+documents an approach. To extend or borrow the AI-first pattern, see
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 [MIT](LICENSE). The FIFA 2026 logos in `public/` belong to FIFA and are not
 covered by this license — strip them if you fork for any other use.
