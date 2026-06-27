@@ -1,4 +1,5 @@
 ---
+disable-model-invocation: true
 name: deploy-fn
 description: |
   Deploy a Supabase edge function + post-deploy smoke test. Runs

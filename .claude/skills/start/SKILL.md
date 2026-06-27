@@ -1,4 +1,5 @@
 ---
+disable-model-invocation: true
 name: start
 description: |
   Bootstrap the AI agent for a new session in this repo. Reads CLAUDE.md +

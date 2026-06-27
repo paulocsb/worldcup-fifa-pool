@@ -1,4 +1,5 @@
 ---
+disable-model-invocation: true
 name: security-sweep
 description: |
   Comprehensive security audit of the app: RLS coverage, leaked secrets, auth

@@ -1,4 +1,5 @@
 ---
+disable-model-invocation: true
 name: dev
 description: |
   Start or refresh the local development stack: Supabase, Vite dev server,

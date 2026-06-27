@@ -1,4 +1,5 @@
 ---
+disable-model-invocation: true
 name: db-status
 description: |
   Health check the remote Supabase database. Runs 5 queries in sequence and

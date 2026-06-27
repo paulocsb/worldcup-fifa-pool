@@ -1,4 +1,5 @@
 ---
+disable-model-invocation: true
 name: ship
 description: |
   Pre-flight quality gate before opening a PR. Runs typecheck, build, tests,

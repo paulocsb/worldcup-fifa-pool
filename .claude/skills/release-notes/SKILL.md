@@ -1,4 +1,5 @@
 ---
+disable-model-invocation: true
 name: release-notes
 description: |
   Generate release notes in friendly pt-BR for sharing with the friends group

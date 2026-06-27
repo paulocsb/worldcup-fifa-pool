@@ -1,4 +1,5 @@
 ---
+disable-model-invocation: true
 name: scoring-verify
 description: |
   Verify scoring in production. Runs the 6 queries from docs/SCORING.md in

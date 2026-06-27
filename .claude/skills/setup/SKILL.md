@@ -1,4 +1,5 @@
 ---
+disable-model-invocation: true
 name: setup
 description: |
   Complete first-time setup of the local development environment for the

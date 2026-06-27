@@ -184,9 +184,17 @@ their scope.
 
 ---
 
-## 10. Project slash commands
+## 10. Project skills (slash-invocable)
 
-Local skills in `.claude/skills/`, organized by role in the development cycle.
+Local **skills** in `.claude/skills/<name>/SKILL.md`, organized by role in the
+development cycle. Each is invocable explicitly as `/<name>` (the command name
+comes from the directory). Analysis/authoring skills (`feature`, `bug`, `spec`,
+`refactor`, `explain`, `impact`, `mobile-audit`, `review`, `verify`) are also
+**model-invocable** — the agent may route to them when the request matches their
+description. Operational, prod-touching, or deliberate-gate skills (`setup`,
+`dev`, `start`, `ship`, `deploy-fn`, `security-sweep`, `db-status`,
+`scoring-verify`, `release-notes`) carry `disable-model-invocation: true`, so
+they run **only** when the user types the command.
 
 ### Lifecycle (the development loop)
 | Command | Use |
