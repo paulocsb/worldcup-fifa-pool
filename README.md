@@ -54,9 +54,14 @@ fix → validate.
 /ship      # quality gate: typecheck, lint, test, build, review, secrets — then a PR body
 ```
 
-Every command lives in [`.claude/skills/`](.claude/skills/) and is
-self-documenting. Prefer to run things by hand, without an AI? See
-[`docs/SETUP.md`](docs/SETUP.md) — same flow, manual steps.
+Every command is an [Agent Skill](.claude/skills/) — type it as `/<name>`, or
+just describe the task and the agent routes to the right one. Build/analysis
+skills (`/feature`, `/bug`, `/spec`, `/refactor`, `/explain`, `/impact`,
+`/mobile-audit`, `/review`, `/verify`) are model-invocable; operational ones
+(`/setup`, `/dev`, `/start`, `/ship`, `/deploy-fn`, `/security-sweep`,
+`/db-status`, `/scoring-verify`, `/release-notes`) run only when you type them.
+Prefer to run things by hand, without an AI? See [`docs/SETUP.md`](docs/SETUP.md)
+— same flow, manual steps.
 
 ### The agents that drive it
 
