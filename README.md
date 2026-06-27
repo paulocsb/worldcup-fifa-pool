@@ -1,6 +1,6 @@
-# Bolão FIFA 2026
+# WORLDCUP FIFA 2026 POOL
 
-[![CI](https://github.com/paulocsb/bolao-fifa/actions/workflows/ci.yml/badge.svg)](https://github.com/paulocsb/bolao-fifa/actions/workflows/ci.yml)
+[![CI](https://github.com/paulocsb/worldcup-fifa-pool/actions/workflows/ci.yml/badge.svg)](https://github.com/paulocsb/worldcup-fifa-pool/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Built with AI](https://img.shields.io/badge/built%20with-AI%20agents-purple)](AGENTS.md)
 [![PWA](https://img.shields.io/badge/PWA-installable-orange)](https://web.dev/progressive-web-apps/)
@@ -12,7 +12,14 @@ codebase, not by reading 50 files first.
 The 2026 World Cup was already underway when this was built, so the whole
 project — schema, RLS, edge functions, UI, scoring, deploy — was driven through
 AI agents calibrated to this repo, with a human at each checkpoint.
-📖 *[The full story on Medium →](https://medium.com/@paulocsb/bolao-fifa-2026) (coming soon)*
+
+<p align="center">
+  <img src="docs/screenshots/screenshot-1.webp" width="150" alt="App screenshot" />
+  <img src="docs/screenshots/screenshot-2.webp" width="150" alt="App screenshot" />
+  <img src="docs/screenshots/screenshot-3.webp" width="150" alt="App screenshot" />
+  <img src="docs/screenshots/screenshot-4.webp" width="150" alt="App screenshot" />
+  <img src="docs/screenshots/screenshot-5.webp" width="150" alt="App screenshot" />
+</p>
 
 ---
 
