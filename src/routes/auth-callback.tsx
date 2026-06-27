@@ -38,16 +38,27 @@ export function AuthCallback() {
       }
     })
 
-    // E também escuta novos sign-ins (detectSessionInUrl é assíncrono)
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
+    // E também escuta novos sign-ins (detectSessionInUrl é assíncrono).
+    // Aceita QUALQUER evento que traga sessão — o implicit flow às vezes emite
+    // INITIAL_SESSION em vez de SIGNED_IN ao processar o hash da URL.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
         markAsReturningUser()
         setState({ kind: 'success' })
       }
     })
 
-    // Fallback: se em 8s não tiver sessão, mostra erro com link pra retry
-    const timeoutId = setTimeout(() => {
+    // Fallback: cold start em celular (SW instalando + parse + round-trip ao
+    // Supabase) pode passar de alguns segundos, então damos uma janela generosa.
+    // Antes de declarar erro, faz uma última checagem de sessão — cobre o caso
+    // da sessão chegar logo após o corte do timeout.
+    const timeoutId = setTimeout(async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        markAsReturningUser()
+        setState({ kind: 'success' })
+        return
+      }
       setState((s) =>
         s.kind === 'waiting'
           ? {
@@ -56,7 +67,7 @@ export function AuthCallback() {
             }
           : s,
       )
-    }, 8000)
+    }, 20000)
 
     return () => {
       sub.subscription.unsubscribe()
