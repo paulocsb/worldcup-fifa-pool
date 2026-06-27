@@ -19,6 +19,12 @@ export const supabase = createClient(url, anonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    flowType: 'pkce',
+    // Magic links are frequently opened in a different browser context than the
+    // one that requested them (WhatsApp/Gmail in-app webviews). PKCE stores a
+    // code_verifier in the requesting browser's localStorage, so the cross-context
+    // exchange fails and the user lands back on the invite gate. The implicit
+    // flow returns tokens in the URL hash — no verifier needed — so it works
+    // from any browser/webview.
+    flowType: 'implicit',
   },
 })
