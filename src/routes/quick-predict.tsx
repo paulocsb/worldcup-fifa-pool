@@ -73,23 +73,12 @@ function ScoreInput({ label, value, onChange }: ScoreInputProps) {
   )
 }
 
-function TeamColumn({
-  team,
-  align,
-}: {
-  team: MatchWithTeams['home_team']
-  align: 'left' | 'right'
-}) {
+function TeamColumn({ team }: { team: MatchWithTeams['home_team'] }) {
   const name = useTeamName(team)
   return (
-    <div
-      className={cn(
-        'flex flex-col items-center gap-2 text-center',
-        align === 'left' ? 'text-left' : 'text-right',
-      )}
-    >
+    <div className="flex w-full flex-col items-center gap-2 text-center">
       <TeamFlag team={team} size={56} />
-      <div className="min-w-0">
+      <div className="w-full min-w-0">
         <div className="font-display text-xl font-black uppercase leading-none tracking-tight">
           {team?.code ?? '—'}
         </div>
@@ -234,11 +223,11 @@ export function QuickPredictPage() {
           )}
 
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-            <TeamColumn team={current.home_team} align="left" />
+            <TeamColumn team={current.home_team} />
             <span className="font-display text-2xl font-bold leading-none text-muted-foreground/60">
               ×
             </span>
-            <TeamColumn team={current.away_team} align="right" />
+            <TeamColumn team={current.away_team} />
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-6">
