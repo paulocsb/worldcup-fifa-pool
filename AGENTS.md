@@ -151,7 +151,7 @@ Use these in RLS policies and `compute-scores`. Do not inline the same logic.
 ## Development cycle commands (slash commands)
 
 Claude Code users invoke these as `/<name>`. For other tools, reference the
-corresponding `.claude/skills/<name>.md` as context when relevant.
+corresponding `.claude/skills/<name>/SKILL.md` as context when relevant.
 
 ### Lifecycle (the development loop)
 
