@@ -71,6 +71,7 @@
     "confrontAria": "Jogo {{number}}: {{home}} contra {{away}}",
     "matchNumber": "Jogo {{number}}",
     "timeTbd": "TBD",
+    "penShort": "{{home}}-{{away}} PK",
     "slotGroupWinner": "1º {{group}}",
     "slotGroupRunnerUp": "2º {{group}}",
     "slotBest3rd": "3º {{groups}}",
