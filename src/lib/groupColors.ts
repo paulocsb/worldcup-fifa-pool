@@ -95,7 +95,7 @@ export function phaseNeedsLightFg(stage: MatchStage): boolean {
 
 export const PHASE_LABEL_PT: Record<MatchStage, string> = {
   group: 'Fase de grupos',
-  round_of_32: '32-avos',
+  round_of_32: '16-avos',
   round_of_16: 'Oitavas',
   quarter_final: 'Quartas',
   semi_final: 'Semifinal',
@@ -106,7 +106,7 @@ export const PHASE_LABEL_PT: Record<MatchStage, string> = {
 // Versão curta para pills em mobile
 export const PHASE_LABEL_SHORT_PT: Record<MatchStage, string> = {
   group: 'Grupos',
-  round_of_32: '32-avos',
+  round_of_32: '16-avos',
   round_of_16: 'Oitavas',
   quarter_final: 'QF',
   semi_final: 'SF',

@@ -271,7 +271,7 @@ function ConnectedNode({
   const mirror = half === 'right'
   // Cada nó reserva SEMPRE as duas perninhas (a linha só aparece quando há
   // conector). Com COLUMN_WIDTH alargado pra caber bandeira + 2 perninhas, os
-  // 32-avos (sem linha de entrada) alinham com as demais fases sem truncar.
+  // 16-avos (sem linha de entrada) alinham com as demais fases sem truncar.
   return (
     <div
       className="relative flex items-center"

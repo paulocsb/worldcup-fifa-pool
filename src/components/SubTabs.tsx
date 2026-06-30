@@ -12,7 +12,7 @@ interface SubTabsProps<T extends string> {
  * Pílulas de navegação horizontal. Scroll horizontal com snap, e a pílula
  * ativa é centralizada automaticamente quando muda (incluindo o mount inicial).
  *
- * Usada na /standings pra alternar entre Fase de Grupos, 32-avos, Oitavas, etc.
+ * Usada na /standings pra alternar entre Fase de Grupos, 16-avos, Oitavas, etc.
  */
 export function SubTabs<T extends string>({
   tabs,

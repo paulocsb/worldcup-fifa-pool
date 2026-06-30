@@ -34,7 +34,7 @@ import { cn } from '@/lib/utils'
  * Tela de classificação do torneio com tabs por fase.
  *
  * - Fase de Grupos: 12 tabelas (top 2 verde, 3º amber)
- * - 32-avos → Final: lista de cards via BracketPhase
+ * - 16-avos → Final: lista de cards via BracketPhase
  *
  * A tab inicial é determinada pelo estado do torneio (currentPhase) ou pode
  * vir explicitamente via ?phase=r32 na URL (deep link).

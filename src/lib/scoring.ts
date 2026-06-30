@@ -121,7 +121,7 @@ export interface GroupScoreBreakdown {
 
 /**
  * Compara palpite vs ordem final do grupo (após desempates oficiais).
- * `qualified` é o set de team_ids que avançaram aos 32-avos no torneio inteiro.
+ * `qualified` é o set de team_ids que avançaram aos 16-avos no torneio inteiro.
  */
 export function scoreGroup(
   predicted: GroupOrder,
@@ -140,7 +140,7 @@ export function scoreGroup(
     qualifier_bonus: 0,
   }
 
-  // Bônus: para cada time entre o palpite top-3 que de fato classificou aos 32-avos
+  // Bônus: para cada time entre o palpite top-3 que de fato classificou aos 16-avos
   const top3Predicted = [
     predicted.first_team_id,
     predicted.second_team_id,
